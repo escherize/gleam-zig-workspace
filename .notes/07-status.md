@@ -29,9 +29,22 @@ vendored at `toolchain/` (checksum-verified). Runner finds zig via
   8 no main fn, 1 int-overflow-semantics divergence (Wilson's theorem:
   i64 wraps, JS f64 loses precision, only Erlang bignums are exact).
 
+## 2026-08-20 (later): bit arrays, file I/O, native binaries
+
+- Bit arrays (byte-aligned): shared-buffer RC representation, builder
+  construction, matcher-based patterns with dependent sizes; stdlib
+  bit_array module FFI (slice, base64/16, is_utf8...). Corpus unskipped.
+- simplifile fork (github.com/escherize/gleam-zig-simplifile): read,
+  write, append, delete (Enoent-correct), dirs, copy, rename, touch.
+  The Find-words rosetta programs run against unixdict.txt.
+- `gleam export zig-executable`: ReleaseFast standalone binary; prelude
+  picks allocator by builtin.mode (leak gate only in Debug).
+- Gate: 129 passed, 0 failed, 20 skipped. Parked idea: single-file zig
+  output (.notes/09-ideas.md).
+
 ### Known gaps
 
-- Bit arrays: no representation; compile to runtime panics.
+- Non-byte-aligned bit array segments; utf16/utf32 segments.
 - Anonymous fn TCO, mutual recursion: stack-bound (JS parity).
 - `float.to_precision`, string trim are ASCII; graphemes are codepoints.
 - Panic message format differs from other targets (fine for now).
