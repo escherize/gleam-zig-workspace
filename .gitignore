@@ -1,0 +1,11 @@
+# Sibling repositories with their own remotes
+/gleam/
+/gleam-stdlib/
+
+# Vendored toolchain (fetch per README) and upstream tour clone
+/toolchain/
+/tour/
+
+# Harness scratch project and build output
+/examples/_run/
+/examples/*/build/
