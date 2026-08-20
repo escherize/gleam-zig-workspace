@@ -83,7 +83,7 @@ def run_target(target: str) -> tuple[int, str]:
     for line in output.splitlines():
         stripped = ANSI.sub("", line)
         if re.match(
-            r"^\s*(Compiling|Compiled|Resolving|Downloading|Running|Added|Updating|Generating|Installing)",
+            r"^\s*(Compiling|Compiled|Resolving|Downloading|Downloaded|Running|Added|Updating|Generating|Installing)",
             stripped,
         ):
             continue
