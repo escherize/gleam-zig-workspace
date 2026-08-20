@@ -38,7 +38,12 @@ def setup_project():
         'name = "mainmod"\nversion = "1.0.0"\n\n'
         "[dependencies]\n"
         'gleam_stdlib = { path = "../../gleam-stdlib" }\n'
+        'simplifile = { path = "../../simplifile" }\n'
     )
+    # Word list some rosetta programs read from their working directory.
+    dictionary = ROOT / "data" / "unixdict.txt"
+    if dictionary.exists():
+        (PROJECT / "unixdict.txt").write_bytes(dictionary.read_bytes())
 
 
 def normalise(text: str) -> str:
@@ -124,7 +129,6 @@ def main() -> int:
         # Dict iteration order is explicitly unspecified, so dict-heavy
         # programs cannot be compared textually across targets.
         nondeterministic = "random" in code or "dict." in code
-        uses_bit_arrays = "<<" in code
         # Numeric-model divergence: zig ints are i64, JS ints are f64,
         # Erlang has bignums. Programs whose output depends on overflow
         # behaviour differ by design.
@@ -135,10 +139,6 @@ def main() -> int:
             if stale.is_file():
                 stale.unlink()
 
-        if uses_bit_arrays:
-            skipped += 1
-            print(f"SKIP {label} (bit arrays not supported on zig yet)")
-            continue
         if overflow_sensitive:
             skipped += 1
             print(f"SKIP {label} (int overflow semantics differ per target)")
