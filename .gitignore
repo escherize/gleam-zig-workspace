@@ -1,6 +1,7 @@
 # Sibling repositories with their own remotes
 /gleam/
 /gleam-stdlib/
+/simplifile/
 
 # Vendored toolchain (fetch per README) and upstream tour clone
 /toolchain/
