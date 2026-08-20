@@ -18,8 +18,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT / "_run"
-GLEAM = ROOT.parent / "gleam" / "target" / "debug" / "gleam"
-ZIG = ROOT.parent / "toolchain" / "zig-aarch64-macos-0.16.0" / "zig"
+# Overridable for CI and other machines; defaults match the local layout.
+GLEAM = Path(
+    os.environ.get("GLEAM_BIN", ROOT.parent / "gleam" / "target" / "debug" / "gleam")
+)
+ZIG = Path(
+    os.environ.get(
+        "GLEAM_ZIG", ROOT.parent / "toolchain" / "zig-aarch64-macos-0.16.0" / "zig"
+    )
+)
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 FILE_LINE = re.compile(r"^\S*\.gleam:(\d+)$")
@@ -183,6 +190,10 @@ def main() -> int:
             print(f"FAIL {label} (zig exit {zig_code})")
 
     print(f"\n{passed} passed, {failed} failed, {skipped} skipped")
+    if passed == 0:
+        # Everything skipping is a broken setup, not a green run.
+        print("no programs passed; treating as failure")
+        return 1
     for label, code, zig_output, js_output in failures:
         print(f"\n=== {label} (zig exit {code})")
         print("--- zig:")
