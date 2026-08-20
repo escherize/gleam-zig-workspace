@@ -2,6 +2,8 @@
 /gleam/
 /gleam-stdlib/
 /simplifile/
+/argv/
+/envoy/
 
 # Vendored toolchain (fetch per README) and upstream tour clone
 /toolchain/
