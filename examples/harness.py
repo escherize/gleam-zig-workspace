@@ -59,7 +59,7 @@ def run_target(target: str) -> tuple[int, str]:
             cwd=PROJECT,
             capture_output=True,
             text=True,
-            timeout=20,
+            timeout=int(os.environ.get("HARNESS_TIMEOUT", "20")),
             env=os.environ | {"GLEAM_ZIG": str(ZIG)},
         )
     except subprocess.TimeoutExpired as e:
@@ -77,7 +77,10 @@ def run_target(target: str) -> tuple[int, str]:
     interesting = []
     for line in output.splitlines():
         stripped = ANSI.sub("", line)
-        if re.match(r"^\s*(Compiling|Compiled|Resolving|Downloading|Running)", stripped):
+        if re.match(
+            r"^\s*(Compiling|Compiled|Resolving|Downloading|Running|Added|Updating|Generating|Installing)",
+            stripped,
+        ):
             continue
         interesting.append(line)
     return result.returncode, normalise("\n".join(interesting))
