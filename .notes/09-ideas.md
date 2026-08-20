@@ -32,3 +32,38 @@ required. Estimate: an afternoon, most of it testing.
 Payoff: zero-dependency distribution (send one file), trivial embedding
 of Gleam code in existing zig projects, and a natural artifact for
 playground-style tooling.
+
+## Branch-aware last-use dataflow (design sketch, 2026-08-20)
+
+The conservative move optimisation handles single straight-line uses.
+Full Perceus precision needs per-branch liveness:
+
+- Walk each function body BACKWARD with a live-variable set, mirroring
+  emission order exactly (argument order, subject-before-clauses, steps
+  before finally).
+- At a Var occurrence: if the name is in the live set, this use dups; if
+  not, it moves, and the name joins the live set.
+- At a case: process each clause with the same live-out; a binding
+  consumed in one clause but live-out of another gets a compensation
+  drop at the top of the non-consuming clause.
+- The result is a set of move-approved occurrence spans (SrcSpan keys)
+  plus per-clause compensation lists, consumed by the emitter.
+- Verification: differential corpus run against the conservative
+  version (outputs + leak gate), plus targeted double-free tests -
+  DebugAllocator catches double frees with traces.
+
+Risk concentrates in mirroring emission order; any divergence is a
+use-after-free. Build the analysis as a shadow of the emitter walk, not
+a separate traversal.
+
+## Stdlib quality ceilings (standing)
+
+Marked `ponytail:` at their implementation sites, ordered by likely
+first complaint:
+1. Dict is an insertion-ordered assoc list - O(n) per op. A real
+   persistent map (HAMT) is the fix; consider porting the JS dict.mjs
+   structure.
+2. lowercase/uppercase/trim are ASCII; graphemes segment by codepoint.
+   Needs Unicode tables (casing + UAX#29); zig std has neither.
+3. float.to_string uses zig's {d} formatting - matches JS closely but
+   unverified against erlang's shortest-round-trip behaviour.

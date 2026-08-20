@@ -4,6 +4,7 @@
 /simplifile/
 /argv/
 /envoy/
+/gleam_native/
 
 # Vendored toolchain (fetch per README) and upstream tour clone
 /toolchain/
