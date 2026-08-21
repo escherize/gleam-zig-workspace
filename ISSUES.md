@@ -10,9 +10,12 @@ design exists. Move finished items to the Done section with the commit.
   single-straight-line-use rule with backward liveness + per-clause
   compensation drops. Design: `.notes/09-ideas.md`. Gate: differential
   corpus + DebugAllocator double-free traps.
-- **#4 Borrowing inference.** Read-only params skip RC traffic. Needs a
-  per-function owned/borrowed ABI split inferred module-graph-wide;
-  public fns keep the owned convention.
+- **#4 Borrowing inference, phase 2: transitive + call-graph.** Phase 1
+  (2026-08-21) ships the field-read-only case: `borrowed$name` ABI, no
+  dup at call / no drop in callee. Remaining: fixpoint over the module
+  call graph so a param passed to a borrowed position is itself
+  borrowable (would cover the ray tracer's intersect), borrowed case
+  subjects, and TCO fns whose params pass through unchanged.
 - **#5 String buffer sharing.** Strings copy on construction and slice
   (naive-RC decision). Restore shared buffers with offset/length views
   (bit arrays already do this).
@@ -47,6 +50,14 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
+- **#4a Borrowed param ABI + scratch allocator fix.** (2026-08-21,
+  gleam@89ad2fa24) Scratch allocator page_allocator -> smp_allocator:
+  the ray tracer's 230k mmap/munmap pairs (one per formatted number)
+  were costing more than rendering — 0.49s -> 0.14s wall, now at node
+  parity (0.12s) in 4MB vs 65MB. Borrowed ABI phase 1: fns whose params
+  are only field-read emit `borrowed$name` (caller passes without dup,
+  callee never drops; owned wrapper kept public). Vec micro 0.34 ->
+  0.28s. Corpus 122/0/27 leak-clean.
 - **#2 Record/tuple FBIP reuse + borrowed field access.** (2026-08-21,
   gleam@c7e257f06) Field access on a live local borrows in place (scalar
   fields: zero RC traffic; boxed: dup the field only). Reuse token is

@@ -13,30 +13,60 @@ pub fn @"new"() Value {
     return P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"new"() }, &[_]?[]const u8{ "dict" });
 }
 
-pub fn @"size"(@"v$set": Value) Value {
-    return @"M$gleam/dict".@"size"(P.recordField(@"v$set", 0));
+fn @"borrowed$size"(@"v$set": Value) Value {
+    return @"M$gleam/dict".@"size"(P.dup((@"v$set").record.fields[0]));
+}
+
+pub fn @"size"(@"a$0": Value) Value {
+    const result = @"borrowed$size"(@"a$0");
+    P.drop(@"a$0");
+    return result;
 }
 
 pub fn @"is_empty"(@"v$set": Value) Value {
     return P.eq(@"v$set", @"new"());
 }
 
-pub fn @"insert"(@"v$set": Value, @"v$member": Value) Value {
-    return P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"insert"(P.recordField(@"v$set", 0), @"v$member", @"constant$token"()) }, &[_]?[]const u8{ "dict" });
+fn @"borrowed$insert"(@"v$set": Value, @"v$member": Value) Value {
+    return P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"insert"(P.dup((@"v$set").record.fields[0]), @"v$member", @"constant$token"()) }, &[_]?[]const u8{ "dict" });
 }
 
-pub fn @"contains"(@"v$set": Value, @"v$member": Value) Value {
-    const @"v$_pipe" = P.recordField(@"v$set", 0);
+pub fn @"insert"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$insert"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$contains"(@"v$set": Value, @"v$member": Value) Value {
+    const @"v$_pipe" = P.dup((@"v$set").record.fields[0]);
     const @"v$_pipe$1" = @"M$gleam/dict".@"get"(@"v$_pipe", @"v$member");
     return @"M$gleam/result".@"is_ok"(@"v$_pipe$1");
 }
 
-pub fn @"delete"(@"v$set": Value, @"v$member": Value) Value {
-    return P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"delete"(P.recordField(@"v$set", 0), @"v$member") }, &[_]?[]const u8{ "dict" });
+pub fn @"contains"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$contains"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
-pub fn @"to_list"(@"v$set": Value) Value {
-    return @"M$gleam/dict".@"keys"(P.recordField(@"v$set", 0));
+fn @"borrowed$delete"(@"v$set": Value, @"v$member": Value) Value {
+    return P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"delete"(P.dup((@"v$set").record.fields[0]), @"v$member") }, &[_]?[]const u8{ "dict" });
+}
+
+pub fn @"delete"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$delete"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$to_list"(@"v$set": Value) Value {
+    return @"M$gleam/dict".@"keys"(P.dup((@"v$set").record.fields[0]));
+}
+
+pub fn @"to_list"(@"a$0": Value) Value {
+    const result = @"borrowed$to_list"(@"a$0");
+    P.drop(@"a$0");
+    return result;
 }
 
 pub fn @"from_list"(@"v$members": Value) Value {
@@ -44,30 +74,55 @@ pub fn @"from_list"(@"v$members": Value) Value {
     return P.makeRecordL("Set", &[_]Value{ @"v$dict" }, &[_]?[]const u8{ "dict" });
 }
 
-pub fn @"fold"(@"v$set": Value, @"v$initial": Value, @"v$reducer": Value) Value {
-    const @"r$0" = @"M$gleam/dict".@"fold"(P.recordField(@"v$set", 0), @"v$initial", P.makeClosure(@ptrCast(&@"lambda$1"), &[_]Value{ P.dup(@"v$reducer") }));
+fn @"borrowed$fold"(@"v$set": Value, @"v$initial": Value, @"v$reducer": Value) Value {
+    const @"r$0" = @"M$gleam/dict".@"fold"(P.dup((@"v$set").record.fields[0]), @"v$initial", P.makeClosure(@ptrCast(&@"lambda$1"), &[_]Value{ P.dup(@"v$reducer") }));
     P.drop(@"v$reducer");
     return @"r$0";
 }
 
-pub fn @"filter"(@"v$set": Value, @"v$predicate": Value) Value {
-    const @"r$0" = P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"filter"(P.recordField(@"v$set", 0), P.makeClosure(@ptrCast(&@"lambda$2"), &[_]Value{ P.dup(@"v$predicate") })) }, &[_]?[]const u8{ "dict" });
+pub fn @"fold"(@"a$0": Value, @"a$1": Value, @"a$2": Value) Value {
+    const result = @"borrowed$fold"(@"a$0", @"a$1", @"a$2");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$filter"(@"v$set": Value, @"v$predicate": Value) Value {
+    const @"r$0" = P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"filter"(P.dup((@"v$set").record.fields[0]), P.makeClosure(@ptrCast(&@"lambda$2"), &[_]Value{ P.dup(@"v$predicate") })) }, &[_]?[]const u8{ "dict" });
     P.drop(@"v$predicate");
     return @"r$0";
 }
 
+pub fn @"filter"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$filter"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
+}
+
 pub fn @"map"(@"v$set": Value, @"v$fun": Value) Value {
-    const @"r$0" = @"fold"(@"v$set", @"new"(), P.makeClosure(@ptrCast(&@"lambda$3"), &[_]Value{ P.dup(@"v$fun") }));
+    const @"r$1" = bc0: {
+        const @"bor$0" = @"v$set";
+        const @"own$0" = @"new"();
+        const @"own$1" = P.makeClosure(@ptrCast(&@"lambda$3"), &[_]Value{ P.dup(@"v$fun") });
+        const @"r$0" = @"borrowed$fold"(@"bor$0", @"own$0", @"own$1");
+        P.drop(@"bor$0");
+        break :bc0 @"r$0";
+    };
     P.drop(@"v$fun");
-    return @"r$0";
+    return @"r$1";
 }
 
 pub fn @"drop"(@"v$set": Value, @"v$disallowed": Value) Value {
     return @"M$gleam/list".@"fold"(@"v$disallowed", @"v$set", P.makeClosure(@ptrCast(&@"wrap$gleam$set$delete"), &[_]Value{}));
 }
 
-pub fn @"take"(@"v$set": Value, @"v$desired": Value) Value {
-    return P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"take"(P.recordField(@"v$set", 0), @"v$desired") }, &[_]?[]const u8{ "dict" });
+fn @"borrowed$take"(@"v$set": Value, @"v$desired": Value) Value {
+    return P.makeRecordL("Set", &[_]Value{ @"M$gleam/dict".@"take"(P.dup((@"v$set").record.fields[0]), @"v$desired") }, &[_]?[]const u8{ "dict" });
+}
+
+pub fn @"take"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$take"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"order"(@"v$first": Value, @"v$second": Value) Value {
@@ -96,7 +151,7 @@ pub fn @"union"(@"v$first": Value, @"v$second": Value) Value {
     const @"v$larger" = P.dup((@"subject$0").tuple[0]);
     const @"v$smaller" = P.dup((@"subject$0").tuple[1]);
     P.drop(@"subject$0");
-    const @"r$0" = @"fold"(P.dup(@"v$smaller"), P.dup(@"v$larger"), P.makeClosure(@ptrCast(&@"wrap$gleam$set$insert"), &[_]Value{}));
+    const @"r$0" = @"borrowed$fold"(@"v$smaller", P.dup(@"v$larger"), P.makeClosure(@ptrCast(&@"wrap$gleam$set$insert"), &[_]Value{}));
     P.drop(@"v$larger");
     P.drop(@"v$smaller");
     return @"r$0";
@@ -107,14 +162,23 @@ pub fn @"intersection"(@"v$first": Value, @"v$second": Value) Value {
     const @"v$larger" = P.dup((@"subject$0").tuple[0]);
     const @"v$smaller" = P.dup((@"subject$0").tuple[1]);
     P.drop(@"subject$0");
-    const @"r$0" = @"take"(P.dup(@"v$larger"), @"to_list"(P.dup(@"v$smaller")));
+    const @"r$1" = bc0: {
+        const @"own$0" = @"borrowed$to_list"(@"v$smaller");
+        const @"r$0" = @"borrowed$take"(@"v$larger", @"own$0");
+        break :bc0 @"r$0";
+    };
     P.drop(@"v$larger");
     P.drop(@"v$smaller");
-    return @"r$0";
+    return @"r$1";
 }
 
 pub fn @"difference"(@"v$first": Value, @"v$second": Value) Value {
-    return @"drop"(@"v$first", @"to_list"(@"v$second"));
+    return @"drop"(@"v$first", bc0: {
+        const @"bor$0" = @"v$second";
+        const @"r$0" = @"borrowed$to_list"(@"bor$0");
+        P.drop(@"bor$0");
+        break :bc0 @"r$0";
+    });
 }
 
 pub fn @"is_subset"(@"v$first": Value, @"v$second": Value) Value {
@@ -135,9 +199,15 @@ pub fn @"symmetric_difference"(@"v$first": Value, @"v$second": Value) Value {
 }
 
 pub fn @"each"(@"v$set": Value, @"v$fun": Value) Value {
-    const @"r$0" = @"fold"(@"v$set", P.NIL, P.makeClosure(@ptrCast(&@"lambda$4"), &[_]Value{ P.dup(@"v$fun") }));
+    const @"r$1" = bc0: {
+        const @"bor$0" = @"v$set";
+        const @"own$0" = P.makeClosure(@ptrCast(&@"lambda$4"), &[_]Value{ P.dup(@"v$fun") });
+        const @"r$0" = @"borrowed$fold"(@"bor$0", P.NIL, @"own$0");
+        P.drop(@"bor$0");
+        break :bc0 @"r$0";
+    };
     P.drop(@"v$fun");
-    return @"r$0";
+    return @"r$1";
 }
 
 fn @"lambda$0"(@"env$": []const Value, @"v$m": Value, @"v$k": Value) Value {
@@ -158,7 +228,13 @@ fn @"lambda$2"(@"env$": []const Value, @"v$m": Value, @"v$_": Value) Value {
 }
 
 fn @"lambda$3"(@"env$": []const Value, @"v$acc": Value, @"v$member": Value) Value {
-    return @"insert"(@"v$acc", P.call1(P.dup(@"env$"[0]), @"v$member"));
+    return bc0: {
+        const @"bor$0" = @"v$acc";
+        const @"own$0" = P.call1(P.dup(@"env$"[0]), @"v$member");
+        const @"r$0" = @"borrowed$insert"(@"bor$0", @"own$0");
+        P.drop(@"bor$0");
+        break :bc0 @"r$0";
+    };
 }
 
 fn @"wrap$gleam$set$delete"(@"env$": []const Value, @"p$0": Value, @"p$1": Value) Value {

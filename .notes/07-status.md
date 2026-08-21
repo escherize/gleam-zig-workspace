@@ -143,3 +143,23 @@ vendored at `toolchain/` (checksum-verified). Runner finds zig via
   (1.8x), wall 0.66 -> 0.49s (sys-time PPM writes now dominate), output
   byte-identical (md5 7a452dda...). Scalar micro and list-churn
   unchanged.
+
+## 2026-08-21 (later): scratch allocator + borrowed ABI (issue #4a)
+
+- The "sys-time PPM writes" diagnosis above was wrong: 0.28s sys was
+  230k page reclaims from `P.allocator = page_allocator` — every FFI
+  scratch allocation (one per int.to_string, one per builder growth) was
+  an mmap/munmap syscall pair. Now smp_allocator. Ray tracer 0.49 ->
+  0.14s wall (user 0.21 -> 0.14 too; the churn polluted user time), at
+  node parity (0.12s) in 4.2MB RSS vs node's 65MB. RSS +0.3MB from smp
+  pools.
+- Borrowed ABI phase 1: fns whose every param use is a field-access
+  container (conservative: bare use, rebind, lambda mention, or guard
+  use disqualifies; TCO fns excluded; scalar params trivially eligible)
+  emit `borrowed$name` — params carry no reference, callers pass live
+  locals directly / box pure scalars inline / temp+drop anything else
+  (temps bound in arg order to keep left-to-right evaluation). Public
+  name stays an owned-convention wrapper. Vec micro (10M add/scale/dot)
+  0.34 -> 0.28s user vs node 0.23s.
+- Gate: corpus 122/0/27 leak-clean, compiler suite green, ray tracer
+  byte-identical.

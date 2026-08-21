@@ -30,8 +30,8 @@ fn @"decode_dynamic"(@"v$data": Value) Value {
     return P.tupleValue(&[_]Value{ @"v$data", P.emptyList() });
 }
 
-pub fn @"run"(@"v$data": Value, @"v$decoder": Value) Value {
-    const @"subject$0" = P.call1(P.recordField(@"v$decoder", 0), @"v$data");
+fn @"borrowed$run"(@"v$data": Value, @"v$decoder": Value) Value {
+    const @"subject$0" = P.call1(P.dup((@"v$decoder").record.fields[0]), @"v$data");
     const @"v$maybe_invalid_data" = P.dup((@"subject$0").tuple[0]);
     const @"v$errors" = P.dup((@"subject$0").tuple[1]);
     P.drop(@"subject$0");
@@ -53,6 +53,12 @@ pub fn @"run"(@"v$data": Value, @"v$decoder": Value) Value {
         return @"r$1";
     }
     unreachable;
+}
+
+pub fn @"run"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$run"(@"a$0", @"a$1");
+    P.drop(@"a$1");
+    return result;
 }
 
 

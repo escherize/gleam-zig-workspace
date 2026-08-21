@@ -141,7 +141,7 @@ pub fn @"path_segments"(@"v$path": Value) Value {
     return @"remove_dot_segments"(@"M$gleam/string".@"split"(@"v$path", P.copyString("/")));
 }
 
-pub fn @"to_string"(@"v$uri": Value) Value {
+fn @"borrowed$to_string"(@"v$uri": Value) Value {
     const @"v$out" = case0: {
         const @"s$0" = P.dup((@"v$uri").record.fields[0]);
         c1: {
@@ -285,8 +285,13 @@ pub fn @"to_string"(@"v$uri": Value) Value {
     P.drop(@"v$out");
     P.drop(@"v$out$6");
     P.drop(@"v$out$7");
-    P.drop(@"v$uri");
     return @"r$16";
+}
+
+pub fn @"to_string"(@"a$0": Value) Value {
+    const result = @"borrowed$to_string"(@"a$0");
+    P.drop(@"a$0");
+    return result;
 }
 
 pub fn @"origin"(@"v$uri": Value) Value {
