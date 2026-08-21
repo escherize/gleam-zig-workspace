@@ -9,13 +9,16 @@ design exists. Move finished items to the Done section with the commit.
 - **#3 Branch-aware last-use dataflow.** Replace the conservative
   single-straight-line-use rule with backward liveness + per-clause
   compensation drops. Design: `.notes/09-ideas.md`. Gate: differential
-  corpus + DebugAllocator double-free traps.
-- **#4 Borrowing inference, phase 2: transitive + call-graph.** Phase 1
-  (2026-08-21) ships the field-read-only case: `borrowed$name` ABI, no
-  dup at call / no drop in callee. Remaining: fixpoint over the module
-  call graph so a param passed to a borrowed position is itself
-  borrowable (would cover the ray tracer's intersect), borrowed case
-  subjects, and TCO fns whose params pass through unchanged.
+  corpus + DebugAllocator double-free traps. Now the top perf item:
+  accumulators used once-per-clause (list.fold, TCO acc params) never
+  reach rc==1, so the in-place string append cannot fire — 200k-append
+  bench runs 8.6s vs node 0.5s. Per-clause moves fix string building,
+  TCO accumulators, and unlock more reuse arming in one design.
+- **#4 Borrowing inference, phase 3.** Phases 1-2 done (2026-08-21):
+  field-read-only params, transitive fixpoint over the module call
+  graph, borrowed case subjects. Remaining: TCO fns whose params pass
+  through self-calls unchanged, and cross-module borrowing (needs
+  interface metadata).
 - **#5 String buffer sharing.** Strings copy on construction and slice
   (naive-RC decision). Restore shared buffers with offset/length views
   (bit arrays already do this).
@@ -49,6 +52,17 @@ design exists. Move finished items to the Done section with the commit.
   nonzero.
 
 ## Done
+
+- **#4b Transitive borrowing + borrowed subjects + capacity strings.**
+  (2026-08-21, gleam@f6b100fc3) Borrow inference runs to fixpoint
+  (param passed to a borrowed position is itself borrowing — covers
+  intersect-style chains); case subjects that are live locals borrow in
+  place (no dup/drop, reuse unaffected for owned subjects); string
+  headers carry allocated capacity so `<>` with an unshared left
+  operand appends in place with doubling. Straight-line/pipeline append
+  chains now amortized linear; multi-clause accumulators still copy
+  (blocked on #3). Ray tracer 0.13-0.14s, vec micro 0.27s. Corpus
+  122/0/27 leak-clean.
 
 - **#4a Borrowed param ABI + scratch allocator fix.** (2026-08-21,
   gleam@89ad2fa24) Scratch allocator page_allocator -> smp_allocator:
