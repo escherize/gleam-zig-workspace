@@ -37,9 +37,6 @@ design exists. Move finished items to the Done section with the commit.
   loop). zig `@call(.always_tail)` could exceed the contract.
 
 ### features
-- **#11 Single-file zig source export.** `gleam export zig-source
-  --single-file`: namespace-struct wrapping + inlined prelude, one
-  runnable .zig. Sketch: `.notes/09-ideas.md`.
 - **#12 Toolchain auto-fetch.** Phase 6 remainder: first build fetches
   the pinned zig tarball instead of GLEAM_ZIG + manual download.
 - **#13 gleam_native v2.** Event loop, buffered stream writers,
@@ -52,6 +49,17 @@ design exists. Move finished items to the Done section with the commit.
   nonzero.
 
 ## Done
+
+- **#11 Single-file zig source export.** (2026-08-21, gleam@adb8bee44)
+  `gleam export zig-source`: modules and native files wrapped in
+  path-keyed namespace structs, imports rewritten, prelude inlined,
+  entrypoint appended — one runnable .zig, `zig run` with no gleam.
+  Ray tracer single file byte-identical; simplifile FFI path verified.
+  Surfaced and fixed two latent bugs multi-file builds hid: constants
+  emitted without target-support checks (dangling references to
+  never-emitted fns), and the nested-sequence use counter not stopping
+  at rebinds (phantom-armed pattern moves; caught by the consumption
+  assert). Corpus 124/0/27, 6180 tests.
 
 - **Inline record fields + benchmark dossier page.** (2026-08-21,
   gleam@039b8430b, docs@6c63486ea) Records arity <= 4 store fields
