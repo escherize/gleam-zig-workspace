@@ -1,0 +1,6 @@
+name = "raytracer"
+version = "1.0.0"
+target = "zig"
+
+[dependencies]
+gleam_stdlib = { path = "../../../gleam-stdlib" }
