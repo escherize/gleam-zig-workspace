@@ -6,14 +6,12 @@ design exists. Move finished items to the Done section with the commit.
 ## Open
 
 ### perf
-- **#3 Branch-aware last-use dataflow.** Replace the conservative
-  single-straight-line-use rule with backward liveness + per-clause
-  compensation drops. Design: `.notes/09-ideas.md`. Gate: differential
-  corpus + DebugAllocator double-free traps. Now the top perf item:
-  accumulators used once-per-clause (list.fold, TCO acc params) never
-  reach rc==1, so the in-place string append cannot fire — 200k-append
-  bench runs 8.6s vs node 0.5s. Per-clause moves fix string building,
-  TCO accumulators, and unlock more reuse arming in one design.
+- **#3b Full backward liveness.** The scoped per-clause version
+  shipped (#3a); remaining: uses spread across MULTIPLE statements
+  before the final case, multi-use-per-clause last-use precision, and
+  liveness through nested block/pipeline tails — the full
+  `.notes/09-ideas.md` design. Lower urgency now: the accumulator
+  pattern is covered.
 - **#4 Borrowing inference, phase 3.** Phases 1-2 done (2026-08-21):
   field-read-only params, transitive fixpoint over the module call
   graph, borrowed case subjects. Remaining: TCO fns whose params pass
@@ -52,6 +50,15 @@ design exists. Move finished items to the Done section with the commit.
   nonzero.
 
 ## Done
+
+- **#3a Per-clause last-use moves.** (2026-08-21, gleam@ac14cc585)
+  Scoped branch-aware liveness: bindings whose region ends in a case
+  with at most one straight-line use per clause move per clause
+  (compensation drops in zero-use clauses; emission-time assert proves
+  consumption). Covers list.fold/TCO accumulators — with rc==1 finally
+  reaching the append, in-place string append fires: 200k-piece fold
+  8.6s -> 0.02s (430x; node 0.48s). Coin change 2.53 -> 2.27s. Corpus
+  122/0/27 in Debug (leak + double-free gates), edge smoke leak-clean.
 
 - **#4b Transitive borrowing + borrowed subjects + capacity strings.**
   (2026-08-21, gleam@f6b100fc3) Borrow inference runs to fixpoint
