@@ -73,3 +73,27 @@ vendored at `toolchain/` (checksum-verified). Runner finds zig via
   javascript targets, normalised diff. Nondeterministic (random/dict-order)
   programs are exit-code-only.
 - Compiler suite: 6180 tests green.
+
+## 2026-08-20 (night): QA sweep, gleam_native, cross-compilation, benchmark
+
+- 10-agent adversarial fan-out audit: 29 confirmed findings (4 critical),
+  all fixed. Criticals: guard operands double-freed (borrowed refs fed to
+  consuming helpers), bit array int segments >64 bits smashed a fixed
+  buffer, >16-segment patterns overran matcher slots, gleam_native
+  handles were use-after-free on double close (now alive-flagged boxes
+  that panic cleanly). Also: P.stringValue never existed (string module
+  constants could not compile), reuse-token escape into conditional
+  branches (barrier-contained now), harness classification holes.
+- gleam_native (github.com/escherize/gleam-zig-native): OS threads with
+  deep-copied closures, sleep, monotonic time, blocking TCP. Echo server
+  gate met. argv + envoy forks published.
+- Cross-compilation: --target-triple on gleam export zig-executable;
+  verified linux x86_64/aarch64, windows, macos from one machine.
+- Tri-target ray tracer demo (examples/demo/raytracer): byte-identical
+  output on all three targets. native 0.66s/3.9MB/421KB static binary,
+  node 0.12s/65MB, BEAM 1.48s/104MB. Benchmark exposed and fixed the
+  positional-vs-streaming stdout writer bug and drove release-mode
+  object pools. Remaining compute gap vs V8 is boxing; unboxing is the
+  future work.
+- Corpus: 122 passed, 0 failed, 27 skipped (all principled). CI double
+  green on the run of record.
