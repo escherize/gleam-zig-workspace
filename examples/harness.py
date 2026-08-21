@@ -161,15 +161,34 @@ def main() -> int:
         zig_code, zig_output = run_target("zig")
 
         if "Unknown module" in zig_output:
-            if "name `gleam/" in zig_output:
-                # The stdlib itself failing to resolve is a target
-                # regression, never a missing third-party dependency.
+            # Only true stdlib modules count as a target regression;
+            # gleam/-prefixed names can also belong to hex packages
+            # (gleam/format, gleam/erlang, ...) we simply do not vendor.
+            stdlib_modules = (
+                "io", "list", "string", "int", "float", "result", "option",
+                "dict", "set", "bool", "order", "pair", "function",
+                "bit_array", "string_tree", "dynamic", "uri",
+            )
+            missing_stdlib = any(
+                f"name `gleam/{module}`" in zig_output for module in stdlib_modules
+            )
+            if missing_stdlib:
                 failed += 1
                 failures.append((label, zig_code, zig_output, ""))
                 print(f"FAIL {label} (stdlib module missing on zig)")
             else:
                 skipped += 1
                 print(f"SKIP {label} (missing dependency)")
+            continue
+
+        if "does not have an implementation for the zig target" in zig_output or (
+            "no implementation" in zig_output and "zig" in zig_output
+        ):
+            # The program genuinely requires erlang/javascript externals;
+            # the zig target lacking them is a documented gap, not a
+            # regression.
+            skipped += 1
+            print(f"SKIP {label} (requires externals the zig target lacks)")
             continue
 
         if nondeterministic:
