@@ -53,6 +53,16 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
+- **Inline record fields + benchmark dossier page.** (2026-08-21,
+  gleam@039b8430b, docs@6c63486ea) Records arity <= 4 store fields
+  inside the Record struct (fields slice points at inline storage;
+  readers untouched): ray tracer 0.12 -> 0.08s (1.5x node), vec micro
+  0.26 -> 0.17s (ahead of node; BEAM 0.13 keeps the last lead). New
+  /benchmarks.html dossier page: log-log time*memory scatter of all 15
+  runs, per-benchmark source + emitted code + dated history, real
+  reproduction commands backed by sources committed at
+  examples/benchmarks/ (workspace@600ccf0). Corpus 122/0/27.
+
 - **#4c Self-recursive borrowing + borrowed pattern bindings.**
   (2026-08-21, gleam@831c1eca2) Greatest-fixpoint inference (seed all
   candidates fully borrowed, clear flags until stable) lets self- and
