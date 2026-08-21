@@ -185,6 +185,6 @@ fn @"wrap$gleam$bytes_tree$from_bit_array"(@"env$": []const Value, @"p$0": Value
 
 fn @"lambda$0"(@"env$": []const Value, @"v$acc": Value, @"v$bits": Value) Value {
     _ = @"env$";
-    return P.addInt(@"M$gleam/bit_array".@"byte_size"(@"v$bits"), @"v$acc");
+    return P.intValue(((@"M$gleam/bit_array".@"byte_size"(@"v$bits")).int +% (@"v$acc").int));
 }
 

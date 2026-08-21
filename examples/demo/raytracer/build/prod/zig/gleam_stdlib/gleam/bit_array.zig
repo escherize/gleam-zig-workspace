@@ -24,7 +24,7 @@ pub fn @"byte_size"(@"a$0": Value) Value {
 }
 
 pub fn @"pad_to_bytes"(@"v$data": Value) Value {
-    const @"s$0" = P.remainderInt(@"bit_size"(P.dup(@"v$data")), P.intValue(8));
+    const @"s$0" = P.intValue(P.rawRemInt((@"bit_size"(P.dup(@"v$data"))).int, 8));
     c0: {
         if (!((@"s$0").int == 0)) break :c0;
         const @"r$0" = P.dup(@"v$data");
@@ -34,11 +34,11 @@ pub fn @"pad_to_bytes"(@"v$data": Value) Value {
     }
     {
         const @"v$trailing_bit_count" = P.dup(@"s$0");
-        const @"v$padding_bits" = P.subInt(P.intValue(8), P.dup(@"v$trailing_bit_count"));
+        const @"v$padding_bits": i64 = (8 -% (@"v$trailing_bit_count").int);
         const @"r$1" = ba2: {
             var @"b$0" = P.baBuilder();
             P.baAddBits(&@"b$0", P.dup(@"v$data"));
-            P.baAddInt(&@"b$0", P.intValue(0), P.baBitCount(@"v$padding_bits"), false);
+            P.baAddInt(&@"b$0", P.intValue(0), P.baBitCount(P.intValue(@"v$padding_bits")), false);
             break :ba2 P.baFinish(&@"b$0");
         };
         P.drop(@"v$trailing_bit_count");
@@ -128,7 +128,7 @@ fn @"decode64"(@"a$0": Value) Value {
 
 pub fn @"base64_decode"(@"v$encoded": Value) Value {
     const @"v$padded" = case0: {
-        const @"s$0" = P.remainderInt(@"byte_size"(@"from_string"(P.dup(@"v$encoded"))), P.intValue(4));
+        const @"s$0" = P.intValue(P.rawRemInt((@"byte_size"(@"from_string"(P.dup(@"v$encoded")))).int, 4));
         c1: {
             if (!((@"s$0").int == 0)) break :c1;
             const @"r$0" = P.dup(@"v$encoded");
@@ -137,7 +137,7 @@ pub fn @"base64_decode"(@"v$encoded": Value) Value {
         }
         {
             const @"v$n" = P.dup(@"s$0");
-            const @"r$1" = @"M$gleam/string".@"append"(P.dup(@"v$encoded"), @"M$gleam/string".@"repeat"(P.copyString("="), P.subInt(P.intValue(4), P.dup(@"v$n"))));
+            const @"r$1" = @"M$gleam/string".@"append"(P.dup(@"v$encoded"), @"M$gleam/string".@"repeat"(P.copyString("="), P.intValue((4 -% (@"v$n").int))));
             P.drop(@"v$n");
             P.drop(@"s$0");
             break :case0 @"r$1";

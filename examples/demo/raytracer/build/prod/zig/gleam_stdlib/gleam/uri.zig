@@ -26,16 +26,18 @@ fn @"parse_fragment"(@"v$rest": Value, @"v$pieces": Value) Value {
 
 
 
-fn @"is_valid_host_within_brackets_char"(@"v$char": Value) Value {
-    const @"r$0" = P.boolValue(if ((P.boolValue(if ((P.boolValue(if ((P.boolValue(if ((blk0: {
-        break :blk0 P.boolValue(if ((P.gtEqInt(P.intValue(48), P.dup(@"v$char"))).bool) (P.ltEqInt(P.dup(@"v$char"), P.intValue(57))).bool else false);
-    }).bool) true else (blk1: {
-        break :blk1 P.boolValue(if ((P.gtEqInt(P.intValue(65), P.dup(@"v$char"))).bool) (P.ltEqInt(P.dup(@"v$char"), P.intValue(90))).bool else false);
-    }).bool)).bool) true else (blk2: {
-        break :blk2 P.boolValue(if ((P.gtEqInt(P.intValue(97), P.dup(@"v$char"))).bool) (P.ltEqInt(P.dup(@"v$char"), P.intValue(122))).bool else false);
-    }).bool)).bool) true else (P.eq(P.dup(@"v$char"), P.intValue(58))).bool)).bool) true else (P.eq(P.dup(@"v$char"), P.intValue(46))).bool);
-    P.drop(@"v$char");
-    return @"r$0";
+fn @"native$is_valid_host_within_brackets_char"(@"v$char": i64) bool {
+    return (P.boolValue((((((blk0: {
+        break :blk0 P.boolValue(((48 >= @"v$char") and (@"v$char" <= 57)));
+    }).bool or (blk1: {
+        break :blk1 P.boolValue(((65 >= @"v$char") and (@"v$char" <= 90)));
+    }).bool) or (blk2: {
+        break :blk2 P.boolValue(((97 >= @"v$char") and (@"v$char" <= 122)));
+    }).bool) or (@"v$char" == 58)) or (@"v$char" == 46)))).bool;
+}
+
+fn @"is_valid_host_within_brackets_char"(@"a$0": Value) Value {
+    return P.boolValue(@"native$is_valid_host_within_brackets_char"((@"a$0").int));
 }
 
 
@@ -375,7 +377,7 @@ fn @"join_segments"(@"v$segments": Value) Value {
 }
 
 fn @"drop_last"(@"v$elements": Value) Value {
-    const @"r$0" = @"M$gleam/list".@"take"(P.dup(@"v$elements"), P.subInt(@"M$gleam/list".@"length"(P.dup(@"v$elements")), P.intValue(1)));
+    const @"r$0" = @"M$gleam/list".@"take"(P.dup(@"v$elements"), P.intValue(((@"M$gleam/list".@"length"(P.dup(@"v$elements"))).int -% 1)));
     P.drop(@"v$elements");
     return @"r$0";
 }

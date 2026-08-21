@@ -22,7 +22,7 @@ pub fn @"size"(@"a$0": Value) Value {
 }
 
 pub fn @"is_empty"(@"v$dict": Value) Value {
-    return P.eq(@"size"(@"v$dict"), P.intValue(0));
+    return P.boolValue(((@"size"(@"v$dict")).int == 0));
 }
 
 
@@ -217,7 +217,7 @@ fn @"transient_update_with"(@"a$0": Value, @"a$1": Value, @"a$2": Value, @"a$3":
 
 fn @"do_combine"(@"v$combine": Value, @"v$left": Value, @"v$right": Value) Value {
     const @"subject$0" = case0: {
-        const @"s$0" = P.gtEqInt(@"size"(P.dup(@"v$left")), @"size"(P.dup(@"v$right")));
+        const @"s$0" = P.boolValue(((@"size"(P.dup(@"v$left"))).int >= (@"size"(P.dup(@"v$right"))).int));
         c1: {
             if (!((@"s$0").bool)) break :c1;
             const @"r$0" = P.tupleValue(&[_]Value{ P.dup(@"v$left"), P.dup(@"v$right"), P.dup(@"v$combine") });

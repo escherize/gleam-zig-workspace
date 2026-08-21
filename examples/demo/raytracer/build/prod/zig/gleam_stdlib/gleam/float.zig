@@ -15,77 +15,75 @@ pub fn @"to_string"(@"a$0": Value) Value {
     return result;
 }
 
-pub fn @"max"(@"v$a": Value, @"v$b": Value) Value {
-    const @"s$0" = P.gtFloat(P.dup(@"v$a"), P.dup(@"v$b"));
+fn @"native$max"(@"v$a": f64, @"v$b": f64) f64 {
+    const @"s$0" = P.boolValue((@"v$a" > @"v$b"));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.dup(@"v$a");
+        const @"r$0" = P.floatValue(@"v$a");
         P.drop(@"s$0");
-        P.drop(@"v$a");
-        P.drop(@"v$b");
-        return @"r$0";
+        return (@"r$0").float;
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.dup(@"v$b");
+        const @"r$1" = P.floatValue(@"v$b");
         P.drop(@"s$0");
-        P.drop(@"v$a");
-        P.drop(@"v$b");
-        return @"r$1";
+        return (@"r$1").float;
     }
     unreachable;
 }
 
-pub fn @"min"(@"v$a": Value, @"v$b": Value) Value {
-    const @"s$0" = P.ltFloat(P.dup(@"v$a"), P.dup(@"v$b"));
+pub fn @"max"(@"a$0": Value, @"a$1": Value) Value {
+    return P.floatValue(@"native$max"((@"a$0").float, (@"a$1").float));
+}
+
+fn @"native$min"(@"v$a": f64, @"v$b": f64) f64 {
+    const @"s$0" = P.boolValue((@"v$a" < @"v$b"));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.dup(@"v$a");
+        const @"r$0" = P.floatValue(@"v$a");
         P.drop(@"s$0");
-        P.drop(@"v$a");
-        P.drop(@"v$b");
-        return @"r$0";
+        return (@"r$0").float;
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.dup(@"v$b");
+        const @"r$1" = P.floatValue(@"v$b");
         P.drop(@"s$0");
-        P.drop(@"v$a");
-        P.drop(@"v$b");
-        return @"r$1";
+        return (@"r$1").float;
     }
     unreachable;
 }
 
-pub fn @"clamp"(@"v$x": Value, @"v$min_bound": Value, @"v$max_bound": Value) Value {
-    const @"s$0" = P.gtEqFloat(P.dup(@"v$min_bound"), P.dup(@"v$max_bound"));
+pub fn @"min"(@"a$0": Value, @"a$1": Value) Value {
+    return P.floatValue(@"native$min"((@"a$0").float, (@"a$1").float));
+}
+
+fn @"native$clamp"(@"v$x": f64, @"v$min_bound": f64, @"v$max_bound": f64) f64 {
+    const @"s$0" = P.boolValue((@"v$min_bound" >= @"v$max_bound"));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"v$_pipe" = P.dup(@"v$x");
-        const @"v$_pipe$1" = @"min"(@"v$_pipe", P.dup(@"v$min_bound"));
-        const @"r$0" = @"max"(@"v$_pipe$1", P.dup(@"v$max_bound"));
+        const @"v$_pipe" = P.floatValue(@"v$x");
+        const @"v$_pipe$1" = P.floatValue(@"native$min"((@"v$_pipe").float, @"v$min_bound"));
+        const @"r$0" = P.floatValue(@"native$max"((@"v$_pipe$1").float, @"v$max_bound"));
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        P.drop(@"v$min_bound");
-        P.drop(@"v$max_bound");
-        return @"r$0";
+        return (@"r$0").float;
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"v$_pipe$2" = P.dup(@"v$x");
-        const @"v$_pipe$3" = @"min"(@"v$_pipe$2", P.dup(@"v$max_bound"));
-        const @"r$1" = @"max"(@"v$_pipe$3", P.dup(@"v$min_bound"));
+        const @"v$_pipe$2" = P.floatValue(@"v$x");
+        const @"v$_pipe$3" = P.floatValue(@"native$min"((@"v$_pipe$2").float, @"v$max_bound"));
+        const @"r$1" = P.floatValue(@"native$max"((@"v$_pipe$3").float, @"v$min_bound"));
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        P.drop(@"v$min_bound");
-        P.drop(@"v$max_bound");
-        return @"r$1";
+        return (@"r$1").float;
     }
     unreachable;
+}
+
+pub fn @"clamp"(@"a$0": Value, @"a$1": Value, @"a$2": Value) Value {
+    return P.floatValue(@"native$clamp"((@"a$0").float, (@"a$1").float, (@"a$2").float));
 }
 
 pub fn @"compare"(@"v$a": Value, @"v$b": Value) Value {
-    const @"s$0" = P.eq(P.dup(@"v$a"), P.dup(@"v$b"));
+    const @"s$0" = P.boolValue(((@"v$a").float == (@"v$b").float));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.makeRecord("Eq", &[_]Value{});
@@ -96,7 +94,7 @@ pub fn @"compare"(@"v$a": Value, @"v$b": Value) Value {
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"s$1" = P.ltFloat(P.dup(@"v$a"), P.dup(@"v$b"));
+        const @"s$1" = P.boolValue(((@"v$a").float < (@"v$b").float));
         c2: {
             if (!((@"s$1").bool)) break :c2;
             const @"r$1" = P.makeRecord("Lt", &[_]Value{});
@@ -120,28 +118,30 @@ pub fn @"compare"(@"v$a": Value, @"v$b": Value) Value {
     unreachable;
 }
 
-pub fn @"absolute_value"(@"v$x": Value) Value {
-    const @"s$0" = P.gtEqFloat(P.dup(@"v$x"), P.floatValue(0.0));
+fn @"native$absolute_value"(@"v$x": f64) f64 {
+    const @"s$0" = P.boolValue((@"v$x" >= 0.0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.dup(@"v$x");
+        const @"r$0" = P.floatValue(@"v$x");
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        return @"r$0";
+        return (@"r$0").float;
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.subFloat(P.floatValue(0.0), P.dup(@"v$x"));
+        const @"r$1" = P.floatValue((0.0 - @"v$x"));
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        return @"r$1";
+        return (@"r$1").float;
     }
     unreachable;
 }
 
+pub fn @"absolute_value"(@"a$0": Value) Value {
+    return P.floatValue(@"native$absolute_value"((@"a$0").float));
+}
+
 pub fn @"loosely_compare"(@"v$a": Value, @"v$b": Value, @"v$tolerance": Value) Value {
-    const @"v$difference" = @"absolute_value"(P.subFloat(P.dup(@"v$a"), P.dup(@"v$b")));
-    const @"s$0" = P.ltEqFloat(@"v$difference", @"v$tolerance");
+    const @"v$difference": f64 = @"native$absolute_value"(((@"v$a").float - (@"v$b").float));
+    const @"s$0" = P.boolValue((@"v$difference" <= (@"v$tolerance").float));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.makeRecord("Eq", &[_]Value{});
@@ -161,9 +161,13 @@ pub fn @"loosely_compare"(@"v$a": Value, @"v$b": Value, @"v$tolerance": Value) V
     unreachable;
 }
 
-pub fn @"loosely_equals"(@"v$a": Value, @"v$b": Value, @"v$tolerance": Value) Value {
-    const @"v$difference" = @"absolute_value"(P.subFloat(@"v$a", @"v$b"));
-    return P.ltEqFloat(@"v$difference", @"v$tolerance");
+fn @"native$loosely_equals"(@"v$a": f64, @"v$b": f64, @"v$tolerance": f64) bool {
+    const @"v$difference": f64 = @"native$absolute_value"((@"v$a" - @"v$b"));
+    return (P.boolValue((@"v$difference" <= @"v$tolerance"))).bool;
+}
+
+pub fn @"loosely_equals"(@"a$0": Value, @"a$1": Value, @"a$2": Value) Value {
+    return P.boolValue(@"native$loosely_equals"((@"a$0").float, (@"a$1").float, (@"a$2").float));
 }
 
 pub fn @"ceiling"(@"a$0": Value) Value {
@@ -178,8 +182,12 @@ pub fn @"floor"(@"a$0": Value) Value {
     return result;
 }
 
-pub fn @"negate"(@"v$x": Value) Value {
-    return P.multFloat(P.floatValue(-1.0), @"v$x");
+fn @"native$negate"(@"v$x": f64) f64 {
+    return (P.floatValue((-1.0 * @"v$x"))).float;
+}
+
+pub fn @"negate"(@"a$0": Value) Value {
+    return P.floatValue(@"native$negate"((@"a$0").float));
 }
 
 fn @"js_round"(@"a$0": Value) Value {
@@ -188,23 +196,25 @@ fn @"js_round"(@"a$0": Value) Value {
     return result;
 }
 
-pub fn @"round"(@"v$x": Value) Value {
-    const @"s$0" = P.gtEqFloat(P.dup(@"v$x"), P.floatValue(0.0));
+fn @"native$round"(@"v$x": f64) i64 {
+    const @"s$0" = P.boolValue((@"v$x" >= 0.0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = @"js_round"(P.dup(@"v$x"));
+        const @"r$0" = @"js_round"(P.floatValue(@"v$x"));
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        return @"r$0";
+        return (@"r$0").int;
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.subInt(P.intValue(0), @"js_round"(@"negate"(P.dup(@"v$x"))));
+        const @"r$1" = P.intValue((0 -% (@"js_round"(P.floatValue(@"native$negate"(@"v$x")))).int));
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        return @"r$1";
+        return (@"r$1").int;
     }
     unreachable;
+}
+
+pub fn @"round"(@"a$0": Value) Value {
+    return P.intValue(@"native$round"((@"a$0").float));
 }
 
 pub fn @"truncate"(@"a$0": Value) Value {
@@ -226,39 +236,36 @@ fn @"do_power"(@"a$0": Value, @"a$1": Value) Value {
     return result;
 }
 
-pub fn @"to_precision"(@"v$x": Value, @"v$precision": Value) Value {
-    const @"s$0" = P.ltEqInt(P.dup(@"v$precision"), P.intValue(0));
+fn @"native$to_precision"(@"v$x": f64, @"v$precision": i64) f64 {
+    const @"s$0" = P.boolValue((@"v$precision" <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"v$factor" = @"do_power"(P.floatValue(10.0), @"do_to_float"(P.negateInt(P.dup(@"v$precision"))));
-        const @"r$0" = P.multFloat(@"do_to_float"(@"round"(P.divFloat(P.dup(@"v$x"), P.dup(@"v$factor")))), P.dup(@"v$factor"));
-        P.drop(@"v$factor");
+        const @"v$factor": f64 = (@"do_power"(P.floatValue(10.0), @"do_to_float"(P.intValue((0 -% @"v$precision"))))).float;
+        const @"r$0" = P.floatValue(((@"do_to_float"(P.intValue(@"native$round"(P.rawDivFloat(@"v$x", @"v$factor"))))).float * @"v$factor"));
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        P.drop(@"v$precision");
-        return @"r$0";
+        return (@"r$0").float;
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"v$factor$1" = @"do_power"(P.floatValue(10.0), @"do_to_float"(P.dup(@"v$precision")));
-        const @"r$1" = P.divFloat(@"do_to_float"(@"round"(P.multFloat(P.dup(@"v$x"), P.dup(@"v$factor$1")))), P.dup(@"v$factor$1"));
-        P.drop(@"v$factor$1");
+        const @"v$factor$1": f64 = (@"do_power"(P.floatValue(10.0), @"do_to_float"(P.intValue(@"v$precision")))).float;
+        const @"r$1" = P.floatValue(P.rawDivFloat((@"do_to_float"(P.intValue(@"native$round"((@"v$x" * @"v$factor$1"))))).float, @"v$factor$1"));
         P.drop(@"s$0");
-        P.drop(@"v$x");
-        P.drop(@"v$precision");
-        return @"r$1";
+        return (@"r$1").float;
     }
     unreachable;
 }
 
+pub fn @"to_precision"(@"a$0": Value, @"a$1": Value) Value {
+    return P.floatValue(@"native$to_precision"((@"a$0").float, (@"a$1").int));
+}
+
 pub fn @"power"(@"v$base": Value, @"v$exponent": Value) Value {
-    const @"v$fractional" = P.gtFloat(P.subFloat(@"ceiling"(P.dup(@"v$exponent")), P.dup(@"v$exponent")), P.floatValue(0.0));
-    const @"s$0" = P.boolValue(if ((P.boolValue(if ((P.ltFloat(P.dup(@"v$base"), P.floatValue(0.0))).bool) (P.dup(@"v$fractional")).bool else false)).bool) true else (P.boolValue(if ((P.eq(P.dup(@"v$base"), P.floatValue(0.0))).bool) (P.ltFloat(P.dup(@"v$exponent"), P.floatValue(0.0))).bool else false)).bool);
+    const @"v$fractional": bool = (((@"ceiling"(P.dup(@"v$exponent"))).float - (@"v$exponent").float) > 0.0);
+    const @"s$0" = P.boolValue(((((@"v$base").float < 0.0) and @"v$fractional") or (((@"v$base").float == 0.0) and ((@"v$exponent").float < 0.0))));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
         P.drop(@"s$0");
-        P.drop(@"v$fractional");
         P.drop(@"v$base");
         P.drop(@"v$exponent");
         return @"r$0";
@@ -267,7 +274,6 @@ pub fn @"power"(@"v$base": Value, @"v$exponent": Value) Value {
         if (!(!((@"s$0").bool))) break :c1;
         const @"r$1" = P.makeRecord("Ok", &[_]Value{ @"do_power"(P.dup(@"v$base"), P.dup(@"v$exponent")) });
         P.drop(@"s$0");
-        P.drop(@"v$fractional");
         P.drop(@"v$base");
         P.drop(@"v$exponent");
         return @"r$1";
@@ -289,7 +295,7 @@ fn @"sum_loop"(@"p$numbers": Value, @"p$initial": Value) Value {
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.addFloat(P.dup(@"v$first"), P.dup(@"v$initial"));
+            const @"tail$1" = P.floatValue(((@"v$first").float + (@"v$initial").float));
             P.drop(@"v$first");
             P.drop(@"v$rest");
             P.drop(@"s$0");
@@ -323,7 +329,7 @@ fn @"product_loop"(@"p$numbers": Value, @"p$initial": Value) Value {
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.multFloat(P.dup(@"v$first"), P.dup(@"v$initial"));
+            const @"tail$1" = P.floatValue(((@"v$first").float * (@"v$initial").float));
             P.drop(@"v$first");
             P.drop(@"v$rest");
             P.drop(@"s$0");
@@ -363,7 +369,7 @@ pub fn @"modulo"(@"v$dividend": Value, @"v$divisor": Value) Value {
         return @"r$0";
     }
     {
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.subFloat(P.dup(@"v$dividend"), P.multFloat(@"floor"(P.divFloat(P.dup(@"v$dividend"), P.dup(@"v$divisor"))), P.dup(@"v$divisor"))) });
+        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.floatValue(((@"v$dividend").float - ((@"floor"(P.floatValue(P.rawDivFloat((@"v$dividend").float, (@"v$divisor").float)))).float * (@"v$divisor").float))) });
         P.drop(@"s$0");
         P.drop(@"v$dividend");
         P.drop(@"v$divisor");
@@ -384,7 +390,7 @@ pub fn @"divide"(@"v$a": Value, @"v$b": Value) Value {
     }
     {
         const @"v$b$1" = P.dup(@"s$0");
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.divFloat(P.dup(@"v$a"), P.dup(@"v$b$1")) });
+        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.floatValue(P.rawDivFloat((@"v$a").float, (@"v$b$1").float)) });
         P.drop(@"v$b$1");
         P.drop(@"s$0");
         P.drop(@"v$a");
@@ -394,16 +400,28 @@ pub fn @"divide"(@"v$a": Value, @"v$b": Value) Value {
     unreachable;
 }
 
-pub fn @"add"(@"v$a": Value, @"v$b": Value) Value {
-    return P.addFloat(@"v$a", @"v$b");
+fn @"native$add"(@"v$a": f64, @"v$b": f64) f64 {
+    return (P.floatValue((@"v$a" + @"v$b"))).float;
 }
 
-pub fn @"multiply"(@"v$a": Value, @"v$b": Value) Value {
-    return P.multFloat(@"v$a", @"v$b");
+pub fn @"add"(@"a$0": Value, @"a$1": Value) Value {
+    return P.floatValue(@"native$add"((@"a$0").float, (@"a$1").float));
 }
 
-pub fn @"subtract"(@"v$a": Value, @"v$b": Value) Value {
-    return P.subFloat(@"v$a", @"v$b");
+fn @"native$multiply"(@"v$a": f64, @"v$b": f64) f64 {
+    return (P.floatValue((@"v$a" * @"v$b"))).float;
+}
+
+pub fn @"multiply"(@"a$0": Value, @"a$1": Value) Value {
+    return P.floatValue(@"native$multiply"((@"a$0").float, (@"a$1").float));
+}
+
+fn @"native$subtract"(@"v$a": f64, @"v$b": f64) f64 {
+    return (P.floatValue((@"v$a" - @"v$b"))).float;
+}
+
+pub fn @"subtract"(@"a$0": Value, @"a$1": Value) Value {
+    return P.floatValue(@"native$subtract"((@"a$0").float, (@"a$1").float));
 }
 
 fn @"do_log"(@"a$0": Value) Value {
@@ -413,7 +431,7 @@ fn @"do_log"(@"a$0": Value) Value {
 }
 
 pub fn @"logarithm"(@"v$x": Value) Value {
-    const @"s$0" = P.ltEqFloat(P.dup(@"v$x"), P.floatValue(0.0));
+    const @"s$0" = P.boolValue(((@"v$x").float <= 0.0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });

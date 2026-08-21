@@ -18,7 +18,7 @@ fn @"length_loop"(@"p$list": Value, @"p$count": Value) Value {
             if (!((@"s$0").list != null)) break :c0;
             const @"v$list$1" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"tail$0" = P.dup(@"v$list$1");
-            const @"tail$1" = P.addInt(P.dup(@"v$count"), P.intValue(1));
+            const @"tail$1" = P.intValue(((@"v$count").int +% 1));
             P.drop(@"v$list$1");
             P.drop(@"s$0");
             P.drop(@"v$list");
@@ -66,7 +66,7 @@ fn @"count_loop"(@"p$list": Value, @"p$predicate": Value, @"p$acc": Value) Value
                 if (!((@"s$1").bool)) break :c2;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$predicate");
-                const @"tail$2" = P.addInt(P.dup(@"v$acc"), P.intValue(1));
+                const @"tail$2" = P.intValue(((@"v$acc").int +% 1));
                 P.drop(@"s$1");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
@@ -504,7 +504,7 @@ fn @"index_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$index": Value, @"p$a
             const @"v$acc$1" = P.listFromSlice(&[_]Value{ P.call2(P.dup(@"v$fun"), P.dup(@"v$first"), P.dup(@"v$index")) }, P.dup(@"v$acc"));
             const @"tail$0" = P.dup(@"v$rest");
             const @"tail$1" = P.dup(@"v$fun");
-            const @"tail$2" = P.addInt(P.dup(@"v$index"), P.intValue(1));
+            const @"tail$2" = P.intValue(((@"v$index").int +% 1));
             const @"tail$3" = @"v$acc$1";
             P.drop(@"v$first");
             P.drop(@"v$rest");
@@ -590,7 +590,7 @@ pub fn @"drop"(@"p$list": Value, @"p$n": Value) Value {
     var @"v$list" = @"p$list";
     var @"v$n" = @"p$n";
     while (true) {
-        const @"s$0" = P.ltEqInt(P.dup(@"v$n"), P.intValue(0));
+        const @"s$0" = P.boolValue(((@"v$n").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
             const @"r$0" = P.dup(@"v$list");
@@ -615,7 +615,7 @@ pub fn @"drop"(@"p$list": Value, @"p$n": Value) Value {
                 if (!((@"s$1").list != null)) break :c3;
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
                 const @"tail$0" = P.dup(@"v$rest");
-                const @"tail$1" = P.subInt(P.dup(@"v$n"), P.intValue(1));
+                const @"tail$1" = P.intValue(((@"v$n").int -% 1));
                 P.drop(@"v$rest");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
@@ -636,7 +636,7 @@ fn @"take_loop"(@"p$list": Value, @"p$n": Value, @"p$acc": Value) Value {
     var @"v$n" = @"p$n";
     var @"v$acc" = @"p$acc";
     while (true) {
-        const @"s$0" = P.ltEqInt(P.dup(@"v$n"), P.intValue(0));
+        const @"s$0" = P.boolValue(((@"v$n").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
             const @"r$0" = @"reverse"(P.dup(@"v$acc"));
@@ -665,7 +665,7 @@ fn @"take_loop"(@"p$list": Value, @"p$n": Value, @"p$acc": Value) Value {
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
                 const @"reuse$0" = P.dropReuseCons(@"s$1");
                 const @"tail$0" = P.dup(@"v$rest");
-                const @"tail$1" = P.subInt(P.dup(@"v$n"), P.intValue(1));
+                const @"tail$1" = P.intValue(((@"v$n").int -% 1));
                 const @"tail$2" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$acc"));
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
@@ -857,7 +857,7 @@ fn @"index_fold_loop"(@"p$over": Value, @"p$acc": Value, @"p$with": Value, @"p$i
             const @"tail$0" = P.dup(@"v$rest");
             const @"tail$1" = P.call3(P.dup(@"v$with"), P.dup(@"v$acc"), P.dup(@"v$first"), P.dup(@"v$index"));
             const @"tail$2" = P.dup(@"v$with");
-            const @"tail$3" = P.addInt(P.dup(@"v$index"), P.intValue(1));
+            const @"tail$3" = P.intValue(((@"v$index").int +% 1));
             P.drop(@"v$first");
             P.drop(@"v$rest");
             P.drop(@"s$0");
@@ -2316,7 +2316,7 @@ fn @"repeat_loop"(@"p$item": Value, @"p$times": Value, @"p$acc": Value) Value {
     var @"v$times" = @"p$times";
     var @"v$acc" = @"p$acc";
     while (true) {
-        const @"s$0" = P.ltEqInt(P.dup(@"v$times"), P.intValue(0));
+        const @"s$0" = P.boolValue(((@"v$times").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
             const @"r$0" = P.dup(@"v$acc");
@@ -2329,7 +2329,7 @@ fn @"repeat_loop"(@"p$item": Value, @"p$times": Value, @"p$acc": Value) Value {
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
             const @"tail$0" = P.dup(@"v$item");
-            const @"tail$1" = P.subInt(P.dup(@"v$times"), P.intValue(1));
+            const @"tail$1" = P.intValue(((@"v$times").int -% 1));
             const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$item") }, P.dup(@"v$acc"));
             P.drop(@"s$0");
             P.drop(@"v$item");
@@ -2353,7 +2353,7 @@ fn @"split_loop"(@"p$list": Value, @"p$n": Value, @"p$taken": Value) Value {
     var @"v$n" = @"p$n";
     var @"v$taken" = @"p$taken";
     while (true) {
-        const @"s$0" = P.ltEqInt(P.dup(@"v$n"), P.intValue(0));
+        const @"s$0" = P.boolValue(((@"v$n").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
             const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$taken")), P.dup(@"v$list") });
@@ -2382,7 +2382,7 @@ fn @"split_loop"(@"p$list": Value, @"p$n": Value, @"p$taken": Value) Value {
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
                 const @"reuse$0" = P.dropReuseCons(@"s$1");
                 const @"tail$0" = P.dup(@"v$rest");
-                const @"tail$1" = P.subInt(P.dup(@"v$n"), P.intValue(1));
+                const @"tail$1" = P.intValue(((@"v$n").int -% 1));
                 const @"tail$2" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$taken"));
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
@@ -2830,7 +2830,7 @@ fn @"window_loop"(@"p$acc": Value, @"p$list": Value, @"p$n": Value) Value {
     var @"v$n" = @"p$n";
     while (true) {
         const @"v$window" = @"take"(P.dup(@"v$list"), P.dup(@"v$n"));
-        const @"s$0" = P.eq(@"length"(P.dup(@"v$window")), P.dup(@"v$n"));
+        const @"s$0" = P.boolValue(((@"length"(P.dup(@"v$window"))).int == (@"v$n").int));
         c0: {
             if (!((@"s$0").bool)) break :c0;
             const @"tail$0" = P.listFromSlice(&[_]Value{ P.dup(@"v$window") }, P.dup(@"v$acc"));
@@ -2861,7 +2861,7 @@ fn @"window_loop"(@"p$acc": Value, @"p$list": Value, @"p$n": Value) Value {
 }
 
 pub fn @"window"(@"v$list": Value, @"v$n": Value) Value {
-    const @"s$0" = P.ltEqInt(P.dup(@"v$n"), P.intValue(0));
+    const @"s$0" = P.boolValue(((@"v$n").int <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.emptyList();
@@ -3130,12 +3130,12 @@ fn @"sized_chunk_loop"(@"p$list": Value, @"p$count": Value, @"p$left": Value, @"
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$chunk" = P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.dup(@"v$current_chunk"));
-            const @"s$2" = P.gtInt(P.dup(@"v$left"), P.intValue(1));
+            const @"s$2" = P.boolValue(((@"v$left").int > 1));
             c4: {
                 if (!((@"s$2").bool)) break :c4;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$count");
-                const @"tail$2" = P.subInt(P.dup(@"v$left"), P.intValue(1));
+                const @"tail$2" = P.intValue(((@"v$left").int -% 1));
                 const @"tail$3" = P.dup(@"v$chunk");
                 const @"tail$4" = P.dup(@"v$acc");
                 P.drop(@"s$2");
@@ -3313,7 +3313,7 @@ pub fn @"combinations"(@"v$items": Value, @"v$n": Value) Value {
         const @"v$first" = P.dup((@"s$1").list.?.head);
         const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
         const @"v$_pipe" = P.dup(@"v$rest");
-        const @"v$_pipe$1" = @"combinations"(@"v$_pipe", P.subInt(P.dup(@"v$n"), P.intValue(1)));
+        const @"v$_pipe$1" = @"combinations"(@"v$_pipe", P.intValue(((@"v$n").int -% 1)));
         const @"v$_pipe$2" = @"map"(@"v$_pipe$1", P.makeClosure(@ptrCast(&@"lambda$2"), &[_]Value{ P.dup(@"v$first") }));
         const @"v$_pipe$3" = @"reverse"(@"v$_pipe$2");
         const @"r$2" = @"fold"(@"v$_pipe$3", @"combinations"(P.dup(@"v$rest"), P.dup(@"v$n")), P.makeClosure(@ptrCast(&@"lambda$3"), &[_]Value{  }));
@@ -3616,14 +3616,18 @@ pub fn @"max"(@"v$list": Value, @"v$compare": Value) Value {
     unreachable;
 }
 
-fn @"log_random"() Value {
-    const @"subject$0" = @"M$gleam/float".@"logarithm"(P.addFloat(@"M$gleam/float".@"random"(), @"constant$min_positive"()));
+fn @"native$log_random"() f64 {
+    const @"subject$0" = @"M$gleam/float".@"logarithm"(P.floatValue(((@"M$gleam/float".@"random"()).float + (@"constant$min_positive"()).float)));
     if (!(P.recordHasName(@"subject$0", "Ok"))) P.gleamPanic("pattern match failed", "/Users/bcm/dv/gleam-zig/gleam-stdlib/src/gleam/list.gleam", 2249);
     const @"v$random" = P.dup((@"subject$0").record.fields[0]);
     P.drop(@"subject$0");
     const @"r$0" = P.dup(@"v$random");
     P.drop(@"v$random");
-    return @"r$0";
+    return (@"r$0").float;
+}
+
+fn @"log_random"() Value {
+    return P.floatValue(@"native$log_random"());
 }
 
 fn @"sample_loop"(@"p$list": Value, @"p$reservoir": Value, @"p$n": Value, @"p$w": Value) Value {
@@ -3632,16 +3636,16 @@ fn @"sample_loop"(@"p$list": Value, @"p$reservoir": Value, @"p$n": Value, @"p$w"
     var @"v$n" = @"p$n";
     var @"v$w" = @"p$w";
     while (true) {
-        const @"v$skip" = blk0: {
-            const @"subject$0" = @"M$gleam/float".@"logarithm"(P.subFloat(P.floatValue(1.0), P.dup(@"v$w")));
+        const @"v$skip": i64 = (blk0: {
+            const @"subject$0" = @"M$gleam/float".@"logarithm"(P.floatValue((1.0 - (@"v$w").float)));
             if (!(P.recordHasName(@"subject$0", "Ok"))) P.gleamPanic("pattern match failed", "/Users/bcm/dv/gleam-zig/gleam-stdlib/src/gleam/list.gleam", 2232);
             const @"v$log" = P.dup((@"subject$0").record.fields[0]);
             P.drop(@"subject$0");
-            const @"r$0" = @"M$gleam/float".@"round"(@"M$gleam/float".@"floor"(P.divFloat(@"log_random"(), P.dup(@"v$log"))));
+            const @"r$0" = @"M$gleam/float".@"round"(@"M$gleam/float".@"floor"(P.floatValue(P.rawDivFloat(@"native$log_random"(), (@"v$log").float))));
             P.drop(@"v$log");
             break :blk0 @"r$0";
-        };
-        const @"s$0" = @"drop"(@"v$list", @"v$skip");
+        }).int;
+        const @"s$0" = @"drop"(@"v$list", P.intValue(@"v$skip"));
         c1: {
             if (!((@"s$0").list == null)) break :c1;
             const @"r$1" = P.dup(@"v$reservoir");
@@ -3656,11 +3660,11 @@ fn @"sample_loop"(@"p$list": Value, @"p$reservoir": Value, @"p$n": Value, @"p$w"
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$reservoir$1" = @"M$gleam/dict".@"insert"(P.dup(@"v$reservoir"), @"M$gleam/int".@"random"(P.dup(@"v$n")), P.dup(@"v$first"));
-            const @"v$w$1" = P.multFloat(P.dup(@"v$w"), @"M$gleam/float".@"exponential"(P.divFloat(@"log_random"(), @"M$gleam/int".@"to_float"(P.dup(@"v$n")))));
+            const @"v$w$1": f64 = ((@"v$w").float * (@"M$gleam/float".@"exponential"(P.floatValue(P.rawDivFloat(@"native$log_random"(), (@"M$gleam/int".@"to_float"(P.dup(@"v$n"))).float)))).float);
             const @"tail$0" = P.dup(@"v$rest");
             const @"tail$1" = @"v$reservoir$1";
             const @"tail$2" = P.dup(@"v$n");
-            const @"tail$3" = @"v$w$1";
+            const @"tail$3" = P.floatValue(@"v$w$1");
             P.drop(@"v$first");
             P.drop(@"v$rest");
             P.drop(@"s$0");
@@ -3682,13 +3686,12 @@ fn @"build_reservoir_loop"(@"p$list": Value, @"p$size": Value, @"p$reservoir": V
     var @"v$size" = @"p$size";
     var @"v$reservoir" = @"p$reservoir";
     while (true) {
-        const @"v$reservoir_size" = @"M$gleam/dict".@"size"(P.dup(@"v$reservoir"));
-        const @"s$0" = P.gtEqInt(P.dup(@"v$reservoir_size"), P.dup(@"v$size"));
+        const @"v$reservoir_size": i64 = (@"M$gleam/dict".@"size"(P.dup(@"v$reservoir"))).int;
+        const @"s$0" = P.boolValue((@"v$reservoir_size" >= (@"v$size").int));
         c0: {
             if (!((@"s$0").bool)) break :c0;
             const @"r$0" = P.tupleValue(&[_]Value{ P.dup(@"v$reservoir"), P.dup(@"v$list") });
             P.drop(@"s$0");
-            P.drop(@"v$reservoir_size");
             P.drop(@"v$list");
             P.drop(@"v$size");
             P.drop(@"v$reservoir");
@@ -3702,7 +3705,6 @@ fn @"build_reservoir_loop"(@"p$list": Value, @"p$size": Value, @"p$reservoir": V
                 const @"r$1" = P.tupleValue(&[_]Value{ P.dup(@"v$reservoir"), P.emptyList() });
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$reservoir_size");
                 P.drop(@"v$list");
                 P.drop(@"v$size");
                 P.drop(@"v$reservoir");
@@ -3712,7 +3714,7 @@ fn @"build_reservoir_loop"(@"p$list": Value, @"p$size": Value, @"p$reservoir": V
                 if (!((@"s$1").list != null)) break :c3;
                 const @"v$first" = P.dup((@"s$1").list.?.head);
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
-                const @"v$reservoir$1" = @"M$gleam/dict".@"insert"(P.dup(@"v$reservoir"), P.dup(@"v$reservoir_size"), P.dup(@"v$first"));
+                const @"v$reservoir$1" = @"M$gleam/dict".@"insert"(P.dup(@"v$reservoir"), P.intValue(@"v$reservoir_size"), P.dup(@"v$first"));
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$size");
                 const @"tail$2" = @"v$reservoir$1";
@@ -3720,7 +3722,6 @@ fn @"build_reservoir_loop"(@"p$list": Value, @"p$size": Value, @"p$reservoir": V
                 P.drop(@"v$rest");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$reservoir_size");
                 P.drop(@"v$list");
                 P.drop(@"v$size");
                 P.drop(@"v$reservoir");
@@ -3756,8 +3757,8 @@ pub fn @"sample"(@"v$list": Value, @"v$n": Value) Value {
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"v$w" = @"M$gleam/float".@"exponential"(P.divFloat(@"log_random"(), @"M$gleam/int".@"to_float"(P.dup(@"v$n"))));
-        const @"r$1" = @"M$gleam/dict".@"values"(@"sample_loop"(P.dup(@"v$rest"), P.dup(@"v$reservoir"), P.dup(@"v$n"), @"v$w"));
+        const @"v$w": f64 = (@"M$gleam/float".@"exponential"(P.floatValue(P.rawDivFloat(@"native$log_random"(), (@"M$gleam/int".@"to_float"(P.dup(@"v$n"))).float)))).float;
+        const @"r$1" = @"M$gleam/dict".@"values"(@"sample_loop"(P.dup(@"v$rest"), P.dup(@"v$reservoir"), P.dup(@"v$n"), P.floatValue(@"v$w")));
         P.drop(@"s$0");
         P.drop(@"v$reservoir");
         P.drop(@"v$rest");

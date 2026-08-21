@@ -97,3 +97,27 @@ vendored at `toolchain/` (checksum-verified). Runner finds zig via
   future work.
 - Corpus: 122 passed, 0 failed, 27 skipped (all principled). CI double
   green on the run of record.
+
+## 2026-08-20 (late night): unboxed scalars (issue #1)
+
+- Emitter renders Int/Float/Bool-typed expressions and simple `let`
+  bindings as raw i64/f64/bool (`scalar()` in zig.rs); values box only
+  at polymorphic boundaries (record fields, lists, closures, captures,
+  guards, case subjects). Raw div/rem helpers keep divide-by-zero -> 0.
+- Native scalar ABI: module fns whose signature is entirely concrete
+  scalars emit `native$name` taking/returning raw scalars, plus a boxed
+  wrapper under the original name for cross-module calls, fn references
+  and the entrypoint. Same-module calls (incl. self tail-call loops with
+  raw `var` params) go native. Structural `P.eq` only for non-scalar
+  operands; scalar ==/!= compile to raw comparisons.
+- Gotchas fixed along the way: unused raw locals need a `_ = x;`
+  discard (boxed locals were kept "used" by their scope-exit drop);
+  `panic`/`todo` clause bodies in native fns emit as bare statements
+  (field access on a noreturn call is a zig error).
+- Gate: corpus 122/0/27, compiler suite 6180 green, leak gate clean,
+  ray tracer byte-identical (md5 7a452dda...).
+- Benchmark (ReleaseFast, M-series): scalar micro (naive fib(32) + 4M
+  float escape-loop) 0.08s -> 0.02s user (4x); node does 0.24s user /
+  52MB, zig now 0.02s / 1.5MB. Ray tracer unchanged (0.38 -> 0.37s
+  user): its hot path is Vec record math, which needs issue #2
+  (record/tuple reuse + unboxed scalar fields).

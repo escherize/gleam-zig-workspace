@@ -92,7 +92,7 @@ fn @"grapheme_slice"(@"a$0": Value, @"a$1": Value, @"a$2": Value) Value {
 }
 
 pub fn @"slice"(@"v$string": Value, @"v$idx": Value, @"v$len": Value) Value {
-    const @"s$0" = P.ltEqInt(P.dup(@"v$len"), P.intValue(0));
+    const @"s$0" = P.boolValue(((@"v$len").int <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.copyString("");
@@ -104,16 +104,15 @@ pub fn @"slice"(@"v$string": Value, @"v$idx": Value, @"v$len": Value) Value {
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"s$1" = P.ltInt(P.dup(@"v$idx"), P.intValue(0));
+        const @"s$1" = P.boolValue(((@"v$idx").int < 0));
         c2: {
             if (!((@"s$1").bool)) break :c2;
-            const @"v$translated_idx" = P.addInt(@"length"(P.dup(@"v$string")), P.dup(@"v$idx"));
-            const @"s$2" = P.ltInt(P.dup(@"v$translated_idx"), P.intValue(0));
+            const @"v$translated_idx": i64 = ((@"length"(P.dup(@"v$string"))).int +% (@"v$idx").int);
+            const @"s$2" = P.boolValue((@"v$translated_idx" < 0));
             c3: {
                 if (!((@"s$2").bool)) break :c3;
                 const @"r$1" = P.copyString("");
                 P.drop(@"s$2");
-                P.drop(@"v$translated_idx");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$string");
@@ -123,9 +122,8 @@ pub fn @"slice"(@"v$string": Value, @"v$idx": Value, @"v$len": Value) Value {
             }
             c4: {
                 if (!(!((@"s$2").bool))) break :c4;
-                const @"r$2" = @"grapheme_slice"(P.dup(@"v$string"), P.dup(@"v$translated_idx"), P.dup(@"v$len"));
+                const @"r$2" = @"grapheme_slice"(P.dup(@"v$string"), P.intValue(@"v$translated_idx"), P.dup(@"v$len"));
                 P.drop(@"s$2");
-                P.drop(@"v$translated_idx");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$string");
@@ -172,7 +170,7 @@ pub fn @"byte_size"(@"a$0": Value) Value {
 }
 
 pub fn @"drop_start"(@"v$string": Value, @"v$num_graphemes": Value) Value {
-    const @"s$0" = P.ltEqInt(P.dup(@"v$num_graphemes"), P.intValue(0));
+    const @"s$0" = P.boolValue(((@"v$num_graphemes").int <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.dup(@"v$string");
@@ -184,9 +182,8 @@ pub fn @"drop_start"(@"v$string": Value, @"v$num_graphemes": Value) Value {
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
         const @"v$prefix" = @"grapheme_slice"(P.dup(@"v$string"), P.intValue(0), P.dup(@"v$num_graphemes"));
-        const @"v$prefix_size" = @"byte_size"(@"v$prefix");
-        const @"r$1" = @"unsafe_byte_slice"(P.dup(@"v$string"), P.dup(@"v$prefix_size"), P.subInt(@"byte_size"(P.dup(@"v$string")), P.dup(@"v$prefix_size")));
-        P.drop(@"v$prefix_size");
+        const @"v$prefix_size": i64 = (@"byte_size"(@"v$prefix")).int;
+        const @"r$1" = @"unsafe_byte_slice"(P.dup(@"v$string"), P.intValue(@"v$prefix_size"), P.intValue(((@"byte_size"(P.dup(@"v$string"))).int -% @"v$prefix_size")));
         P.drop(@"s$0");
         P.drop(@"v$string");
         P.drop(@"v$num_graphemes");
@@ -196,7 +193,7 @@ pub fn @"drop_start"(@"v$string": Value, @"v$num_graphemes": Value) Value {
 }
 
 pub fn @"drop_end"(@"v$string": Value, @"v$num_graphemes": Value) Value {
-    const @"s$0" = P.ltEqInt(P.dup(@"v$num_graphemes"), P.intValue(0));
+    const @"s$0" = P.boolValue(((@"v$num_graphemes").int <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.dup(@"v$string");
@@ -207,7 +204,7 @@ pub fn @"drop_end"(@"v$string": Value, @"v$num_graphemes": Value) Value {
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = @"slice"(P.dup(@"v$string"), P.intValue(0), P.subInt(@"length"(P.dup(@"v$string")), P.dup(@"v$num_graphemes")));
+        const @"r$1" = @"slice"(P.dup(@"v$string"), P.intValue(0), P.intValue(((@"length"(P.dup(@"v$string"))).int -% (@"v$num_graphemes").int)));
         P.drop(@"s$0");
         P.drop(@"v$string");
         P.drop(@"v$num_graphemes");
@@ -356,7 +353,7 @@ fn @"repeat_loop"(@"p$times": Value, @"p$doubling_acc": Value, @"p$acc": Value) 
     var @"v$acc" = @"p$acc";
     while (true) {
         const @"v$acc$1" = case0: {
-            const @"s$0" = P.remainderInt(P.dup(@"v$times"), P.intValue(2));
+            const @"s$0" = P.intValue(P.rawRemInt((@"v$times").int, 2));
             c1: {
                 if (!((@"s$0").int == 0)) break :c1;
                 const @"r$0" = P.dup(@"v$acc");
@@ -370,14 +367,13 @@ fn @"repeat_loop"(@"p$times": Value, @"p$doubling_acc": Value, @"p$acc": Value) 
             }
             unreachable;
         };
-        const @"v$times$1" = P.divInt(P.dup(@"v$times"), P.intValue(2));
-        const @"s$1" = P.ltEqInt(P.dup(@"v$times$1"), P.intValue(0));
+        const @"v$times$1": i64 = P.rawDivInt((@"v$times").int, 2);
+        const @"s$1" = P.boolValue((@"v$times$1" <= 0));
         c3: {
             if (!((@"s$1").bool)) break :c3;
             const @"r$2" = P.dup(@"v$acc$1");
             P.drop(@"s$1");
             P.drop(@"v$acc$1");
-            P.drop(@"v$times$1");
             P.drop(@"v$times");
             P.drop(@"v$doubling_acc");
             P.drop(@"v$acc");
@@ -385,12 +381,11 @@ fn @"repeat_loop"(@"p$times": Value, @"p$doubling_acc": Value, @"p$acc": Value) 
         }
         c4: {
             if (!(!((@"s$1").bool))) break :c4;
-            const @"tail$0" = P.dup(@"v$times$1");
+            const @"tail$0" = P.intValue(@"v$times$1");
             const @"tail$1" = P.concatenate(P.dup(@"v$doubling_acc"), P.dup(@"v$doubling_acc"));
             const @"tail$2" = P.dup(@"v$acc$1");
             P.drop(@"s$1");
             P.drop(@"v$acc$1");
-            P.drop(@"v$times$1");
             P.drop(@"v$times");
             P.drop(@"v$doubling_acc");
             P.drop(@"v$acc");
@@ -404,7 +399,7 @@ fn @"repeat_loop"(@"p$times": Value, @"p$doubling_acc": Value, @"p$acc": Value) 
 }
 
 pub fn @"repeat"(@"v$string": Value, @"v$times": Value) Value {
-    const @"s$0" = P.ltEqInt(P.dup(@"v$times"), P.intValue(0));
+    const @"s$0" = P.boolValue(((@"v$times").int <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.copyString("");
@@ -485,34 +480,31 @@ pub fn @"join"(@"v$strings": Value, @"v$separator": Value) Value {
 }
 
 fn @"padding"(@"v$size": Value, @"v$pad_string": Value) Value {
-    const @"v$pad_string_length" = @"length"(P.dup(@"v$pad_string"));
-    const @"v$num_pads" = P.divInt(P.dup(@"v$size"), P.dup(@"v$pad_string_length"));
-    const @"v$extra" = P.remainderInt(P.dup(@"v$size"), P.dup(@"v$pad_string_length"));
-    const @"r$0" = P.concatenate(@"repeat"(P.dup(@"v$pad_string"), @"v$num_pads"), @"slice"(P.dup(@"v$pad_string"), P.intValue(0), @"v$extra"));
-    P.drop(@"v$pad_string_length");
+    const @"v$pad_string_length": i64 = (@"length"(P.dup(@"v$pad_string"))).int;
+    const @"v$num_pads": i64 = P.rawDivInt((@"v$size").int, @"v$pad_string_length");
+    const @"v$extra": i64 = P.rawRemInt((@"v$size").int, @"v$pad_string_length");
+    const @"r$0" = P.concatenate(@"repeat"(P.dup(@"v$pad_string"), P.intValue(@"v$num_pads")), @"slice"(P.dup(@"v$pad_string"), P.intValue(0), P.intValue(@"v$extra")));
     P.drop(@"v$size");
     P.drop(@"v$pad_string");
     return @"r$0";
 }
 
 pub fn @"pad_start"(@"v$string": Value, @"v$desired_length": Value, @"v$pad_string": Value) Value {
-    const @"v$current_length" = @"length"(P.dup(@"v$string"));
-    const @"v$to_pad_length" = P.subInt(@"v$desired_length", @"v$current_length");
-    const @"s$0" = P.ltEqInt(P.dup(@"v$to_pad_length"), P.intValue(0));
+    const @"v$current_length": i64 = (@"length"(P.dup(@"v$string"))).int;
+    const @"v$to_pad_length": i64 = ((@"v$desired_length").int -% @"v$current_length");
+    const @"s$0" = P.boolValue((@"v$to_pad_length" <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.dup(@"v$string");
         P.drop(@"s$0");
-        P.drop(@"v$to_pad_length");
         P.drop(@"v$string");
         P.drop(@"v$pad_string");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.concatenate(@"padding"(P.dup(@"v$to_pad_length"), P.dup(@"v$pad_string")), P.dup(@"v$string"));
+        const @"r$1" = P.concatenate(@"padding"(P.intValue(@"v$to_pad_length"), P.dup(@"v$pad_string")), P.dup(@"v$string"));
         P.drop(@"s$0");
-        P.drop(@"v$to_pad_length");
         P.drop(@"v$string");
         P.drop(@"v$pad_string");
         return @"r$1";
@@ -521,23 +513,21 @@ pub fn @"pad_start"(@"v$string": Value, @"v$desired_length": Value, @"v$pad_stri
 }
 
 pub fn @"pad_end"(@"v$string": Value, @"v$desired_length": Value, @"v$pad_string": Value) Value {
-    const @"v$current_length" = @"length"(P.dup(@"v$string"));
-    const @"v$to_pad_length" = P.subInt(@"v$desired_length", @"v$current_length");
-    const @"s$0" = P.ltEqInt(P.dup(@"v$to_pad_length"), P.intValue(0));
+    const @"v$current_length": i64 = (@"length"(P.dup(@"v$string"))).int;
+    const @"v$to_pad_length": i64 = ((@"v$desired_length").int -% @"v$current_length");
+    const @"s$0" = P.boolValue((@"v$to_pad_length" <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.dup(@"v$string");
         P.drop(@"s$0");
-        P.drop(@"v$to_pad_length");
         P.drop(@"v$string");
         P.drop(@"v$pad_string");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.concatenate(P.dup(@"v$string"), @"padding"(P.dup(@"v$to_pad_length"), P.dup(@"v$pad_string")));
+        const @"r$1" = P.concatenate(P.dup(@"v$string"), @"padding"(P.intValue(@"v$to_pad_length"), P.dup(@"v$pad_string")));
         P.drop(@"s$0");
-        P.drop(@"v$to_pad_length");
         P.drop(@"v$string");
         P.drop(@"v$pad_string");
         return @"r$1";

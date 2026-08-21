@@ -6,16 +6,12 @@ design exists. Move finished items to the Done section with the commit.
 ## Open
 
 ### perf
-- **#1 Unboxed scalars, phase 2: typed locals + native fn ABI.** The
-  compute gap vs V8 (5.5x, ray tracer) is boxed-value overhead. Phase 1
-  (raw scalar arithmetic subtrees) in progress. Phase 2: locals with
-  concrete Int/Float/Bool types as raw i64/f64/bool; private fns with
-  concrete scalar signatures go native; box only at polymorphic
-  boundaries. Emitter has full types via `TypedExpr::type_()`.
-  Sketch: `.notes/09-ideas.md`.
-- **#2 Record/tuple FBIP reuse.** Extend the cons-cell token discipline
-  (dropReuseCons/consReuse) to records and tuples. Vec math in the ray
-  tracer is the motivating workload.
+- **#2 Record/tuple FBIP reuse + scalar fields.** Extend the cons-cell
+  token discipline (dropReuseCons/consReuse) to records and tuples. Vec
+  math in the ray tracer is the motivating workload: #1's unboxing did
+  not move the ray tracer (0.38s -> 0.37s user) because its hot path is
+  record construction/access, not scalar-signature fns. Unboxed scalar
+  record fields would compound with reuse here.
 - **#3 Branch-aware last-use dataflow.** Replace the conservative
   single-straight-line-use rule with backward liveness + per-clause
   compensation drops. Design: `.notes/09-ideas.md`. Gate: differential
@@ -57,4 +53,12 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
-(nothing yet — opened 2026-08-20)
+- **#1 Unboxed scalars: raw subtrees, typed locals, native fn ABI.**
+  (2026-08-20) Int/Float/Bool expressions and simple `let` bindings emit
+  as raw i64/f64/bool; module fns with all-scalar concrete signatures get
+  a raw `native$name` ABI plus a boxed wrapper (cross-module callers,
+  fn references, entrypoint). Same-module calls and TCO loops run fully
+  unboxed. Scalar micro (fib(32) + 4M-iteration float escape loop):
+  0.08s -> 0.02s user, 4x, now 12x faster than node's 0.24s. Corpus
+  122/0/27, 6180 compiler tests, leak gate clean, ray tracer output
+  byte-identical. Ray tracer time unchanged — moved to #2.

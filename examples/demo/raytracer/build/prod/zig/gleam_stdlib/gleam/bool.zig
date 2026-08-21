@@ -2,44 +2,64 @@
 const P = @import("../../prelude.zig");
 const Value = P.Value;
 
-pub fn @"and"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.boolValue(if ((@"v$a").bool) (P.dup(@"v$b")).bool else false);
-    P.drop(@"v$b");
-    return @"r$0";
+fn @"native$and"(@"v$a": bool, @"v$b": bool) bool {
+    return (P.boolValue((@"v$a" and @"v$b"))).bool;
 }
 
-pub fn @"or"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.boolValue(if ((@"v$a").bool) true else (P.dup(@"v$b")).bool);
-    P.drop(@"v$b");
-    return @"r$0";
+pub fn @"and"(@"a$0": Value, @"a$1": Value) Value {
+    return P.boolValue(@"native$and"((@"a$0").bool, (@"a$1").bool));
 }
 
-pub fn @"negate"(@"v$bool": Value) Value {
-    return P.negateBool(@"v$bool");
+fn @"native$or"(@"v$a": bool, @"v$b": bool) bool {
+    return (P.boolValue((@"v$a" or @"v$b"))).bool;
 }
 
-pub fn @"nor"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.negateBool(blk0: {
-        break :blk0 P.boolValue(if ((@"v$a").bool) true else (P.dup(@"v$b")).bool);
-    });
-    P.drop(@"v$b");
-    return @"r$0";
+pub fn @"or"(@"a$0": Value, @"a$1": Value) Value {
+    return P.boolValue(@"native$or"((@"a$0").bool, (@"a$1").bool));
 }
 
-pub fn @"nand"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.negateBool(blk0: {
-        break :blk0 P.boolValue(if ((@"v$a").bool) (P.dup(@"v$b")).bool else false);
-    });
-    P.drop(@"v$b");
-    return @"r$0";
+fn @"native$negate"(@"v$bool": bool) bool {
+    return (P.boolValue(!(@"v$bool"))).bool;
 }
 
-pub fn @"exclusive_or"(@"v$a": Value, @"v$b": Value) Value {
-    return P.notEq(@"v$a", @"v$b");
+pub fn @"negate"(@"a$0": Value) Value {
+    return P.boolValue(@"native$negate"((@"a$0").bool));
 }
 
-pub fn @"exclusive_nor"(@"v$a": Value, @"v$b": Value) Value {
-    return P.eq(@"v$a", @"v$b");
+fn @"native$nor"(@"v$a": bool, @"v$b": bool) bool {
+    return (P.boolValue(!((blk0: {
+        break :blk0 P.boolValue((@"v$a" or @"v$b"));
+    }).bool))).bool;
+}
+
+pub fn @"nor"(@"a$0": Value, @"a$1": Value) Value {
+    return P.boolValue(@"native$nor"((@"a$0").bool, (@"a$1").bool));
+}
+
+fn @"native$nand"(@"v$a": bool, @"v$b": bool) bool {
+    return (P.boolValue(!((blk0: {
+        break :blk0 P.boolValue((@"v$a" and @"v$b"));
+    }).bool))).bool;
+}
+
+pub fn @"nand"(@"a$0": Value, @"a$1": Value) Value {
+    return P.boolValue(@"native$nand"((@"a$0").bool, (@"a$1").bool));
+}
+
+fn @"native$exclusive_or"(@"v$a": bool, @"v$b": bool) bool {
+    return (P.boolValue((@"v$a" != @"v$b"))).bool;
+}
+
+pub fn @"exclusive_or"(@"a$0": Value, @"a$1": Value) Value {
+    return P.boolValue(@"native$exclusive_or"((@"a$0").bool, (@"a$1").bool));
+}
+
+fn @"native$exclusive_nor"(@"v$a": bool, @"v$b": bool) bool {
+    return (P.boolValue((@"v$a" == @"v$b"))).bool;
+}
+
+pub fn @"exclusive_nor"(@"a$0": Value, @"a$1": Value) Value {
+    return P.boolValue(@"native$exclusive_nor"((@"a$0").bool, (@"a$1").bool));
 }
 
 pub fn @"to_string"(@"v$bool": Value) Value {
