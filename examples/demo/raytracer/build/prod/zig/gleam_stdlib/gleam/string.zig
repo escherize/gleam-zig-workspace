@@ -587,7 +587,7 @@ pub fn @"utf_codepoint"(@"v$value": Value) Value {
     c0: {
         const @"v$i" = P.dup(@"s$0");
         if (!((P.gtInt(P.dup(@"v$i"), P.intValue(1114111))).bool)) { P.drop(@"v$i"); break :c0; }
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$i");
         P.drop(@"s$0");
         return @"r$0";
@@ -595,7 +595,7 @@ pub fn @"utf_codepoint"(@"v$value": Value) Value {
     c1: {
         const @"v$i$1" = P.dup(@"s$0");
         if (!((P.boolValue(if ((P.gtEqInt(P.dup(@"v$i$1"), P.intValue(55296))).bool) (P.ltEqInt(P.dup(@"v$i$1"), P.intValue(57343))).bool else false)).bool)) { P.drop(@"v$i$1"); break :c1; }
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$i$1");
         P.drop(@"s$0");
         return @"r$1";
@@ -603,14 +603,14 @@ pub fn @"utf_codepoint"(@"v$value": Value) Value {
     c2: {
         const @"v$i$2" = P.dup(@"s$0");
         if (!((P.ltInt(P.dup(@"v$i$2"), P.intValue(0))).bool)) { P.drop(@"v$i$2"); break :c2; }
-        const @"r$2" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$2" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$i$2");
         P.drop(@"s$0");
         return @"r$2";
     }
     {
         const @"v$i$3" = P.dup(@"s$0");
-        const @"r$3" = P.makeRecord("Ok", &[_]Value{ @"unsafe_int_to_utf_codepoint"(P.dup(@"v$i$3")) });
+        const @"r$3" = P.makeRecordL("Ok", &[_]Value{ @"unsafe_int_to_utf_codepoint"(P.dup(@"v$i$3")) }, &[_]?[]const u8{});
         P.drop(@"v$i$3");
         P.drop(@"s$0");
         return @"r$3";
@@ -634,7 +634,7 @@ pub fn @"to_option"(@"v$string": Value) Value {
         return @"r$0";
     }
     {
-        const @"r$1" = P.makeRecord("Some", &[_]Value{ P.dup(@"v$string") });
+        const @"r$1" = P.makeRecordL("Some", &[_]Value{ P.dup(@"v$string") }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$string");
         return @"r$1";
@@ -647,17 +647,17 @@ pub fn @"first"(@"v$string": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$first" = P.dup(((@"s$0").record.fields[0]).tuple[0]);
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$first") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$first") }, &[_]?[]const u8{});
         P.drop(@"v$first");
-        P.drop(@"s$0");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
         const @"v$e" = P.dup((@"s$0").record.fields[0]);
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$e") });
+        const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
         P.drop(@"v$e");
-        P.drop(@"s$0");
         return @"r$1";
     }
     unreachable;
@@ -668,25 +668,25 @@ pub fn @"last"(@"v$string": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok") and P.stringLiteralEquals(((@"s$0").record.fields[0]).tuple[1], ""))) break :c0;
         const @"v$first" = P.dup(((@"s$0").record.fields[0]).tuple[0]);
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$first") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$first") }, &[_]?[]const u8{});
         P.drop(@"v$first");
-        P.drop(@"s$0");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c1;
         const @"v$rest" = P.dup(((@"s$0").record.fields[0]).tuple[1]);
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ @"slice"(P.dup(@"v$rest"), P.intValue(-1), P.intValue(1)) });
+        const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Ok", &[_]Value{ @"slice"(P.dup(@"v$rest"), P.intValue(-1), P.intValue(1)) }, &[_]?[]const u8{});
         P.drop(@"v$rest");
-        P.drop(@"s$0");
         return @"r$1";
     }
     c2: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c2;
         const @"v$e" = P.dup((@"s$0").record.fields[0]);
-        const @"r$2" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$e") });
+        const @"reuse$2" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$2" = P.makeRecordReuse(@"reuse$2", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
         P.drop(@"v$e");
-        P.drop(@"s$0");
         return @"r$2";
     }
     unreachable;

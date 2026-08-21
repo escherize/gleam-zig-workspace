@@ -38,7 +38,7 @@ pub fn @"run"(@"v$data": Value, @"v$decoder": Value) Value {
     const @"s$0" = P.dup(@"v$errors");
     c0: {
         if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$maybe_invalid_data") });
+        const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$maybe_invalid_data") }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$maybe_invalid_data");
         P.drop(@"v$errors");
@@ -46,7 +46,7 @@ pub fn @"run"(@"v$data": Value, @"v$decoder": Value) Value {
     }
     c1: {
         if (!((@"s$0").list != null)) break :c1;
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$errors") });
+        const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.dup(@"v$errors") }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$maybe_invalid_data");
         P.drop(@"v$errors");
@@ -90,7 +90,7 @@ fn @"run_decoders"(@"p$data": Value, @"p$failure": Value, @"p$decoders": Value) 
             if (!((@"s$0").list != null)) break :c1;
             const @"v$decoder" = P.dup((@"s$0").list.?.head);
             const @"v$decoders$1" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"subject$0" = P.call1(P.recordField(P.dup(@"v$decoder"), 0), P.dup(@"v$data"));
+            const @"subject$0" = P.call1(P.dup((@"v$decoder").record.fields[0]), P.dup(@"v$data"));
             const @"v$layer" = P.dup(@"subject$0");
             const @"v$errors" = P.dup((@"subject$0").tuple[1]);
             P.drop(@"subject$0");
@@ -220,7 +220,7 @@ fn @"wrap$gleam$dynamic$decode$decode_bool"(@"env$": []const Value, @"p$0": Valu
 }
 
 fn @"lambda$0"(@"env$": []const Value, @"v$d": Value) Value {
-    const @"subject$0" = P.call1(P.recordField(P.dup(@"env$"[0]), 0), @"v$d");
+    const @"subject$0" = P.call1(P.dup((@"env$"[0]).record.fields[0]), @"v$d");
     const @"v$data" = P.dup((@"subject$0").tuple[0]);
     const @"v$errors" = P.dup((@"subject$0").tuple[1]);
     P.drop(@"subject$0");
@@ -231,7 +231,7 @@ fn @"lambda$0"(@"env$": []const Value, @"v$d": Value) Value {
 }
 
 fn @"lambda$1"(@"env$": []const Value, @"v$dynamic_data": Value) Value {
-    const @"subject$0" = P.call1(P.recordField(P.dup(@"env$"[1]), 0), P.dup(@"v$dynamic_data"));
+    const @"subject$0" = P.call1(P.dup((@"env$"[1]).record.fields[0]), P.dup(@"v$dynamic_data"));
     const @"v$layer" = P.dup(@"subject$0");
     const @"v$errors" = P.dup((@"subject$0").tuple[1]);
     P.drop(@"subject$0");
@@ -264,7 +264,7 @@ fn @"lambda$2"(@"env$": []const Value, @"v$_": Value) Value {
 }
 
 fn @"lambda$3"(@"env$": []const Value, @"v$d": Value) Value {
-    const @"subject$0" = P.call1(P.recordField(P.dup(@"env$"[0]), 0), @"v$d");
+    const @"subject$0" = P.call1(P.dup((@"env$"[0]).record.fields[0]), @"v$d");
     const @"v$data" = P.dup((@"subject$0").tuple[0]);
     const @"v$errors" = P.dup((@"subject$0").tuple[1]);
     P.drop(@"subject$0");
@@ -275,7 +275,7 @@ fn @"lambda$3"(@"env$": []const Value, @"v$d": Value) Value {
 }
 
 fn @"lambda$4"(@"env$": []const Value, @"v$dynamic_data": Value) Value {
-    const @"subject$0" = P.call1(P.recordField(P.dup(@"env$"[0]), 0), P.dup(@"v$dynamic_data"));
+    const @"subject$0" = P.call1(P.dup((@"env$"[0]).record.fields[0]), P.dup(@"v$dynamic_data"));
     const @"v$data" = P.dup((@"subject$0").tuple[0]);
     const @"v$errors" = P.dup((@"subject$0").tuple[1]);
     P.drop(@"subject$0");

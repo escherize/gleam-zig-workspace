@@ -71,7 +71,7 @@ pub fn @"take"(@"v$set": Value, @"v$desired": Value) Value {
 }
 
 fn @"order"(@"v$first": Value, @"v$second": Value) Value {
-    const @"s$0" = P.boolValue(((@"M$gleam/dict".@"size"(P.recordField(P.dup(@"v$first"), 0))).int > (@"M$gleam/dict".@"size"(P.recordField(P.dup(@"v$second"), 0))).int));
+    const @"s$0" = P.boolValue(((@"M$gleam/dict".@"size"(P.dup((@"v$first").record.fields[0]))).int > (@"M$gleam/dict".@"size"(P.dup((@"v$second").record.fields[0]))).int));
     c0: {
         if (!((@"s$0").bool)) break :c0;
         const @"r$0" = P.tupleValue(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$second") });

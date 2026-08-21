@@ -264,7 +264,7 @@ pub fn @"power"(@"v$base": Value, @"v$exponent": Value) Value {
     const @"s$0" = P.boolValue(((((@"v$base").float < 0.0) and @"v$fractional") or (((@"v$base").float == 0.0) and ((@"v$exponent").float < 0.0))));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$base");
         P.drop(@"v$exponent");
@@ -272,7 +272,7 @@ pub fn @"power"(@"v$base": Value, @"v$exponent": Value) Value {
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ @"do_power"(P.dup(@"v$base"), P.dup(@"v$exponent")) });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"do_power"(P.dup(@"v$base"), P.dup(@"v$exponent")) }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$base");
         P.drop(@"v$exponent");
@@ -362,14 +362,14 @@ pub fn @"modulo"(@"v$dividend": Value, @"v$divisor": Value) Value {
     const @"s$0" = P.dup(@"v$divisor");
     c0: {
         if (!((@"s$0").float == 0.0)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$dividend");
         P.drop(@"v$divisor");
         return @"r$0";
     }
     {
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.floatValue(((@"v$dividend").float - ((@"floor"(P.floatValue(P.rawDivFloat((@"v$dividend").float, (@"v$divisor").float)))).float * (@"v$divisor").float))) });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.floatValue(((@"v$dividend").float - ((@"floor"(P.floatValue(P.rawDivFloat((@"v$dividend").float, (@"v$divisor").float)))).float * (@"v$divisor").float))) }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$dividend");
         P.drop(@"v$divisor");
@@ -382,7 +382,7 @@ pub fn @"divide"(@"v$a": Value, @"v$b": Value) Value {
     const @"s$0" = P.dup(@"v$b");
     c0: {
         if (!((@"s$0").float == 0.0)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$a");
         P.drop(@"v$b");
@@ -390,7 +390,7 @@ pub fn @"divide"(@"v$a": Value, @"v$b": Value) Value {
     }
     {
         const @"v$b$1" = P.dup(@"s$0");
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.floatValue(P.rawDivFloat((@"v$a").float, (@"v$b$1").float)) });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.floatValue(P.rawDivFloat((@"v$a").float, (@"v$b$1").float)) }, &[_]?[]const u8{});
         P.drop(@"v$b$1");
         P.drop(@"s$0");
         P.drop(@"v$a");
@@ -434,14 +434,14 @@ pub fn @"logarithm"(@"v$x": Value) Value {
     const @"s$0" = P.boolValue(((@"v$x").float <= 0.0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$x");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ @"do_log"(P.dup(@"v$x")) });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"do_log"(P.dup(@"v$x")) }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$x");
         return @"r$1";

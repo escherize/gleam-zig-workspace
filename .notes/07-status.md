@@ -121,3 +121,25 @@ vendored at `toolchain/` (checksum-verified). Runner finds zig via
   52MB, zig now 0.02s / 1.5MB. Ray tracer unchanged (0.38 -> 0.37s
   user): its hot path is Vec record math, which needs issue #2
   (record/tuple reuse + unboxed scalar fields).
+
+## 2026-08-21: record/tuple reuse + borrowed field access (issue #2)
+
+- Field access on a live local borrows in place: scalar-typed fields
+  (`v.x` in raw context) read `(v).record.fields[i].float` with zero RC
+  traffic; boxed accesses emit `P.dup(field)` instead of
+  `P.recordField(P.dup(v), i)`. Move-approved locals fall back to the
+  consuming path (a borrow after a transfer would leak).
+- Reuse token generalized: (identifier, shape, barrier) where shape is
+  cons | record(arity) | tuple(arity). Arming extends to clauses that
+  match a Constructor (non-bool/nil, arity > 0) or Tuple pattern on a
+  single subject with a guaranteed same-shape construction in the body
+  (direct or as a call argument). dropReuseRecord/makeRecordReuse
+  overwrite the record struct + field slice in place (variant retag
+  free: names/labels are static); dropReuseTuple/tupleReuse the same for
+  element slices. Tokens are stashed around lifted constructor-wrapper
+  emission so they cannot escape into a lifted fn's body.
+- Gate: corpus 122/0/27 leak-clean, 3519+2 compiler tests (the
+  copyright test now skips docs/). Ray tracer 0.37 -> 0.21s user
+  (1.8x), wall 0.66 -> 0.49s (sys-time PPM writes now dominate), output
+  byte-identical (md5 7a452dda...). Scalar micro and list-churn
+  unchanged.

@@ -43,7 +43,7 @@ fn @"all_loop"(@"p$list": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Some", &[_]Value{ @"reverse"(P.dup(@"v$acc")) });
+            const @"r$0" = P.makeRecordL("Some", &[_]Value{ @"reverse"(P.dup(@"v$acc")) }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"v$acc");
             return @"r$0";
@@ -90,15 +90,15 @@ pub fn @"to_result"(@"v$option": Value, @"v$e": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
         const @"v$a" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$a") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$a") }, &[_]?[]const u8{});
         P.drop(@"v$a");
-        P.drop(@"s$0");
         P.drop(@"v$e");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$e") });
+        const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$e");
         return @"r$1";
@@ -111,9 +111,9 @@ pub fn @"from_result"(@"v$result": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$a" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Some", &[_]Value{ P.dup(@"v$a") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Some", &[_]Value{ P.dup(@"v$a") }, &[_]?[]const u8{});
         P.drop(@"v$a");
-        P.drop(@"s$0");
         return @"r$0";
     }
     c1: {
@@ -172,9 +172,9 @@ pub fn @"map"(@"v$option": Value, @"v$fun": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
         const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Some", &[_]Value{ P.call1(P.dup(@"v$fun"), P.dup(@"v$x")) });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Some", &[_]Value{ P.call1(P.dup(@"v$fun"), P.dup(@"v$x")) }, &[_]?[]const u8{});
         P.drop(@"v$x");
-        P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$0";
     }

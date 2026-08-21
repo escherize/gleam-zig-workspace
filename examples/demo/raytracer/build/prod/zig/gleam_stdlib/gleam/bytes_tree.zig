@@ -6,7 +6,7 @@ const @"M$gleam/list" = @import("../../gleam_stdlib/gleam/list.zig");
 const @"M$gleam/string_tree" = @import("../../gleam_stdlib/gleam/string_tree.zig");
 
 pub fn @"concat"(@"v$trees": Value) Value {
-    return P.makeRecord("Many", &[_]Value{ @"v$trees" });
+    return P.makeRecordL("Many", &[_]Value{ @"v$trees" }, &[_]?[]const u8{});
 }
 
 pub fn @"new"() Value {
@@ -14,7 +14,7 @@ pub fn @"new"() Value {
 }
 
 fn @"wrap_list"(@"v$bits": Value) Value {
-    return P.makeRecord("Bytes", &[_]Value{ @"v$bits" });
+    return P.makeRecordL("Bytes", &[_]Value{ @"v$bits" }, &[_]?[]const u8{});
 }
 
 pub fn @"from_bit_array"(@"v$bits": Value) Value {
@@ -28,16 +28,16 @@ pub fn @"append_tree"(@"v$first": Value, @"v$second": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Many"))) break :c0;
         const @"v$trees" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.dup(@"v$trees")) });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.dup(@"v$trees")) }, &[_]?[]const u8{});
         P.drop(@"v$trees");
-        P.drop(@"s$0");
         P.drop(@"v$first");
         P.drop(@"v$second");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Text"))) break :c1;
-        const @"r$1" = P.makeRecord("Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$second") }, P.emptyList()) });
+        const @"r$1" = P.makeRecordL("Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$second") }, P.emptyList()) }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$first");
         P.drop(@"v$second");
@@ -45,7 +45,7 @@ pub fn @"append_tree"(@"v$first": Value, @"v$second": Value) Value {
     }
     c2: {
         if (!(P.recordHasName(@"s$0", "Bytes"))) break :c2;
-        const @"r$2" = P.makeRecord("Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$second") }, P.emptyList()) });
+        const @"r$2" = P.makeRecordL("Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$second") }, P.emptyList()) }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$first");
         P.drop(@"v$second");
@@ -67,7 +67,7 @@ pub fn @"prepend_tree"(@"v$second": Value, @"v$first": Value) Value {
 }
 
 pub fn @"from_string"(@"v$string": Value) Value {
-    return P.makeRecord("Text", &[_]Value{ @"M$gleam/string_tree".@"from_string"(@"v$string") });
+    return P.makeRecordL("Text", &[_]Value{ @"M$gleam/string_tree".@"from_string"(@"v$string") }, &[_]?[]const u8{});
 }
 
 pub fn @"prepend_string"(@"v$second": Value, @"v$first": Value) Value {
@@ -85,7 +85,7 @@ pub fn @"concat_bit_arrays"(@"v$bits": Value) Value {
 }
 
 pub fn @"from_string_tree"(@"v$tree": Value) Value {
-    return P.makeRecord("Text", &[_]Value{ @"v$tree" });
+    return P.makeRecordL("Text", &[_]Value{ @"v$tree" }, &[_]?[]const u8{});
 }
 
 fn @"to_list"(@"p$stack": Value, @"p$acc": Value) Value {

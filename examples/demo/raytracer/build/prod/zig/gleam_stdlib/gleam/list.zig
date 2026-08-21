@@ -184,14 +184,14 @@ pub fn @"first"(@"v$list": Value) Value {
     const @"s$0" = @"v$list";
     c0: {
         if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         return @"r$0";
     }
     c1: {
         if (!((@"s$0").list != null)) break :c1;
         const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$first") });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$first") }, &[_]?[]const u8{});
         P.drop(@"v$first");
         P.drop(@"s$0");
         return @"r$1";
@@ -203,14 +203,14 @@ pub fn @"rest"(@"v$list": Value) Value {
     const @"s$0" = @"v$list";
     c0: {
         if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         return @"r$0";
     }
     c1: {
         if (!((@"s$0").list != null)) break :c1;
         const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$rest") });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$rest") }, &[_]?[]const u8{});
         P.drop(@"v$rest");
         P.drop(@"s$0");
         return @"r$1";
@@ -534,7 +534,7 @@ fn @"try_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Ok", &[_]Value{ @"reverse"(P.dup(@"v$acc")) });
+            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ @"reverse"(P.dup(@"v$acc")) }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"v$fun");
             P.drop(@"v$acc");
@@ -566,9 +566,9 @@ fn @"try_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value {
             c3: {
                 if (!(P.recordHasName(@"s$1", "Error"))) break :c3;
                 const @"v$error" = P.dup((@"s$1").record.fields[0]);
-                const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$error") });
+                const @"reuse$0" = P.dropReuseRecord(@"s$1", 1);
+                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ P.dup(@"v$error") }, &[_]?[]const u8{});
                 P.drop(@"v$error");
-                P.drop(@"s$1");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -886,7 +886,7 @@ pub fn @"try_fold"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Value
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$initial") });
+            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$initial") }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"v$initial");
             P.drop(@"v$fun");
@@ -997,7 +997,7 @@ pub fn @"find"(@"p$list": Value, @"p$is_desired": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+            const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"v$is_desired");
             return @"r$0";
@@ -1009,7 +1009,7 @@ pub fn @"find"(@"p$list": Value, @"p$is_desired": Value) Value {
             const @"s$1" = P.call1(P.dup(@"v$is_desired"), P.dup(@"v$first"));
             c2: {
                 if (!((@"s$1").bool)) break :c2;
-                const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$first") });
+                const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$first") }, &[_]?[]const u8{});
                 P.drop(@"s$1");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
@@ -1043,7 +1043,7 @@ pub fn @"find_map"(@"p$list": Value, @"p$fun": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+            const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"v$fun");
             return @"r$0";
@@ -1056,9 +1056,9 @@ pub fn @"find_map"(@"p$list": Value, @"p$fun": Value) Value {
             c2: {
                 if (!(P.recordHasName(@"s$1", "Ok"))) break :c2;
                 const @"v$first$1" = P.dup((@"s$1").record.fields[0]);
-                const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$first$1") });
+                const @"reuse$0" = P.dropReuseRecord(@"s$1", 1);
+                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$first$1") }, &[_]?[]const u8{});
                 P.drop(@"v$first$1");
-                P.drop(@"s$1");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -1228,7 +1228,7 @@ fn @"strict_zip_loop"(@"p$one": Value, @"p$other": Value, @"p$acc": Value) Value
         const @"s$1" = @"v$other";
         c0: {
             if (!((@"s$0").list == null and (@"s$1").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Ok", &[_]Value{ @"reverse"(P.dup(@"v$acc")) });
+            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ @"reverse"(P.dup(@"v$acc")) }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"s$1");
             P.drop(@"v$acc");
@@ -1236,7 +1236,7 @@ fn @"strict_zip_loop"(@"p$one": Value, @"p$other": Value, @"p$acc": Value) Value
         }
         c1: {
             if (!((@"s$0").list == null)) break :c1;
-            const @"r$1" = P.makeRecord("Error", &[_]Value{ P.NIL });
+            const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"s$1");
             P.drop(@"v$acc");
@@ -1244,7 +1244,7 @@ fn @"strict_zip_loop"(@"p$one": Value, @"p$other": Value, @"p$acc": Value) Value
         }
         c2: {
             if (!((@"s$1").list == null)) break :c2;
-            const @"r$2" = P.makeRecord("Error", &[_]Value{ P.NIL });
+            const @"r$2" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"s$1");
             P.drop(@"v$acc");
@@ -2484,7 +2484,7 @@ fn @"key_pop_loop"(@"p$list": Value, @"p$key": Value, @"p$checked": Value) Value
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+            const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"v$key");
             P.drop(@"v$checked");
@@ -2496,7 +2496,7 @@ fn @"key_pop_loop"(@"p$list": Value, @"p$key": Value, @"p$checked": Value) Value
             const @"v$v" = P.dup(((@"s$0").list.?.head).tuple[1]);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             if (!((P.eq(P.dup(@"v$k"), P.dup(@"v$key"))).bool)) { P.drop(@"v$k"); P.drop(@"v$v"); P.drop(@"v$rest"); break :c1; }
-            const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.tupleValue(&[_]Value{ P.dup(@"v$v"), @"reverse_and_prepend"(P.dup(@"v$checked"), P.dup(@"v$rest")) }) });
+            const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.tupleValue(&[_]Value{ P.dup(@"v$v"), @"reverse_and_prepend"(P.dup(@"v$checked"), P.dup(@"v$rest")) }) }, &[_]?[]const u8{});
             P.drop(@"v$k");
             P.drop(@"v$v");
             P.drop(@"v$rest");
@@ -2626,7 +2626,7 @@ pub fn @"try_each"(@"p$list": Value, @"p$fun": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.NIL });
+            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"v$fun");
             return @"r$0";
@@ -2652,9 +2652,9 @@ pub fn @"try_each"(@"p$list": Value, @"p$fun": Value) Value {
             c3: {
                 if (!(P.recordHasName(@"s$1", "Error"))) break :c3;
                 const @"v$e" = P.dup((@"s$1").record.fields[0]);
-                const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$e") });
+                const @"reuse$0" = P.dropReuseRecord(@"s$1", 1);
+                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
                 P.drop(@"v$e");
-                P.drop(@"s$1");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -3193,7 +3193,7 @@ pub fn @"reduce"(@"v$list": Value, @"v$fun": Value) Value {
     const @"s$0" = @"v$list";
     c0: {
         if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$0";
@@ -3202,7 +3202,7 @@ pub fn @"reduce"(@"v$list": Value, @"v$fun": Value) Value {
         if (!((@"s$0").list != null)) break :c1;
         const @"v$first" = P.dup((@"s$0").list.?.head);
         const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ @"fold"(P.dup(@"v$rest"), P.dup(@"v$first"), P.dup(@"v$fun")) });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"fold"(P.dup(@"v$rest"), P.dup(@"v$first"), P.dup(@"v$fun")) }, &[_]?[]const u8{});
         P.drop(@"v$first");
         P.drop(@"v$rest");
         P.drop(@"s$0");
@@ -3264,14 +3264,14 @@ pub fn @"last"(@"p$list": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+            const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null and (@"s$0").list.?.tail == null)) break :c1;
             const @"v$last" = P.dup((@"s$0").list.?.head);
-            const @"r$1" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$last") });
+            const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$last") }, &[_]?[]const u8{});
             P.drop(@"v$last");
             P.drop(@"s$0");
             return @"r$1";
@@ -3497,7 +3497,7 @@ fn @"shuffle_pair_unwrap_loop"(@"p$list": Value, @"p$acc": Value) Value {
             const @"v$enumerable" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
             const @"tail$0" = P.dup(@"v$enumerable");
-            const @"tail$1" = P.consReuse(@"reuse$0", P.tupleField(P.dup(@"v$elem_pair"), 1), P.dup(@"v$acc"));
+            const @"tail$1" = P.consReuse(@"reuse$0", P.dup((@"v$elem_pair").tuple[1]), P.dup(@"v$acc"));
             P.drop(@"v$elem_pair");
             P.drop(@"v$enumerable");
             P.drop(@"v$acc");
@@ -3597,7 +3597,7 @@ pub fn @"max"(@"v$list": Value, @"v$compare": Value) Value {
     const @"s$0" = @"v$list";
     c0: {
         if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$compare");
         return @"r$0";
@@ -3606,7 +3606,7 @@ pub fn @"max"(@"v$list": Value, @"v$compare": Value) Value {
         if (!((@"s$0").list != null)) break :c1;
         const @"v$first" = P.dup((@"s$0").list.?.head);
         const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = P.makeRecord("Ok", &[_]Value{ @"max_loop"(P.dup(@"v$rest"), P.dup(@"v$compare"), P.dup(@"v$first")) });
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"max_loop"(P.dup(@"v$rest"), P.dup(@"v$compare"), P.dup(@"v$first")) }, &[_]?[]const u8{});
         P.drop(@"v$first");
         P.drop(@"v$rest");
         P.drop(@"s$0");
@@ -3776,7 +3776,7 @@ fn @"lambda$0"(@"env$": []const Value, @"v$keyword": Value) Value {
     const @"s$0" = P.eq(P.dup(@"v$key"), P.dup(@"env$"[0]));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$value") });
+        const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$value") }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$key");
         P.drop(@"v$value");
@@ -3784,7 +3784,7 @@ fn @"lambda$0"(@"env$": []const Value, @"v$keyword": Value) Value {
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$key");
         P.drop(@"v$value");
@@ -3801,7 +3801,7 @@ fn @"lambda$1"(@"env$": []const Value, @"v$keyword": Value) Value {
     const @"s$0" = P.eq(P.dup(@"v$key"), P.dup(@"env$"[0]));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$value") });
+        const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$value") }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$key");
         P.drop(@"v$value");
@@ -3809,7 +3809,7 @@ fn @"lambda$1"(@"env$": []const Value, @"v$keyword": Value) Value {
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.NIL });
+        const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
         P.drop(@"v$key");
         P.drop(@"v$value");

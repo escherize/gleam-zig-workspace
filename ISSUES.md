@@ -6,12 +6,6 @@ design exists. Move finished items to the Done section with the commit.
 ## Open
 
 ### perf
-- **#2 Record/tuple FBIP reuse + scalar fields.** Extend the cons-cell
-  token discipline (dropReuseCons/consReuse) to records and tuples. Vec
-  math in the ray tracer is the motivating workload: #1's unboxing did
-  not move the ray tracer (0.38s -> 0.37s user) because its hot path is
-  record construction/access, not scalar-signature fns. Unboxed scalar
-  record fields would compound with reuse here.
 - **#3 Branch-aware last-use dataflow.** Replace the conservative
   single-straight-line-use rule with backward liveness + per-clause
   compensation drops. Design: `.notes/09-ideas.md`. Gate: differential
@@ -53,6 +47,15 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
+- **#2 Record/tuple FBIP reuse + borrowed field access.** (2026-08-21,
+  gleam@c7e257f06) Field access on a live local borrows in place (scalar
+  fields: zero RC traffic; boxed: dup the field only). Reuse token is
+  now shape-tagged (cons | record(arity) | tuple(arity)): a clause
+  matching a record/tuple pattern whose body is guaranteed to construct
+  the same shape steals the unshared allocation in place; variant retag
+  free. Ray tracer 0.37 -> 0.21s user (1.8x), wall 0.66 -> 0.49s,
+  byte-identical output. Corpus 122/0/27 leak-clean; other benchmarks
+  unchanged.
 - **#1 Unboxed scalars: raw subtrees, typed locals, native fn ABI.**
   (2026-08-20) Int/Float/Bool expressions and simple `let` bindings emit
   as raw i64/f64/bool; module fns with all-scalar concrete signatures get

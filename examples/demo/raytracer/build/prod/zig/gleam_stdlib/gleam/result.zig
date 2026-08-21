@@ -42,18 +42,18 @@ pub fn @"map"(@"v$result": Value, @"v$fun": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.call1(P.dup(@"v$fun"), P.dup(@"v$x")) });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.call1(P.dup(@"v$fun"), P.dup(@"v$x")) }, &[_]?[]const u8{});
         P.drop(@"v$x");
-        P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
         const @"v$e" = P.dup((@"s$0").record.fields[0]);
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$e") });
+        const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
         P.drop(@"v$e");
-        P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$1";
     }
@@ -65,18 +65,18 @@ pub fn @"map_error"(@"v$result": Value, @"v$fun": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$x") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$x") }, &[_]?[]const u8{});
         P.drop(@"v$x");
-        P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
         const @"v$error" = P.dup((@"s$0").record.fields[0]);
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.call1(P.dup(@"v$fun"), P.dup(@"v$error")) });
+        const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Error", &[_]Value{ P.call1(P.dup(@"v$fun"), P.dup(@"v$error")) }, &[_]?[]const u8{});
         P.drop(@"v$error");
-        P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$1";
     }
@@ -96,9 +96,9 @@ pub fn @"flatten"(@"v$result": Value) Value {
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
         const @"v$error" = P.dup((@"s$0").record.fields[0]);
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$error") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ P.dup(@"v$error") }, &[_]?[]const u8{});
         P.drop(@"v$error");
-        P.drop(@"s$0");
         return @"r$1";
     }
     unreachable;
@@ -118,9 +118,9 @@ pub fn @"try"(@"v$result": Value, @"v$fun": Value) Value {
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
         const @"v$e" = P.dup((@"s$0").record.fields[0]);
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$e") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
         P.drop(@"v$e");
-        P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$1";
     }
@@ -296,17 +296,17 @@ pub fn @"replace"(@"v$result": Value, @"v$value": Value) Value {
     const @"s$0" = @"v$result";
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$value") });
-        P.drop(@"s$0");
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$value") }, &[_]?[]const u8{});
         P.drop(@"v$value");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
         const @"v$error" = P.dup((@"s$0").record.fields[0]);
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$error") });
+        const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Error", &[_]Value{ P.dup(@"v$error") }, &[_]?[]const u8{});
         P.drop(@"v$error");
-        P.drop(@"s$0");
         P.drop(@"v$value");
         return @"r$1";
     }
@@ -318,16 +318,16 @@ pub fn @"replace_error"(@"v$result": Value, @"v$error": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$x") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$x") }, &[_]?[]const u8{});
         P.drop(@"v$x");
-        P.drop(@"s$0");
         P.drop(@"v$error");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
-        const @"r$1" = P.makeRecord("Error", &[_]Value{ P.dup(@"v$error") });
-        P.drop(@"s$0");
+        const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Error", &[_]Value{ P.dup(@"v$error") }, &[_]?[]const u8{});
         P.drop(@"v$error");
         return @"r$1";
     }
@@ -343,9 +343,9 @@ pub fn @"try_recover"(@"v$result": Value, @"v$fun": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$value" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.makeRecord("Ok", &[_]Value{ P.dup(@"v$value") });
+        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
+        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$value") }, &[_]?[]const u8{});
         P.drop(@"v$value");
-        P.drop(@"s$0");
         P.drop(@"v$fun");
         return @"r$0";
     }

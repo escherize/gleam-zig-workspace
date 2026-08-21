@@ -24,35 +24,35 @@ fn @"constant$height"() Value {
 }
 
 fn @"add"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue(((P.recordField(P.dup(@"v$a"), 0)).float + (P.recordField(P.dup(@"v$b"), 0)).float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 1)).float + (P.recordField(P.dup(@"v$b"), 1)).float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 2)).float + (P.recordField(P.dup(@"v$b"), 2)).float)) }, &[_]?[]const u8{ "x", "y", "z" });
+    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue((((@"v$a").record.fields[0]).float + ((@"v$b").record.fields[0]).float)), P.floatValue((((@"v$a").record.fields[1]).float + ((@"v$b").record.fields[1]).float)), P.floatValue((((@"v$a").record.fields[2]).float + ((@"v$b").record.fields[2]).float)) }, &[_]?[]const u8{ "x", "y", "z" });
     P.drop(@"v$a");
     P.drop(@"v$b");
     return @"r$0";
 }
 
 fn @"sub"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue(((P.recordField(P.dup(@"v$a"), 0)).float - (P.recordField(P.dup(@"v$b"), 0)).float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 1)).float - (P.recordField(P.dup(@"v$b"), 1)).float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 2)).float - (P.recordField(P.dup(@"v$b"), 2)).float)) }, &[_]?[]const u8{ "x", "y", "z" });
+    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue((((@"v$a").record.fields[0]).float - ((@"v$b").record.fields[0]).float)), P.floatValue((((@"v$a").record.fields[1]).float - ((@"v$b").record.fields[1]).float)), P.floatValue((((@"v$a").record.fields[2]).float - ((@"v$b").record.fields[2]).float)) }, &[_]?[]const u8{ "x", "y", "z" });
     P.drop(@"v$a");
     P.drop(@"v$b");
     return @"r$0";
 }
 
 fn @"scale"(@"v$a": Value, @"v$s": Value) Value {
-    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue(((P.recordField(P.dup(@"v$a"), 0)).float * (@"v$s").float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 1)).float * (@"v$s").float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 2)).float * (@"v$s").float)) }, &[_]?[]const u8{ "x", "y", "z" });
+    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue((((@"v$a").record.fields[0]).float * (@"v$s").float)), P.floatValue((((@"v$a").record.fields[1]).float * (@"v$s").float)), P.floatValue((((@"v$a").record.fields[2]).float * (@"v$s").float)) }, &[_]?[]const u8{ "x", "y", "z" });
     P.drop(@"v$a");
     P.drop(@"v$s");
     return @"r$0";
 }
 
 fn @"mul"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue(((P.recordField(P.dup(@"v$a"), 0)).float * (P.recordField(P.dup(@"v$b"), 0)).float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 1)).float * (P.recordField(P.dup(@"v$b"), 1)).float)), P.floatValue(((P.recordField(P.dup(@"v$a"), 2)).float * (P.recordField(P.dup(@"v$b"), 2)).float)) }, &[_]?[]const u8{ "x", "y", "z" });
+    const @"r$0" = P.makeRecordL("Vec", &[_]Value{ P.floatValue((((@"v$a").record.fields[0]).float * ((@"v$b").record.fields[0]).float)), P.floatValue((((@"v$a").record.fields[1]).float * ((@"v$b").record.fields[1]).float)), P.floatValue((((@"v$a").record.fields[2]).float * ((@"v$b").record.fields[2]).float)) }, &[_]?[]const u8{ "x", "y", "z" });
     P.drop(@"v$a");
     P.drop(@"v$b");
     return @"r$0";
 }
 
 fn @"dot"(@"v$a": Value, @"v$b": Value) Value {
-    const @"r$0" = P.floatValue(((((P.recordField(P.dup(@"v$a"), 0)).float * (P.recordField(P.dup(@"v$b"), 0)).float) + ((P.recordField(P.dup(@"v$a"), 1)).float * (P.recordField(P.dup(@"v$b"), 1)).float)) + ((P.recordField(P.dup(@"v$a"), 2)).float * (P.recordField(P.dup(@"v$b"), 2)).float)));
+    const @"r$0" = P.floatValue((((((@"v$a").record.fields[0]).float * ((@"v$b").record.fields[0]).float) + (((@"v$a").record.fields[1]).float * ((@"v$b").record.fields[1]).float)) + (((@"v$a").record.fields[2]).float * ((@"v$b").record.fields[2]).float)));
     P.drop(@"v$a");
     P.drop(@"v$b");
     return @"r$0";
@@ -106,9 +106,9 @@ fn @"scene"() Value {
 }
 
 fn @"intersect"(@"v$origin": Value, @"v$dir": Value, @"v$sphere": Value) Value {
-    const @"v$oc" = @"sub"(@"v$origin", P.recordField(P.dup(@"v$sphere"), 0));
+    const @"v$oc" = @"sub"(@"v$origin", P.dup((@"v$sphere").record.fields[0]));
     const @"v$b": f64 = (2.0 * (@"dot"(P.dup(@"v$oc"), @"v$dir")).float);
-    const @"v$c": f64 = ((@"dot"(P.dup(@"v$oc"), P.dup(@"v$oc"))).float - ((P.recordField(P.dup(@"v$sphere"), 1)).float * (P.recordField(P.dup(@"v$sphere"), 1)).float));
+    const @"v$c": f64 = ((@"dot"(P.dup(@"v$oc"), P.dup(@"v$oc"))).float - (((@"v$sphere").record.fields[1]).float * ((@"v$sphere").record.fields[1]).float));
     const @"v$disc": f64 = ((@"v$b" * @"v$b") - (4.0 * @"v$c"));
     const @"s$0" = P.boolValue((@"v$disc" < 0.0));
     c0: {
@@ -206,7 +206,7 @@ fn @"trace"(@"v$origin": Value, @"v$dir": Value, @"v$spheres": Value, @"v$depth"
     c0: {
         if (!(P.recordHasName(@"s$0", "Miss"))) break :c0;
         const @"v$t": f64 = P.rawDivFloat((blk1: {
-            break :blk1 P.floatValue(((P.recordField(P.dup(@"v$dir"), 1)).float + 1.0));
+            break :blk1 P.floatValue((((@"v$dir").record.fields[1]).float + 1.0));
         }).float, 2.0);
         const @"r$0" = @"add"(@"scale"(P.makeRecordL("Vec", &[_]Value{ P.floatValue(1.0), P.floatValue(1.0), P.floatValue(1.0) }, &[_]?[]const u8{ "x", "y", "z" }), P.floatValue((1.0 - @"v$t"))), @"scale"(P.makeRecordL("Vec", &[_]Value{ P.floatValue(0.4), P.floatValue(0.6), P.floatValue(0.9) }, &[_]?[]const u8{ "x", "y", "z" }), P.floatValue(@"v$t")));
         P.drop(@"s$0");
@@ -221,7 +221,7 @@ fn @"trace"(@"v$origin": Value, @"v$dir": Value, @"v$spheres": Value, @"v$depth"
         const @"v$t$1" = P.dup((@"s$0").record.fields[0]);
         const @"v$sphere" = P.dup((@"s$0").record.fields[1]);
         const @"v$point" = @"add"(P.dup(@"v$origin"), @"scale"(P.dup(@"v$dir"), P.dup(@"v$t$1")));
-        const @"v$normal" = @"norm"(@"sub"(P.dup(@"v$point"), P.recordField(P.dup(@"v$sphere"), 0)));
+        const @"v$normal" = @"norm"(@"sub"(P.dup(@"v$point"), P.dup((@"v$sphere").record.fields[0])));
         const @"v$to_light" = @"norm"(@"sub"(@"constant$light"(), P.dup(@"v$point")));
         const @"v$diffuse": f64 = (@"M$gleam/float".@"max"(@"dot"(P.dup(@"v$normal"), @"v$to_light"), P.floatValue(0.0))).float;
         const @"v$lit": f64 = (case3: {
@@ -240,8 +240,8 @@ fn @"trace"(@"v$origin": Value, @"v$dir": Value, @"v$spheres": Value, @"v$depth"
             }
             unreachable;
         }).float;
-        const @"v$base" = @"scale"(P.recordField(P.dup(@"v$sphere"), 2), P.floatValue(@"v$lit"));
-        const @"s$2" = P.boolValue((((@"v$depth").int > 0) and ((P.recordField(P.dup(@"v$sphere"), 3)).float > 0.0)));
+        const @"v$base" = @"scale"(P.dup((@"v$sphere").record.fields[2]), P.floatValue(@"v$lit"));
+        const @"s$2" = P.boolValue((((@"v$depth").int > 0) and (((@"v$sphere").record.fields[3]).float > 0.0)));
         c6: {
             if (!(!((@"s$2").bool))) break :c6;
             const @"r$3" = P.dup(@"v$base");
@@ -262,7 +262,7 @@ fn @"trace"(@"v$origin": Value, @"v$dir": Value, @"v$spheres": Value, @"v$depth"
             if (!((@"s$2").bool)) break :c7;
             const @"v$refl_dir" = @"norm"(@"sub"(P.dup(@"v$dir"), @"scale"(P.dup(@"v$normal"), P.floatValue((2.0 * (@"dot"(P.dup(@"v$dir"), P.dup(@"v$normal"))).float)))));
             const @"v$refl" = @"trace"(P.dup(@"v$point"), @"v$refl_dir", P.dup(@"v$spheres"), P.intValue(((@"v$depth").int -% 1)));
-            const @"r$4" = @"add"(@"scale"(P.dup(@"v$base"), P.floatValue((1.0 - (P.recordField(P.dup(@"v$sphere"), 3)).float))), @"scale"(@"v$refl", P.recordField(P.dup(@"v$sphere"), 3)));
+            const @"r$4" = @"add"(@"scale"(P.dup(@"v$base"), P.floatValue((1.0 - ((@"v$sphere").record.fields[3]).float))), @"scale"(@"v$refl", P.dup((@"v$sphere").record.fields[3])));
             P.drop(@"s$2");
             P.drop(@"v$point");
             P.drop(@"v$normal");
@@ -406,7 +406,7 @@ fn @"lambda$1"(@"env$": []const Value, @"v$x": Value) Value {
     }).float, (@"env$"[0]).float);
     const @"v$dir" = @"norm"(P.makeRecordL("Vec", &[_]Value{ P.floatValue(@"v$u"), P.floatValue(@"v$v"), P.floatValue(2.0) }, &[_]?[]const u8{ "x", "y", "z" }));
     const @"v$color" = @"trace"(P.makeRecordL("Vec", &[_]Value{ P.floatValue(0.0), P.floatValue(0.5), P.floatValue(0.0) }, &[_]?[]const u8{ "x", "y", "z" }), @"v$dir", P.dup(@"env$"[3]), @"constant$max_depth"());
-    const @"r$0" = P.concatenate(P.concatenate(P.concatenate(P.concatenate(@"channel"(P.recordField(P.dup(@"v$color"), 0)), P.copyString(" ")), @"channel"(P.recordField(P.dup(@"v$color"), 1))), P.copyString(" ")), @"channel"(P.recordField(P.dup(@"v$color"), 2)));
+    const @"r$0" = P.concatenate(P.concatenate(P.concatenate(P.concatenate(@"channel"(P.dup((@"v$color").record.fields[0])), P.copyString(" ")), @"channel"(P.dup((@"v$color").record.fields[1]))), P.copyString(" ")), @"channel"(P.dup((@"v$color").record.fields[2])));
     P.drop(@"v$color");
     return @"r$0";
 }

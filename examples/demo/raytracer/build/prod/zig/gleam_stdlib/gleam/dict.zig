@@ -316,7 +316,7 @@ pub fn @"upsert"(@"v$dict": Value, @"v$key": Value, @"v$fun": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$value" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = @"insert"(P.dup(@"v$dict"), P.dup(@"v$key"), P.call1(P.dup(@"v$fun"), P.makeRecord("Some", &[_]Value{ P.dup(@"v$value") })));
+        const @"r$0" = @"insert"(P.dup(@"v$dict"), P.dup(@"v$key"), P.call1(P.dup(@"v$fun"), P.makeRecordL("Some", &[_]Value{ P.dup(@"v$value") }, &[_]?[]const u8{})));
         P.drop(@"v$value");
         P.drop(@"s$0");
         P.drop(@"v$dict");
