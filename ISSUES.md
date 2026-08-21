@@ -12,11 +12,13 @@ design exists. Move finished items to the Done section with the commit.
   liveness through nested block/pipeline tails — the full
   `.notes/09-ideas.md` design. Lower urgency now: the accumulator
   pattern is covered.
-- **#4 Borrowing inference, phase 3.** Phases 1-2 done (2026-08-21):
-  field-read-only params, transitive fixpoint over the module call
-  graph, borrowed case subjects. Remaining: TCO fns whose params pass
-  through self-calls unchanged, and cross-module borrowing (needs
-  interface metadata).
+- **#4 Borrowing inference, phase 4.** Phases 1-3 done (2026-08-21):
+  field-read-only params, transitive + self-recursive greatest-fixpoint
+  inference, borrowed case subjects, borrowed pattern bindings.
+  Remaining: TCO fns whose params pass through self-calls unchanged,
+  cross-module borrowing (needs interface metadata), and stack
+  allocation for constructions that flow only into borrowed positions
+  (the vec-records loss row).
 - **#5 String buffer sharing.** Strings copy on construction and slice
   (naive-RC decision). Restore shared buffers with offset/length views
   (bit arrays already do this).
@@ -50,6 +52,15 @@ design exists. Move finished items to the Done section with the commit.
   nonzero.
 
 ## Done
+
+- **#4c Self-recursive borrowing + borrowed pattern bindings.**
+  (2026-08-21, gleam@831c1eca2) Greatest-fixpoint inference (seed all
+  candidates fully borrowed, clear flags until stable) lets self- and
+  mutually-recursive calls justify each other's borrows; pattern
+  bindings from borrowed subjects with borrow-only uses skip dup and
+  drop entirely. Coin change 0.81 -> 0.28s — zero RC ops per call,
+  beats BEAM JIT (0.46 CPU) and node (0.85). Corpus 122/0/27
+  leak-clean, all other benches unchanged.
 
 - **Guess-iterate-observe round: scalar guards + pattern-binding moves.**
   (2026-08-21, gleam@72f7de0d5) Guards on scalar comparisons render as
