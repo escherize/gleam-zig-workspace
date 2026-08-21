@@ -51,6 +51,14 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
+- **Guess-iterate-observe round: scalar guards + pattern-binding moves.**
+  (2026-08-21, gleam@72f7de0d5) Guards on scalar comparisons render as
+  raw compares (were dup + structural-eq helper); pattern bindings with
+  one straight-line body use transfer at the use. Coin change 2.27 ->
+  1.25 -> 0.81s — ahead of node (0.85), BEAM JIT still wins CPU (0.46).
+  Docs site gained a five-workload benchmark scoreboard with the losses
+  shown at full size (docs@e9ba73872). Corpus 122/0/27 each step.
+
 - **#3a Per-clause last-use moves.** (2026-08-21, gleam@ac14cc585)
   Scoped branch-aware liveness: bindings whose region ends in a case
   with at most one straight-line use per clause move per clause
