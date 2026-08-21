@@ -213,6 +213,12 @@ def main() -> int:
             zig_crashed = (
                 zig_code != 0 or "Segmentation fault" in zig_output
             ) and not zig_compile_error
+            if zig_compile_error and "error:" in js_output:
+                # The program fails to compile on both targets (stale
+                # stdlib APIs etc.) - broken input, not a zig regression.
+                skipped += 1
+                print(f"SKIP {label} (does not compile on either target)")
+                continue
             if "does not have a main function" in js_output:
                 skipped += 1
                 print(f"SKIP {label} (no main function)")
