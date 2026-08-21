@@ -1,1 +1,69 @@
-{"buildPath":"code"}
+{
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "#14100a",
+        "createdAt": "2026-08-21T05:28:30.295Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "3px",
+        "createdAt": "2026-08-21T05:28:30.331Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "5px",
+        "createdAt": "2026-08-21T05:28:30.363Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "9px",
+        "createdAt": "2026-08-21T05:28:30.393Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "14.5px",
+        "createdAt": "2026-08-21T05:28:30.425Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "10px",
+        "createdAt": "2026-08-21T05:28:30.456Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1.2rem",
+        "createdAt": "2026-08-21T05:28:30.488Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1.35rem",
+        "createdAt": "2026-08-21T05:28:30.519Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "14px",
+        "createdAt": "2026-08-21T05:28:30.551Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "13.5px",
+        "createdAt": "2026-08-21T05:28:30.582Z",
+        "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      }
+    ]
+  }
+}
