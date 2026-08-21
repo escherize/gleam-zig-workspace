@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-20T00:00:00Z",
+  "title": "Design System: gleam-zig docs",
+  "extensions": {
+    "colorMeta": {
+      "amber": { "role": "primary", "displayName": "Zig Amber", "canonical": "#f7a41d", "tonalRamp": ["oklch(25% 0.06 75)", "oklch(35% 0.09 75)", "oklch(45% 0.12 75)", "oklch(55% 0.14 75)", "oklch(65% 0.15 75)", "oklch(76% 0.155 75)", "oklch(86% 0.12 75)", "oklch(94% 0.06 75)"] },
+      "pink": { "role": "secondary", "displayName": "Gleam Pink", "canonical": "#ffaff3", "tonalRamp": ["oklch(25% 0.06 335)", "oklch(38% 0.09 335)", "oklch(50% 0.12 335)", "oklch(62% 0.13 335)", "oklch(72% 0.13 335)", "oklch(82% 0.11 335)", "oklch(88% 0.09 335)", "oklch(95% 0.04 335)"] },
+      "green": { "role": "tertiary", "displayName": "Pass Green", "canonical": "#56d364", "tonalRamp": ["oklch(25% 0.08 145)", "oklch(35% 0.11 145)", "oklch(45% 0.14 145)", "oklch(55% 0.16 145)", "oklch(65% 0.17 145)", "oklch(76% 0.17 145)", "oklch(85% 0.13 145)", "oklch(94% 0.06 145)"] },
+      "ground": { "role": "neutral", "displayName": "Graphite Ground", "canonical": "#0d1117", "tonalRamp": ["#0d1117", "#12161d", "#181d26", "#1d232c", "#262c36", "#8a93a2", "#9ba5b3", "#e6edf3"] },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "#12161d" },
+      "elevated": { "role": "neutral", "displayName": "Elevated", "canonical": "#181d26" },
+      "text": { "role": "neutral", "displayName": "Console Text", "canonical": "#e6edf3" },
+      "dim": { "role": "neutral", "displayName": "Dim Prose", "canonical": "#9ba5b3" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headline only; split-ink accent spans, text-wrap balance, 22ch cap." },
+      "headline": { "displayName": "Headline", "purpose": "Section h2, underlined by a full-width seam." },
+      "label": { "displayName": "Console Label", "purpose": "Uppercase mono chrome: panel heads, rail heads, table headers." },
+      "code": { "displayName": "Code", "purpose": "Code panes and shell blocks; ligatures disabled, tabular-nums for measurements." }
+    },
+    "shadows": [
+      { "name": "hero-anchor", "value": "0 24px 60px -32px rgba(0, 0, 0, 0.55)", "purpose": "The first-viewport compile panel only; one of two shadows on the page." },
+      { "name": "button-primary", "value": "0 2px 8px -2px rgba(0, 0, 0, 0.5)", "purpose": "Primary button at rest." },
+      { "name": "button-primary-hover", "value": "0 4px 12px -3px rgba(0, 0, 0, 0.55)", "purpose": "Primary button hover, paired with translateY(-1px)." }
+    ],
+    "motion": [
+      { "name": "ease-rise", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Entrance rises for hero title, sub, CTA, compile panel, status bar (0.55-0.6s, staggered ~70ms)." },
+      { "name": "stream", "value": "0.3s ease-out, 60ms per-line stagger", "purpose": "The one authored motion: the emitted Zig pane streams in once like build output. Disabled under prefers-reduced-motion." },
+      { "name": "state-transition", "value": "0.15s (background, color, border-color, transform), 0.2s (box-shadow)", "purpose": "Hover/focus state changes on links, buttons, TOC, copy buttons." }
+    ],
+    "breakpoints": [
+      { "name": "mobile-gutter", "value": "640px" },
+      { "name": "limits-collapse", "value": "680px" },
+      { "name": "plate-hide", "value": "720px" },
+      { "name": "compile-stack", "value": "760px" },
+      { "name": "nav-collapse", "value": "780px" },
+      { "name": "single-column", "value": "1000px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Amber CTA with dark amber-derived ink; lifts 1px on hover.",
+      "html": "<a href=\"#\" class=\"ds-btn-primary\">Get started <svg width=\"13\" height=\"13\" viewBox=\"0 0 16 16\" fill=\"none\" aria-hidden=\"true\"><path d=\"M2 8h11M9 3.5 13.5 8 9 12.5\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></a>",
+      "css": ".ds-btn-primary { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; padding: 10px 17px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; background: #f7a41d; color: #17120a; border: 1px solid transparent; box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.5); transition: transform 0.15s, box-shadow 0.2s; } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px -3px rgba(0, 0, 0, 0.55); } .ds-btn-primary:focus-visible { outline: 2px solid #f7a41d; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Seam-bordered secondary action; fills with the elevated surface on hover.",
+      "html": "<a href=\"#\" class=\"ds-btn-ghost\">How it's verified</a>",
+      "css": ".ds-btn-ghost { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 500; padding: 10px 17px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border: 1px solid #262c36; color: #e6edf3; background: transparent; transition: background 0.15s; } .ds-btn-ghost:hover { background: #181d26; } .ds-btn-ghost:focus-visible { outline: 2px solid #f7a41d; outline-offset: 2px; }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Lowercase mono topbar link; hovers to an elevated pill.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\">start</a><a href=\"#\">runtime</a><a href=\"#\" class=\"ds-active\">verification</a><a href=\"#\">limits</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 2px; background: #0d1117; padding: 6px; } .ds-nav a { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: #9ba5b3; padding: 7px 11px; border-radius: 6px; text-decoration: none; transition: background 0.15s, color 0.15s; } .ds-nav a:hover, .ds-nav a.ds-active { background: #181d26; color: #e6edf3; } .ds-nav a:focus-visible { outline: 2px solid #f7a41d; outline-offset: 2px; }"
+    },
+    {
+      "name": "Planned Chip",
+      "kind": "chip",
+      "refersTo": "planned-chip",
+      "description": "Dashed outline means not shipped; the only marker for planned work.",
+      "html": "<span class=\"ds-planned\">planned · issue #12</span>",
+      "css": ".ds-planned { display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: #9ba5b3; border: 1px dashed #8a93a2; border-radius: 12px; padding: 2px 9px; white-space: nowrap; background: #0d1117; }"
+    },
+    {
+      "name": "Fact Badge",
+      "kind": "chip",
+      "refersTo": "panel-head",
+      "description": "Solid mono pill for measured facts on panel title bars.",
+      "html": "<span class=\"ds-badge\">1,161 lines</span>",
+      "css": ".ds-badge { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 10.5px; padding: 2px 8px; border-radius: 12px; background: #0d1117; border: 1px solid #262c36; color: #9ba5b3; letter-spacing: 0.02em; }"
+    },
+    {
+      "name": "Console Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The page's native container: panel fill, seam border, uppercase mono title bar with a provenance plate slot.",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-panel-head\">prelude.zig<span class=\"ds-plate\">compiled into every binary</span></div><div class=\"ds-panel-body\">The whole runtime: the uniform <strong>Value</strong> union, reference counting, and the debug-mode leak gate.</div></div>",
+      "css": ".ds-panel { background: #12161d; border: 1px solid #262c36; border-radius: 10px; overflow: hidden; max-width: 420px; } .ds-panel-head { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #9ba5b3; border-bottom: 1px solid #1d232c; background: #181d26; } .ds-plate { margin-left: auto; text-transform: none; letter-spacing: 0.01em; color: #8a93a2; font-size: 10.5px; } .ds-panel-body { padding: 14px 16px; font-family: 'Archivo', system-ui, sans-serif; font-size: 14px; line-height: 1.6; color: #9ba5b3; } .ds-panel-body strong { color: #e6edf3; font-weight: 600; }"
+    },
+    {
+      "name": "Receipt Stat",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "One row of the receipts status bar: a large tabular-mono number with unit suffix and an oracle caption.",
+      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-n\">122<span class=\"ds-stat-u\">/122</span></div><div class=\"ds-stat-l\">corpus programs match the official compiler byte-for-byte — 0 failures, 27 classified skips</div></div>",
+      "css": ".ds-stat { background: #12161d; border: 1px solid #262c36; border-radius: 10px; padding: 13px 18px 12px; max-width: 300px; } .ds-stat-n { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1.15; color: #56d364; } .ds-stat-u { font-size: 0.72em; color: #9ba5b3; font-weight: 500; margin-left: 2px; } .ds-stat-l { font-family: 'Archivo', system-ui, sans-serif; font-size: 12px; color: #9ba5b3; margin-top: 6px; line-height: 1.5; }"
+    },
+    {
+      "name": "Limits Log Row",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "A limit rendered as log output: mono severity, bold subject, dim explanation.",
+      "html": "<div class=\"ds-limit\"><span class=\"ds-sev\">WARN</span><span class=\"ds-what\">Integers are i64</span><span class=\"ds-why\">Wrapping 64-bit ints, no bigint. The one semantic divergence from the BEAM — stated here, not buried.</span></div>",
+      "css": ".ds-limit { display: grid; grid-template-columns: 62px minmax(0, 180px) minmax(0, 1fr); gap: 14px; padding: 11px 16px; align-items: baseline; background: #12161d; border: 1px solid #262c36; border-radius: 10px; font-family: 'Archivo', system-ui, sans-serif; font-size: 13.5px; } .ds-sev { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; color: #f7a41d; } .ds-what { color: #e6edf3; font-weight: 600; } .ds-why { color: #9ba5b3; line-height: 1.55; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Graphite Console",
+    "overview": "The docs surface reads like the environment its audience already works in: a dark-first developer console on a graphite ground, built from hairline-seam panels rather than floating cards. It refuses both the white feature-grid docs default and the all-black terminal rut — the ground is #0d1117 graphite, never pure black, and every container is a panel with a mono-labeled title bar, like a tool window.\n\nColor is never decorative: it carries syntax-derived meaning. Pink #FFAFF3 (sampled from Gleam's Lucy) marks the source language; amber #F7A41D (sampled from the Zig mark) marks the output/runtime side and doubles as the site's only interactive accent. The compile — pink becoming amber — is the visual throughline. Evidence has its own typography: every measurement sits in JetBrains Mono with tabular figures, and every number traces to a dated run of record in the colophon.\n\nOne divergence from PRODUCT.md's baseline is deliberate and shipped: the committed world is dark-only (color-scheme: dark), one canonical theme with no light fork.",
+    "keyCharacteristics": [
+      "Graphite ground with three tonal surface steps (ground -> panel -> elevated), seamed by 1px hairlines",
+      "Pink = source, amber = output; meaning-bearing color only",
+      "Archivo for prose, JetBrains Mono for everything console-flavored: labels, nav, numbers, code",
+      "Receipts culture: tabular-num measurements, plate captions, dated colophon",
+      "Dashed outline = planned/unshipped; log rows = limits",
+      "Near-still: one authored motion (the emitted pane streams in once)"
+    ],
+    "rules": [
+      { "name": "The Syntax-Derived Color Rule", "body": "Pink means Gleam/source and amber means Zig/output — everywhere, at every scale. Neither is ever used as mood or decoration, and no accent hex is invented: both are sampled from the official logos.", "section": "colors" },
+      { "name": "The Tint-Not-Fill Rule", "body": "At region scale an accent appears only as its dark tint ground plus its seam (amber-tint/amber-seam, pink-tint/pink-seam). Full-strength accent fills are reserved for text, dots, and the primary button.", "section": "colors" },
+      { "name": "The Tabular Receipt Rule", "body": "Every measurement on the page — corpus counts, sizes, timings, commit hashes — is set in JetBrains Mono with font-variant-numeric: tabular-nums. Prose figures never carry evidence.", "section": "typography" },
+      { "name": "The Mono Chrome Rule", "body": "Anything belonging to the console chrome (nav, labels, buttons, badges, chips, footer colophon) is mono; Archivo is reserved for reading.", "section": "typography" },
+      { "name": "The Hairline Seam Rule", "body": "Structure comes from 1px seams and tonal steps; shadows are exceptional (two on the whole page) and always neutral black.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do route every accent through meaning: pink for Gleam/source, amber for Zig/output and interaction, green for verification-positive — nothing else gets color.",
+      "Do set every number in .num tabular mono, and give every code panel a plate caption stating its provenance (commit, \"emitted, verbatim\", what was elided).",
+      "Do mark unshipped work with the dashed .planned chip; dashed outline is the only vocabulary for \"not built yet.\"",
+      "Do build containers as panels: panel fill, 1px seam border, 10px radius, uppercase mono title bar on elevated.",
+      "Do honor prefers-reduced-motion by killing all animation and smooth scroll (* { animation: none; transition: none; })."
+    ],
+    "donts": [
+      "Don't use pure black or white surfaces; the world runs #0d1117 to #e6edf3, dark-only, one theme.",
+      "Don't fill a region with full-strength accent; regions get tint grounds plus seams (amber-tint/amber-seam, pink-tint/pink-seam).",
+      "Don't add shadows beyond the two shipped (hero compile panel, primary button), and never colored glows.",
+      "Don't enable code ligatures or proportional figures in evidence; emitted code and measurements read verbatim.",
+      "Don't add authored motion beyond entrance rises and the single hero stream; the console is near-still."
+    ]
+  }
+}
