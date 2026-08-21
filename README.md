@@ -20,6 +20,10 @@ Sibling checkouts expected next to this repo (see `.gitignore`):
 gleam-zig-workspace/   this repo, checked out as gleam-zig/
 ├── gleam/             https://github.com/escherize/gleam-zig
 ├── gleam-stdlib/      https://github.com/escherize/gleam-zig-stdlib
+├── simplifile/        https://github.com/escherize/gleam-zig-simplifile
+├── argv/              https://github.com/escherize/gleam-zig-argv
+├── envoy/             https://github.com/escherize/gleam-zig-envoy
+├── gleam_native/      https://github.com/escherize/gleam-zig-native
 ├── toolchain/         zig 0.16.0 (below)
 └── tour/              https://github.com/gleam-lang/language-tour (test input)
 ```
@@ -29,11 +33,12 @@ gleam-zig-workspace/   this repo, checked out as gleam-zig/
 ```sh
 git clone https://github.com/escherize/gleam-zig gleam
 git clone https://github.com/escherize/gleam-zig-stdlib gleam-stdlib
+git clone https://github.com/escherize/gleam-zig-simplifile simplifile
 git clone --depth 1 https://github.com/gleam-lang/language-tour tour
 mkdir toolchain && cd toolchain
 curl -O https://ziglang.org/download/0.16.0/zig-aarch64-macos-0.16.0.tar.xz
 tar xf zig-aarch64-macos-0.16.0.tar.xz && cd ..
-cd gleam && cargo build --release -p gleam && cd ..
+cd gleam && cargo build -p gleam && cd ..   # debug build; the harness expects it
 ```
 
 ## Running the corpus
@@ -44,9 +49,9 @@ python3 examples/harness.py tour/src/content examples/rosetta
 
 Each program runs on the zig target (leak-checked: any live allocation at
 exit fails the run) and on the javascript target via node, and the
-normalised outputs are compared. Current state: 121 passed, 0 failed,
-28 skipped (missing hex dependencies, programs without a main function,
-bit arrays, one int-overflow-semantics divergence).
+normalised outputs are compared. Current state: 129 passed, 0 failed,
+20 skipped (missing hex dependencies, programs without a main function,
+one int-overflow-semantics divergence).
 
 ## Licence
 

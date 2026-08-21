@@ -77,16 +77,24 @@ def run_target(target: str) -> tuple[int, str]:
             return stream
 
         return 124, normalise(as_text(e.stdout) + as_text(e.stderr))
-    # Drop gleam's own progress lines (they go to stderr before the program).
+    # Drop gleam's own progress lines. They all appear before the
+    # "Running module.main" marker, so only lines up to and including it
+    # are eligible for filtering; real program output that happens to
+    # start with "Compiling..." survives.
     output = result.stdout + result.stderr
     interesting = []
+    program_started = False
     for line in output.splitlines():
         stripped = ANSI.sub("", line)
-        if re.match(
-            r"^\s*(Compiling|Compiled|Resolving|Downloading|Downloaded|Running|Added|Updating|Generating|Installing)",
-            stripped,
-        ):
-            continue
+        if not program_started:
+            if re.match(r"^\s*Running \S+\.main", stripped):
+                program_started = True
+                continue
+            if re.match(
+                r"^\s*(Compiling|Compiled|Resolving|Downloading|Downloaded|Added|Updating|Generating|Installing)",
+                stripped,
+            ):
+                continue
         interesting.append(line)
     return result.returncode, normalise("\n".join(interesting))
 
@@ -95,7 +103,11 @@ def outputs_match(zig_output: str, js_output: str) -> bool:
     """The JavaScript target cannot distinguish Int from Float (both are JS
     numbers), so its echo prints 2 for the float 2.0. The zig target prints
     2.0 like Erlang does. Accept zig "N.0" where JS printed integer "N",
-    anywhere numbers appear in a line."""
+    anywhere numbers appear in a line.
+
+    Known blind spot: a zig regression that formatted Ints as N.0 would be
+    indistinguishable from this legitimate difference. Only an Erlang-target
+    baseline (types preserved) could close it; revisit if erl joins CI."""
     zig_lines = zig_output.splitlines()
     js_lines = js_output.splitlines()
     if len(zig_lines) != len(js_lines):
@@ -127,8 +139,10 @@ def main() -> int:
         label = str(source)
         code = source.read_text()
         # Dict iteration order is explicitly unspecified, so dict-heavy
-        # programs cannot be compared textually across targets.
-        nondeterministic = "random" in code or "dict." in code
+        # programs cannot be compared textually across targets. Matching the
+        # import (not any "dict." substring) keeps word-list programs that
+        # merely mention unixdict.txt fully diff-checked.
+        nondeterministic = "random" in code or "import gleam/dict" in code
         # Numeric-model divergence: zig ints are i64, JS ints are f64,
         # Erlang has bignums. Programs whose output depends on overflow
         # behaviour differ by design.
@@ -147,8 +161,15 @@ def main() -> int:
         zig_code, zig_output = run_target("zig")
 
         if "Unknown module" in zig_output:
-            skipped += 1
-            print(f"SKIP {label} (missing dependency)")
+            if "name `gleam/" in zig_output:
+                # The stdlib itself failing to resolve is a target
+                # regression, never a missing third-party dependency.
+                failed += 1
+                failures.append((label, zig_code, zig_output, ""))
+                print(f"FAIL {label} (stdlib module missing on zig)")
+            else:
+                skipped += 1
+                print(f"SKIP {label} (missing dependency)")
             continue
 
         if nondeterministic:
@@ -165,7 +186,14 @@ def main() -> int:
         js_code, js_output = run_target("javascript")
 
         if js_code != 0:
-            zig_crashed = zig_code != 0 or "Segmentation fault" in zig_output
+            # Only a runtime failure on the zig side may pair with a JS
+            # failure as "expected": a compile error must never pass.
+            zig_compile_error = (
+                "error:" in zig_output and "panic" not in zig_output
+            ) or "Fatal compiler bug" in zig_output
+            zig_crashed = (
+                zig_code != 0 or "Segmentation fault" in zig_output
+            ) and not zig_compile_error
             if "does not have a main function" in js_output:
                 skipped += 1
                 print(f"SKIP {label} (no main function)")
