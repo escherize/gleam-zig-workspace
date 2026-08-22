@@ -29,7 +29,9 @@ design exists. Move finished items to the Done section with the commit.
 - **#7 Unicode: casing tables + UAX-29 graphemes.** ASCII case/trim,
   codepoint "graphemes". Needs data tables; zig std has neither.
 - **#8 Dict is an O(n) assoc list.** Port the HAMT from upstream
-  dict.mjs.
+  dict.mjs. Now the published loss row: 10k-key insert+lookup runs
+  1.12s vs node 0.07s and BEAM 0.11s (16x). Benchmark:
+  examples/benchmarks/dict_lookup.gleam.
 - **#9 Windows.** argv FFI is posix-only (process.Args.initAllocator
   needed); paths, CI runner, and testing the x86_64-windows binaries we
   already cross-compile.
