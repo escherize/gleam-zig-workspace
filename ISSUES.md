@@ -50,6 +50,17 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
+- **#4d Flat record ABI.** (2026-08-21, gleam@fbe68ae62) Single-
+  constructor all-scalar records travel as zig structs inside their
+  module: `flat$Type` structs, `flat$fn` ABI + boxed wrapper, flat
+  locals, tag-free pattern matching, box$/unbox$ at every polymorphic
+  boundary. Vec micro 0.17 -> 0.03s (last loss row flips: 2x the BEAM),
+  ray tracer 0.08 -> 0.07s byte-identical. Corpus 126/0/27, 6180 tests.
+  Also corrected two published measurement errors: erlang rows had been
+  wall time vs everyone else's CPU (ray tracer headline 18x -> 4.7x),
+  and node re-measured best-of-3 (string 24x -> 6x). Docs carry a dated
+  correction; every page now quotes user CPU time.
+
 - **Bare-file export mode.** (2026-08-21, gleam@89f6e29a7)
   `gleam export zig-executable file.gleam` / `zig-source file.gleam`:
   temp-project scaffolding (stdlib via $GLEAM_ZIG_STDLIB or ancestor
