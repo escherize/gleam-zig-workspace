@@ -50,6 +50,17 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
+- **#4e Nested flat records + width cap.** (2026-08-21, gleam@90eff8361)
+  Flat fields may be other flat structs (least-fixpoint eligibility,
+  recursive box/unbox, chained field paths). Nesting alone made the ray
+  tracer 16% slower — wide structs are copied by value at every
+  boundary, and Sphere crosses one ~1.4M times per render — so
+  eligibility gained a 4-scalar width cap: Vec stays flat, Sphere stays
+  boxed, ray tracer back to 0.074s. Narrow nested case (Seg of two
+  Points) 0.331 -> 0.049s, 6.7x. Corpus 126/0/27; harness timeout
+  raised 20s -> 60s after a near-limit program produced two false
+  failures.
+
 - **#4d Flat record ABI.** (2026-08-21, gleam@fbe68ae62) Single-
   constructor all-scalar records travel as zig structs inside their
   module: `flat$Type` structs, `flat$fn` ABI + boxed wrapper, flat
