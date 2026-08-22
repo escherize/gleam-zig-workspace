@@ -28,10 +28,6 @@ design exists. Move finished items to the Done section with the commit.
   only today; sub-byte sizes panic. Needs a bit-level cursor.
 - **#7 Unicode: casing tables + UAX-29 graphemes.** ASCII case/trim,
   codepoint "graphemes". Needs data tables; zig std has neither.
-- **#8 Dict is an O(n) assoc list.** Port the HAMT from upstream
-  dict.mjs. Now the published loss row: 10k-key insert+lookup runs
-  1.12s vs node 0.07s and BEAM 0.11s (16x). Benchmark:
-  examples/benchmarks/dict_lookup.gleam.
 - **#9 Windows.** argv FFI is posix-only (process.Args.initAllocator
   needed); paths, CI runner, and testing the x86_64-windows binaries we
   already cross-compile.
@@ -51,6 +47,15 @@ design exists. Move finished items to the Done section with the commit.
   nonzero.
 
 ## Done
+
+- **#8 Dict HAMT.** (2026-08-21, stdlib@c5a195e, prelude@6fa94bd11)
+  Assoc list -> hash array mapped trie (32-way, 5 hash bits/level,
+  nodes are RC'd Values so the leak gate covers them). 10k-key
+  insert+lookup 1.12s -> 0.011s (100x): now 6x node, 10x BEAM, 8MB vs
+  36MB. Verified with a 60-case differential test against the JS
+  target. Iteration order is hash order now (was always unspecified;
+  matches erlang where the assoc list matched V8), so gleam/set joined
+  the harness's unspecified-order list. Corpus 123/0/30.
 
 - **#4e Nested flat records + width cap.** (2026-08-21, gleam@90eff8361)
   Flat fields may be other flat structs (least-fixpoint eligibility,
