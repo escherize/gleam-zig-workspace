@@ -64,7 +64,10 @@ def run_target(target: str) -> tuple[int, str]:
             cwd=PROJECT,
             capture_output=True,
             text=True,
-            timeout=int(os.environ.get("HARNESS_TIMEOUT", "20")),
+            # 60s: a few corpus programs (dictionary-scanning string
+            # work) take ~16s in Debug with a cold zig cache, and 20s
+            # made them fail or pass on cache state alone.
+            timeout=int(os.environ.get("HARNESS_TIMEOUT", "60")),
             env=os.environ | {"GLEAM_ZIG": str(ZIG)},
         )
     except subprocess.TimeoutExpired as e:
