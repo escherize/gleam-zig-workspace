@@ -41,7 +41,6 @@ pub fn @"pad_to_bytes"(@"v$data": Value) Value {
             P.baAddInt(&@"b$0", P.intValue(0), P.baBitCount(P.intValue(@"v$padding_bits")), false);
             break :ba2 P.baFinish(&@"b$0");
         };
-        P.drop(@"v$trailing_bit_count");
         P.drop(@"s$0");
         P.drop(@"v$data");
         return @"r$1";
@@ -82,8 +81,7 @@ fn @"is_utf8_loop"(@"p$bits": Value) Value {
             var @"m$1" = P.baMatcher(@"s$0");
             if (!(P.baReadUtf8Codepoint(&@"m$1", 0) and P.baReadRest(&@"m$1", 1))) break :c1;
             const @"v$rest" = P.baSliceSlot(&@"m$1", @"s$0", 1);
-            const @"tail$0" = P.dup(@"v$rest");
-            P.drop(@"v$rest");
+            const @"tail$0" = @"v$rest";
             P.drop(@"s$0");
             @"v$bits" = @"tail$0";
             continue;
@@ -138,7 +136,6 @@ pub fn @"base64_decode"(@"v$encoded": Value) Value {
         {
             const @"v$n" = P.dup(@"s$0");
             const @"r$1" = @"M$gleam/string".@"append"(P.dup(@"v$encoded"), @"M$gleam/string".@"repeat"(P.copyString("="), P.intValue((4 -% (@"v$n").int))));
-            P.drop(@"v$n");
             P.drop(@"s$0");
             break :case0 @"r$1";
         }
@@ -192,8 +189,7 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             var @"m$1" = P.baMatcher(@"s$0");
             if (!(P.baReadInt(&@"m$1", 1, false, false, 0) and P.baAtEnd(&@"m$1"))) break :c1;
             const @"v$x" = P.baIntSlot(&@"m$1", 0);
-            const @"r$1" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x"))), P.copyString(":size(1)"));
-            P.drop(@"v$x");
+            const @"r$1" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x")), P.copyString(":size(1)"));
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             return @"r$1";
@@ -202,8 +198,7 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             var @"m$2" = P.baMatcher(@"s$0");
             if (!(P.baReadInt(&@"m$2", 2, false, false, 0) and P.baAtEnd(&@"m$2"))) break :c2;
             const @"v$x$1" = P.baIntSlot(&@"m$2", 0);
-            const @"r$2" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x$1"))), P.copyString(":size(2)"));
-            P.drop(@"v$x$1");
+            const @"r$2" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x$1")), P.copyString(":size(2)"));
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             return @"r$2";
@@ -212,8 +207,7 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             var @"m$3" = P.baMatcher(@"s$0");
             if (!(P.baReadInt(&@"m$3", 3, false, false, 0) and P.baAtEnd(&@"m$3"))) break :c3;
             const @"v$x$2" = P.baIntSlot(&@"m$3", 0);
-            const @"r$3" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x$2"))), P.copyString(":size(3)"));
-            P.drop(@"v$x$2");
+            const @"r$3" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x$2")), P.copyString(":size(3)"));
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             return @"r$3";
@@ -222,8 +216,7 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             var @"m$4" = P.baMatcher(@"s$0");
             if (!(P.baReadInt(&@"m$4", 4, false, false, 0) and P.baAtEnd(&@"m$4"))) break :c4;
             const @"v$x$3" = P.baIntSlot(&@"m$4", 0);
-            const @"r$4" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x$3"))), P.copyString(":size(4)"));
-            P.drop(@"v$x$3");
+            const @"r$4" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x$3")), P.copyString(":size(4)"));
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             return @"r$4";
@@ -232,8 +225,7 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             var @"m$5" = P.baMatcher(@"s$0");
             if (!(P.baReadInt(&@"m$5", 5, false, false, 0) and P.baAtEnd(&@"m$5"))) break :c5;
             const @"v$x$4" = P.baIntSlot(&@"m$5", 0);
-            const @"r$5" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x$4"))), P.copyString(":size(5)"));
-            P.drop(@"v$x$4");
+            const @"r$5" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x$4")), P.copyString(":size(5)"));
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             return @"r$5";
@@ -242,8 +234,7 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             var @"m$6" = P.baMatcher(@"s$0");
             if (!(P.baReadInt(&@"m$6", 6, false, false, 0) and P.baAtEnd(&@"m$6"))) break :c6;
             const @"v$x$5" = P.baIntSlot(&@"m$6", 0);
-            const @"r$6" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x$5"))), P.copyString(":size(6)"));
-            P.drop(@"v$x$5");
+            const @"r$6" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x$5")), P.copyString(":size(6)"));
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             return @"r$6";
@@ -252,8 +243,7 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             var @"m$7" = P.baMatcher(@"s$0");
             if (!(P.baReadInt(&@"m$7", 7, false, false, 0) and P.baAtEnd(&@"m$7"))) break :c7;
             const @"v$x$6" = P.baIntSlot(&@"m$7", 0);
-            const @"r$7" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x$6"))), P.copyString(":size(7)"));
-            P.drop(@"v$x$6");
+            const @"r$7" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x$6")), P.copyString(":size(7)"));
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             return @"r$7";
@@ -264,25 +254,21 @@ fn @"inspect_loop"(@"p$input": Value, @"p$accumulator": Value) Value {
             const @"v$x$7" = P.baIntSlot(&@"m$8", 0);
             const @"v$rest" = P.baSliceSlot(&@"m$8", @"s$0", 1);
             const @"v$suffix" = case9: {
-                const @"s$1" = P.dup(@"v$rest");
                 c10: {
-                    var @"m$9" = P.baMatcher(@"s$1");
+                    var @"m$9" = P.baMatcher(@"v$rest");
                     if (!(P.baAtEnd(&@"m$9"))) break :c10;
                     const @"r$8" = P.copyString("");
-                    P.drop(@"s$1");
                     break :case9 @"r$8";
                 }
                 {
                     const @"r$9" = P.copyString(", ");
-                    P.drop(@"s$1");
                     break :case9 @"r$9";
                 }
                 unreachable;
             };
-            const @"v$accumulator$1" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(P.dup(@"v$x$7"))), @"v$suffix");
+            const @"v$accumulator$1" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), @"M$gleam/int".@"to_string"(@"v$x$7")), @"v$suffix");
             const @"tail$0" = P.dup(@"v$rest");
             const @"tail$1" = @"v$accumulator$1";
-            P.drop(@"v$x$7");
             P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$accumulator");

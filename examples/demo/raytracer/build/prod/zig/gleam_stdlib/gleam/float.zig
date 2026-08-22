@@ -294,21 +294,17 @@ fn @"sum_loop"(@"p$numbers": Value, @"p$initial": Value) Value {
             if (!((@"s$0").list != null)) break :c0;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.floatValue(((@"v$first").float + (@"v$initial").float));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             @"v$numbers" = @"tail$0";
             @"v$initial" = @"tail$1";
             continue;
         }
         c1: {
             if (!((@"s$0").list == null)) break :c1;
-            const @"r$0" = P.dup(@"v$initial");
+            const @"r$0" = @"v$initial";
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             return @"r$0";
         }
         unreachable;
@@ -328,21 +324,17 @@ fn @"product_loop"(@"p$numbers": Value, @"p$initial": Value) Value {
             if (!((@"s$0").list != null)) break :c0;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.floatValue(((@"v$first").float * (@"v$initial").float));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             @"v$numbers" = @"tail$0";
             @"v$initial" = @"tail$1";
             continue;
         }
         c1: {
             if (!((@"s$0").list == null)) break :c1;
-            const @"r$0" = P.dup(@"v$initial");
+            const @"r$0" = @"v$initial";
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             return @"r$0";
         }
         unreachable;
@@ -359,18 +351,15 @@ pub fn @"random"() Value {
 }
 
 pub fn @"modulo"(@"v$dividend": Value, @"v$divisor": Value) Value {
-    const @"s$0" = P.dup(@"v$divisor");
     c0: {
-        if (!((@"s$0").float == 0.0)) break :c0;
+        if (!((@"v$divisor").float == 0.0)) break :c0;
         const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
         P.drop(@"v$dividend");
         P.drop(@"v$divisor");
         return @"r$0";
     }
     {
         const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.floatValue(((@"v$dividend").float - ((@"floor"(P.floatValue(P.rawDivFloat((@"v$dividend").float, (@"v$divisor").float)))).float * (@"v$divisor").float))) }, &[_]?[]const u8{});
-        P.drop(@"s$0");
         P.drop(@"v$dividend");
         P.drop(@"v$divisor");
         return @"r$1";
@@ -379,21 +368,16 @@ pub fn @"modulo"(@"v$dividend": Value, @"v$divisor": Value) Value {
 }
 
 pub fn @"divide"(@"v$a": Value, @"v$b": Value) Value {
-    const @"s$0" = P.dup(@"v$b");
     c0: {
-        if (!((@"s$0").float == 0.0)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
+        if (!((@"v$b").float == 0.0)) break :c0;
         P.drop(@"v$a");
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$b");
         return @"r$0";
     }
     {
-        const @"v$b$1" = P.dup(@"s$0");
+        const @"v$b$1" = P.dup(@"v$b");
         const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.floatValue(P.rawDivFloat((@"v$a").float, (@"v$b$1").float)) }, &[_]?[]const u8{});
-        P.drop(@"v$b$1");
-        P.drop(@"s$0");
-        P.drop(@"v$a");
         P.drop(@"v$b");
         return @"r$1";
     }

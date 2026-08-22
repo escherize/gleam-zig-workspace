@@ -2,87 +2,76 @@
 const P = @import("../../prelude.zig");
 const Value = P.Value;
 
-pub fn @"negate"(@"v$order": Value) Value {
-    const @"s$0" = @"v$order";
+fn @"borrowed$negate"(@"v$order": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Lt"))) break :c0;
-        const @"r$0" = P.makeRecord("Gt", &[_]Value{});
-        P.drop(@"s$0");
-        return @"r$0";
+        if (!(P.recordHasName(@"v$order", "Lt"))) break :c0;
+        return P.makeRecord("Gt", &[_]Value{});
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Eq"))) break :c1;
-        const @"r$1" = P.makeRecord("Eq", &[_]Value{});
-        P.drop(@"s$0");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$order", "Eq"))) break :c1;
+        return P.makeRecord("Eq", &[_]Value{});
     }
     c2: {
-        if (!(P.recordHasName(@"s$0", "Gt"))) break :c2;
-        const @"r$2" = P.makeRecord("Lt", &[_]Value{});
-        P.drop(@"s$0");
-        return @"r$2";
+        if (!(P.recordHasName(@"v$order", "Gt"))) break :c2;
+        return P.makeRecord("Lt", &[_]Value{});
     }
     unreachable;
 }
 
-pub fn @"to_int"(@"v$order": Value) Value {
-    const @"s$0" = @"v$order";
+pub fn @"negate"(@"a$0": Value) Value {
+    const result = @"borrowed$negate"(@"a$0");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$to_int"(@"v$order": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Lt"))) break :c0;
-        const @"r$0" = P.intValue(-1);
-        P.drop(@"s$0");
-        return @"r$0";
+        if (!(P.recordHasName(@"v$order", "Lt"))) break :c0;
+        return P.intValue(-1);
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Eq"))) break :c1;
-        const @"r$1" = P.intValue(0);
-        P.drop(@"s$0");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$order", "Eq"))) break :c1;
+        return P.intValue(0);
     }
     c2: {
-        if (!(P.recordHasName(@"s$0", "Gt"))) break :c2;
-        const @"r$2" = P.intValue(1);
-        P.drop(@"s$0");
-        return @"r$2";
+        if (!(P.recordHasName(@"v$order", "Gt"))) break :c2;
+        return P.intValue(1);
     }
     unreachable;
 }
 
-pub fn @"compare"(@"v$a": Value, @"v$b": Value) Value {
-    const @"s$0" = @"v$a";
-    const @"s$1" = @"v$b";
+pub fn @"to_int"(@"a$0": Value) Value {
+    const result = @"borrowed$to_int"(@"a$0");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$compare"(@"v$a": Value, @"v$b": Value) Value {
     c0: {
-        const @"v$x" = P.dup(@"s$0");
-        const @"v$y" = P.dup(@"s$1");
-        if (!((P.eq(P.dup(@"v$x"), P.dup(@"v$y"))).bool)) { P.drop(@"v$x"); P.drop(@"v$y"); break :c0; }
-        const @"r$0" = P.makeRecord("Eq", &[_]Value{});
-        P.drop(@"v$x");
-        P.drop(@"v$y");
-        P.drop(@"s$0");
-        P.drop(@"s$1");
-        return @"r$0";
+        const @"v$x" = @"v$a";
+        const @"v$y" = @"v$b";
+        if (!((P.eq(P.dup(@"v$x"), P.dup(@"v$y"))).bool)) { break :c0; }
+        return P.makeRecord("Eq", &[_]Value{});
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Lt"))) break :c1;
-        const @"r$1" = P.makeRecord("Lt", &[_]Value{});
-        P.drop(@"s$0");
-        P.drop(@"s$1");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$a", "Lt"))) break :c1;
+        return P.makeRecord("Lt", &[_]Value{});
     }
     c2: {
-        if (!(P.recordHasName(@"s$0", "Eq") and P.recordHasName(@"s$1", "Gt"))) break :c2;
-        const @"r$2" = P.makeRecord("Lt", &[_]Value{});
-        P.drop(@"s$0");
-        P.drop(@"s$1");
-        return @"r$2";
+        if (!(P.recordHasName(@"v$a", "Eq") and P.recordHasName(@"v$b", "Gt"))) break :c2;
+        return P.makeRecord("Lt", &[_]Value{});
     }
     {
-        const @"r$3" = P.makeRecord("Gt", &[_]Value{});
-        P.drop(@"s$0");
-        P.drop(@"s$1");
-        return @"r$3";
+        return P.makeRecord("Gt", &[_]Value{});
     }
     unreachable;
+}
+
+pub fn @"compare"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$compare"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    P.drop(@"a$1");
+    return result;
 }
 
 pub fn @"reverse"(@"v$orderer": Value) Value {
@@ -92,59 +81,39 @@ pub fn @"reverse"(@"v$orderer": Value) Value {
 }
 
 pub fn @"break_tie"(@"v$order": Value, @"v$other": Value) Value {
-    const @"s$0" = P.dup(@"v$order");
     c0: {
-        if (!(P.recordHasName(@"s$0", "Lt"))) break :c0;
-        const @"r$0" = P.dup(@"v$order");
-        P.drop(@"s$0");
-        P.drop(@"v$order");
+        if (!(P.recordHasName(@"v$order", "Lt"))) break :c0;
         P.drop(@"v$other");
-        return @"r$0";
+        return @"v$order";
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Gt"))) break :c1;
-        const @"r$1" = P.dup(@"v$order");
-        P.drop(@"s$0");
-        P.drop(@"v$order");
+        if (!(P.recordHasName(@"v$order", "Gt"))) break :c1;
         P.drop(@"v$other");
-        return @"r$1";
+        return @"v$order";
     }
     c2: {
-        if (!(P.recordHasName(@"s$0", "Eq"))) break :c2;
-        const @"r$2" = P.dup(@"v$other");
-        P.drop(@"s$0");
+        if (!(P.recordHasName(@"v$order", "Eq"))) break :c2;
         P.drop(@"v$order");
-        P.drop(@"v$other");
-        return @"r$2";
+        return @"v$other";
     }
     unreachable;
 }
 
 pub fn @"lazy_break_tie"(@"v$order": Value, @"v$comparison": Value) Value {
-    const @"s$0" = P.dup(@"v$order");
     c0: {
-        if (!(P.recordHasName(@"s$0", "Lt"))) break :c0;
-        const @"r$0" = P.dup(@"v$order");
-        P.drop(@"s$0");
-        P.drop(@"v$order");
+        if (!(P.recordHasName(@"v$order", "Lt"))) break :c0;
         P.drop(@"v$comparison");
-        return @"r$0";
+        return @"v$order";
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Gt"))) break :c1;
-        const @"r$1" = P.dup(@"v$order");
-        P.drop(@"s$0");
-        P.drop(@"v$order");
+        if (!(P.recordHasName(@"v$order", "Gt"))) break :c1;
         P.drop(@"v$comparison");
-        return @"r$1";
+        return @"v$order";
     }
     c2: {
-        if (!(P.recordHasName(@"s$0", "Eq"))) break :c2;
-        const @"r$2" = P.call0(P.dup(@"v$comparison"));
-        P.drop(@"s$0");
+        if (!(P.recordHasName(@"v$order", "Eq"))) break :c2;
         P.drop(@"v$order");
-        P.drop(@"v$comparison");
-        return @"r$2";
+        return P.call0(@"v$comparison");
     }
     unreachable;
 }

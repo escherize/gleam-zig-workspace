@@ -24,32 +24,19 @@ pub fn @"from_bit_array"(@"v$bits": Value) Value {
 }
 
 pub fn @"append_tree"(@"v$first": Value, @"v$second": Value) Value {
-    const @"s$0" = P.dup(@"v$second");
     c0: {
-        if (!(P.recordHasName(@"s$0", "Many"))) break :c0;
-        const @"v$trees" = P.dup((@"s$0").record.fields[0]);
-        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.dup(@"v$trees")) }, &[_]?[]const u8{});
-        P.drop(@"v$trees");
-        P.drop(@"v$first");
+        if (!(P.recordHasName(@"v$second", "Many"))) break :c0;
+        const @"v$trees" = P.dup((@"v$second").record.fields[0]);
         P.drop(@"v$second");
-        return @"r$0";
+        return P.makeRecordL("Many", &[_]Value{ P.listFromSlice(&[_]Value{ @"v$first" }, @"v$trees") }, &[_]?[]const u8{});
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Text"))) break :c1;
-        const @"r$1" = P.makeRecordL("Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$second") }, P.emptyList()) }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        P.drop(@"v$first");
-        P.drop(@"v$second");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$second", "Text"))) break :c1;
+        return P.makeRecordL("Many", &[_]Value{ P.listFromSlice(&[_]Value{ @"v$first", @"v$second" }, P.emptyList()) }, &[_]?[]const u8{});
     }
     c2: {
-        if (!(P.recordHasName(@"s$0", "Bytes"))) break :c2;
-        const @"r$2" = P.makeRecordL("Many", &[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$second") }, P.emptyList()) }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        P.drop(@"v$first");
-        P.drop(@"v$second");
-        return @"r$2";
+        if (!(P.recordHasName(@"v$second", "Bytes"))) break :c2;
+        return P.makeRecordL("Many", &[_]Value{ P.listFromSlice(&[_]Value{ @"v$first", @"v$second" }, P.emptyList()) }, &[_]?[]const u8{});
     }
     unreachable;
 }
@@ -95,19 +82,16 @@ fn @"to_list"(@"p$stack": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$stack";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$acc");
+            const @"r$0" = @"v$acc";
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null and ((@"s$0").list.?.head).list == null)) break :c1;
             const @"v$remaining_stack" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$remaining_stack");
-            const @"tail$1" = P.dup(@"v$acc");
-            P.drop(@"v$remaining_stack");
+            const @"tail$0" = @"v$remaining_stack";
+            const @"tail$1" = @"v$acc";
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             @"v$stack" = @"tail$0";
             @"v$acc" = @"tail$1";
             continue;
@@ -118,12 +102,8 @@ fn @"to_list"(@"p$stack": Value, @"p$acc": Value) Value {
             const @"v$rest" = P.dup(P.listValue(((@"s$0").list.?.head).list.?.tail));
             const @"v$remaining_stack$1" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$2" = P.consReuse(@"reuse$0", P.dup(@"v$rest"), P.dup(@"v$remaining_stack$1"));
-            const @"tail$3" = P.listFromSlice(&[_]Value{ P.dup(@"v$bits") }, P.dup(@"v$acc"));
-            P.drop(@"v$bits");
-            P.drop(@"v$rest");
-            P.drop(@"v$remaining_stack$1");
-            P.drop(@"v$acc");
+            const @"tail$2" = P.consReuse(@"reuse$0", @"v$rest", @"v$remaining_stack$1");
+            const @"tail$3" = P.listFromSlice(&[_]Value{ @"v$bits" }, @"v$acc");
             @"v$stack" = @"tail$2";
             @"v$acc" = @"tail$3";
             continue;
@@ -133,14 +113,10 @@ fn @"to_list"(@"p$stack": Value, @"p$acc": Value) Value {
             const @"v$tree" = P.dup((((@"s$0").list.?.head).list.?.head).record.fields[0]);
             const @"v$rest$1" = P.dup(P.listValue(((@"s$0").list.?.head).list.?.tail));
             const @"v$remaining_stack$2" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$bits$1" = @"M$gleam/bit_array".@"from_string"(@"M$gleam/string_tree".@"to_string"(P.dup(@"v$tree")));
-            const @"tail$4" = P.listFromSlice(&[_]Value{ P.dup(@"v$rest$1") }, P.dup(@"v$remaining_stack$2"));
-            const @"tail$5" = P.listFromSlice(&[_]Value{ @"v$bits$1" }, P.dup(@"v$acc"));
-            P.drop(@"v$tree");
-            P.drop(@"v$rest$1");
-            P.drop(@"v$remaining_stack$2");
+            const @"v$bits$1" = @"M$gleam/bit_array".@"from_string"(@"M$gleam/string_tree".@"to_string"(@"v$tree"));
+            const @"tail$4" = P.listFromSlice(&[_]Value{ @"v$rest$1" }, @"v$remaining_stack$2");
+            const @"tail$5" = P.listFromSlice(&[_]Value{ @"v$bits$1" }, @"v$acc");
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             @"v$stack" = @"tail$4";
             @"v$acc" = @"tail$5";
             continue;
@@ -150,13 +126,9 @@ fn @"to_list"(@"p$stack": Value, @"p$acc": Value) Value {
             const @"v$trees" = P.dup((((@"s$0").list.?.head).list.?.head).record.fields[0]);
             const @"v$rest$2" = P.dup(P.listValue(((@"s$0").list.?.head).list.?.tail));
             const @"v$remaining_stack$3" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$6" = P.listFromSlice(&[_]Value{ P.dup(@"v$trees"), P.dup(@"v$rest$2") }, P.dup(@"v$remaining_stack$3"));
-            const @"tail$7" = P.dup(@"v$acc");
-            P.drop(@"v$trees");
-            P.drop(@"v$rest$2");
-            P.drop(@"v$remaining_stack$3");
+            const @"tail$6" = P.listFromSlice(&[_]Value{ @"v$trees", @"v$rest$2" }, @"v$remaining_stack$3");
+            const @"tail$7" = @"v$acc";
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             @"v$stack" = @"tail$6";
             @"v$acc" = @"tail$7";
             continue;

@@ -98,17 +98,21 @@ pub fn @"filter"(@"a$0": Value, @"a$1": Value) Value {
     return result;
 }
 
-pub fn @"map"(@"v$set": Value, @"v$fun": Value) Value {
+fn @"borrowed$map"(@"v$set": Value, @"v$fun": Value) Value {
     const @"r$1" = bc0: {
-        const @"bor$0" = @"v$set";
         const @"own$0" = @"new"();
         const @"own$1" = P.makeClosure(@ptrCast(&@"lambda$3"), &[_]Value{ P.dup(@"v$fun") });
-        const @"r$0" = @"borrowed$fold"(@"bor$0", @"own$0", @"own$1");
-        P.drop(@"bor$0");
+        const @"r$0" = @"borrowed$fold"(@"v$set", @"own$0", @"own$1");
         break :bc0 @"r$0";
     };
     P.drop(@"v$fun");
     return @"r$1";
+}
+
+pub fn @"map"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$map"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 pub fn @"drop"(@"v$set": Value, @"v$disallowed": Value) Value {
@@ -172,13 +176,14 @@ pub fn @"intersection"(@"v$first": Value, @"v$second": Value) Value {
     return @"r$1";
 }
 
-pub fn @"difference"(@"v$first": Value, @"v$second": Value) Value {
-    return @"drop"(@"v$first", bc0: {
-        const @"bor$0" = @"v$second";
-        const @"r$0" = @"borrowed$to_list"(@"bor$0");
-        P.drop(@"bor$0");
-        break :bc0 @"r$0";
-    });
+fn @"borrowed$difference"(@"v$first": Value, @"v$second": Value) Value {
+    return @"drop"(@"v$first", @"borrowed$to_list"(@"v$second"));
+}
+
+pub fn @"difference"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$difference"(@"a$0", @"a$1");
+    P.drop(@"a$1");
+    return result;
 }
 
 pub fn @"is_subset"(@"v$first": Value, @"v$second": Value) Value {
@@ -192,22 +197,32 @@ pub fn @"is_disjoint"(@"v$first": Value, @"v$second": Value) Value {
 }
 
 pub fn @"symmetric_difference"(@"v$first": Value, @"v$second": Value) Value {
-    const @"r$0" = @"difference"(@"union"(P.dup(@"v$first"), P.dup(@"v$second")), @"intersection"(P.dup(@"v$first"), P.dup(@"v$second")));
+    const @"r$1" = bc0: {
+        const @"own$0" = @"union"(P.dup(@"v$first"), P.dup(@"v$second"));
+        const @"bor$0" = @"intersection"(P.dup(@"v$first"), P.dup(@"v$second"));
+        const @"r$0" = @"borrowed$difference"(@"own$0", @"bor$0");
+        P.drop(@"bor$0");
+        break :bc0 @"r$0";
+    };
     P.drop(@"v$first");
     P.drop(@"v$second");
-    return @"r$0";
+    return @"r$1";
 }
 
-pub fn @"each"(@"v$set": Value, @"v$fun": Value) Value {
+fn @"borrowed$each"(@"v$set": Value, @"v$fun": Value) Value {
     const @"r$1" = bc0: {
-        const @"bor$0" = @"v$set";
         const @"own$0" = P.makeClosure(@ptrCast(&@"lambda$4"), &[_]Value{ P.dup(@"v$fun") });
-        const @"r$0" = @"borrowed$fold"(@"bor$0", P.NIL, @"own$0");
-        P.drop(@"bor$0");
+        const @"r$0" = @"borrowed$fold"(@"v$set", P.NIL, @"own$0");
         break :bc0 @"r$0";
     };
     P.drop(@"v$fun");
     return @"r$1";
+}
+
+pub fn @"each"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$each"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"lambda$0"(@"env$": []const Value, @"v$m": Value, @"v$k": Value) Value {

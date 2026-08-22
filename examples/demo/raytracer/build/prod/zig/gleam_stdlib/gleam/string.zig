@@ -249,21 +249,17 @@ fn @"to_graphemes_loop"(@"p$string": Value, @"p$acc": Value) Value {
             if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
             const @"v$grapheme" = P.dup(((@"s$0").record.fields[0]).tuple[0]);
             const @"v$rest" = P.dup(((@"s$0").record.fields[0]).tuple[1]);
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$grapheme") }, P.dup(@"v$acc"));
-            P.drop(@"v$grapheme");
-            P.drop(@"v$rest");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.listFromSlice(&[_]Value{ @"v$grapheme" }, @"v$acc");
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             @"v$string" = @"tail$0";
             @"v$acc" = @"tail$1";
             continue;
         }
         c1: {
             if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
-            const @"r$0" = P.dup(@"v$acc");
+            const @"r$0" = @"v$acc";
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         unreachable;
@@ -277,24 +273,16 @@ pub fn @"to_graphemes"(@"a$0": Value) Value {
 }
 
 pub fn @"split"(@"v$x": Value, @"v$substring": Value) Value {
-    const @"s$0" = P.dup(@"v$substring");
     c0: {
-        if (!(P.stringLiteralEquals(@"s$0", ""))) break :c0;
-        const @"r$0" = @"to_graphemes"(P.dup(@"v$x"));
-        P.drop(@"s$0");
-        P.drop(@"v$x");
+        if (!(P.stringLiteralEquals(@"v$substring", ""))) break :c0;
         P.drop(@"v$substring");
-        return @"r$0";
+        return @"to_graphemes"(@"v$x");
     }
     {
-        const @"v$_pipe" = P.dup(@"v$x");
+        const @"v$_pipe" = @"v$x";
         const @"v$_pipe$1" = @"M$gleam/string_tree".@"from_string"(@"v$_pipe");
-        const @"v$_pipe$2" = @"M$gleam/string_tree".@"split"(@"v$_pipe$1", P.dup(@"v$substring"));
-        const @"r$1" = @"M$gleam/list".@"map"(@"v$_pipe$2", P.makeClosure(@ptrCast(&@"wrap$gleam$string_tree$to_string"), &[_]Value{}));
-        P.drop(@"s$0");
-        P.drop(@"v$x");
-        P.drop(@"v$substring");
-        return @"r$1";
+        const @"v$_pipe$2" = @"M$gleam/string_tree".@"split"(@"v$_pipe$1", @"v$substring");
+        return @"M$gleam/list".@"map"(@"v$_pipe$2", P.makeClosure(@ptrCast(&@"wrap$gleam$string_tree$to_string"), &[_]Value{}));
     }
     unreachable;
 }
@@ -315,28 +303,21 @@ fn @"concat_loop"(@"p$strings": Value, @"p$accumulator": Value) Value {
     var @"v$strings" = @"p$strings";
     var @"v$accumulator" = @"p$accumulator";
     while (true) {
-        const @"s$0" = P.dup(@"v$strings");
         c0: {
-            if (!((@"s$0").list != null)) break :c0;
-            const @"v$string" = P.dup((@"s$0").list.?.head);
-            const @"v$strings$1" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$strings$1");
-            const @"tail$1" = P.concatenate(P.dup(@"v$accumulator"), P.dup(@"v$string"));
-            P.drop(@"v$string");
-            P.drop(@"v$strings$1");
-            P.drop(@"s$0");
+            if (!((@"v$strings").list != null)) break :c0;
+            const @"v$string" = P.dup((@"v$strings").list.?.head);
+            const @"v$strings$1" = P.dup(P.listValue((@"v$strings").list.?.tail));
+            const @"tail$0" = @"v$strings$1";
+            const @"tail$1" = P.concatenate(@"v$accumulator", @"v$string");
             P.drop(@"v$strings");
-            P.drop(@"v$accumulator");
             @"v$strings" = @"tail$0";
             @"v$accumulator" = @"tail$1";
             continue;
         }
         c1: {
-            if (!((@"s$0").list == null)) break :c1;
-            const @"r$0" = P.dup(@"v$accumulator");
-            P.drop(@"s$0");
+            if (!((@"v$strings").list == null)) break :c1;
+            const @"r$0" = @"v$accumulator";
             P.drop(@"v$strings");
-            P.drop(@"v$accumulator");
             return @"r$0";
         }
         unreachable;
@@ -371,9 +352,8 @@ fn @"repeat_loop"(@"p$times": Value, @"p$doubling_acc": Value, @"p$acc": Value) 
         const @"s$1" = P.boolValue((@"v$times$1" <= 0));
         c3: {
             if (!((@"s$1").bool)) break :c3;
-            const @"r$2" = P.dup(@"v$acc$1");
+            const @"r$2" = @"v$acc$1";
             P.drop(@"s$1");
-            P.drop(@"v$acc$1");
             P.drop(@"v$times");
             P.drop(@"v$doubling_acc");
             P.drop(@"v$acc");
@@ -383,9 +363,8 @@ fn @"repeat_loop"(@"p$times": Value, @"p$doubling_acc": Value, @"p$acc": Value) 
             if (!(!((@"s$1").bool))) break :c4;
             const @"tail$0" = P.intValue(@"v$times$1");
             const @"tail$1" = P.concatenate(P.dup(@"v$doubling_acc"), P.dup(@"v$doubling_acc"));
-            const @"tail$2" = P.dup(@"v$acc$1");
+            const @"tail$2" = @"v$acc$1";
             P.drop(@"s$1");
-            P.drop(@"v$acc$1");
             P.drop(@"v$times");
             P.drop(@"v$doubling_acc");
             P.drop(@"v$acc");
@@ -402,17 +381,16 @@ pub fn @"repeat"(@"v$string": Value, @"v$times": Value) Value {
     const @"s$0" = P.boolValue(((@"v$times").int <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
+        P.drop(@"v$string");
         const @"r$0" = P.copyString("");
         P.drop(@"s$0");
-        P.drop(@"v$string");
         P.drop(@"v$times");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = @"repeat_loop"(P.dup(@"v$times"), P.dup(@"v$string"), P.copyString(""));
+        const @"r$1" = @"repeat_loop"(P.dup(@"v$times"), @"v$string", P.copyString(""));
         P.drop(@"s$0");
-        P.drop(@"v$string");
         P.drop(@"v$times");
         return @"r$1";
     }
@@ -424,29 +402,22 @@ fn @"join_loop"(@"p$strings": Value, @"p$separator": Value, @"p$accumulator": Va
     var @"v$separator" = @"p$separator";
     var @"v$accumulator" = @"p$accumulator";
     while (true) {
-        const @"s$0" = P.dup(@"v$strings");
         c0: {
-            if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$accumulator");
-            P.drop(@"s$0");
+            if (!((@"v$strings").list == null)) break :c0;
+            const @"r$0" = @"v$accumulator";
             P.drop(@"v$strings");
             P.drop(@"v$separator");
-            P.drop(@"v$accumulator");
             return @"r$0";
         }
         c1: {
-            if (!((@"s$0").list != null)) break :c1;
-            const @"v$string" = P.dup((@"s$0").list.?.head);
-            const @"v$strings$1" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$strings$1");
+            if (!((@"v$strings").list != null)) break :c1;
+            const @"v$string" = P.dup((@"v$strings").list.?.head);
+            const @"v$strings$1" = P.dup(P.listValue((@"v$strings").list.?.tail));
+            const @"tail$0" = @"v$strings$1";
             const @"tail$1" = P.dup(@"v$separator");
-            const @"tail$2" = P.concatenate(P.concatenate(P.dup(@"v$accumulator"), P.dup(@"v$separator")), P.dup(@"v$string"));
-            P.drop(@"v$string");
-            P.drop(@"v$strings$1");
-            P.drop(@"s$0");
+            const @"tail$2" = P.concatenate(P.concatenate(@"v$accumulator", P.dup(@"v$separator")), @"v$string");
             P.drop(@"v$strings");
             P.drop(@"v$separator");
-            P.drop(@"v$accumulator");
             @"v$strings" = @"tail$0";
             @"v$separator" = @"tail$1";
             @"v$accumulator" = @"tail$2";
@@ -456,27 +427,25 @@ fn @"join_loop"(@"p$strings": Value, @"p$separator": Value, @"p$accumulator": Va
     }
 }
 
-pub fn @"join"(@"v$strings": Value, @"v$separator": Value) Value {
-    const @"s$0" = @"v$strings";
+fn @"borrowed$join"(@"v$strings": Value, @"v$separator": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.copyString("");
-        P.drop(@"s$0");
+        if (!((@"v$strings").list == null)) break :c0;
         P.drop(@"v$separator");
-        return @"r$0";
+        return P.copyString("");
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = @"join_loop"(P.dup(@"v$rest"), P.dup(@"v$separator"), P.dup(@"v$first"));
-        P.drop(@"v$first");
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
-        P.drop(@"v$separator");
-        return @"r$1";
+        if (!((@"v$strings").list != null)) break :c1;
+        const @"v$first" = P.dup((@"v$strings").list.?.head);
+        const @"v$rest" = P.dup(P.listValue((@"v$strings").list.?.tail));
+        return @"join_loop"(@"v$rest", @"v$separator", @"v$first");
     }
     unreachable;
+}
+
+pub fn @"join"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$join"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"padding"(@"v$size": Value, @"v$pad_string": Value) Value {
@@ -495,18 +464,17 @@ pub fn @"pad_start"(@"v$string": Value, @"v$desired_length": Value, @"v$pad_stri
     const @"s$0" = P.boolValue((@"v$to_pad_length" <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
+        P.drop(@"v$pad_string");
         const @"r$0" = P.dup(@"v$string");
         P.drop(@"s$0");
         P.drop(@"v$string");
-        P.drop(@"v$pad_string");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.concatenate(@"padding"(P.intValue(@"v$to_pad_length"), P.dup(@"v$pad_string")), P.dup(@"v$string"));
+        const @"r$1" = P.concatenate(@"padding"(P.intValue(@"v$to_pad_length"), @"v$pad_string"), P.dup(@"v$string"));
         P.drop(@"s$0");
         P.drop(@"v$string");
-        P.drop(@"v$pad_string");
         return @"r$1";
     }
     unreachable;
@@ -518,18 +486,17 @@ pub fn @"pad_end"(@"v$string": Value, @"v$desired_length": Value, @"v$pad_string
     const @"s$0" = P.boolValue((@"v$to_pad_length" <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
+        P.drop(@"v$pad_string");
         const @"r$0" = P.dup(@"v$string");
         P.drop(@"s$0");
         P.drop(@"v$string");
-        P.drop(@"v$pad_string");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.concatenate(P.dup(@"v$string"), @"padding"(P.intValue(@"v$to_pad_length"), P.dup(@"v$pad_string")));
+        const @"r$1" = P.concatenate(P.dup(@"v$string"), @"padding"(P.intValue(@"v$to_pad_length"), @"v$pad_string"));
         P.drop(@"s$0");
         P.drop(@"v$string");
-        P.drop(@"v$pad_string");
         return @"r$1";
     }
     unreachable;
@@ -586,7 +553,7 @@ pub fn @"utf_codepoint"(@"v$value": Value) Value {
     const @"s$0" = @"v$value";
     c0: {
         const @"v$i" = P.dup(@"s$0");
-        if (!((P.gtInt(P.dup(@"v$i"), P.intValue(1114111))).bool)) { P.drop(@"v$i"); break :c0; }
+        if (!(((@"v$i").int > 1114111))) { P.drop(@"v$i"); break :c0; }
         const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$i");
         P.drop(@"s$0");
@@ -594,7 +561,7 @@ pub fn @"utf_codepoint"(@"v$value": Value) Value {
     }
     c1: {
         const @"v$i$1" = P.dup(@"s$0");
-        if (!((P.boolValue(if ((P.gtEqInt(P.dup(@"v$i$1"), P.intValue(55296))).bool) (P.ltEqInt(P.dup(@"v$i$1"), P.intValue(57343))).bool else false)).bool)) { P.drop(@"v$i$1"); break :c1; }
+        if (!((((@"v$i$1").int >= 55296) and ((@"v$i$1").int <= 57343)))) { P.drop(@"v$i$1"); break :c1; }
         const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$i$1");
         P.drop(@"s$0");
@@ -602,7 +569,7 @@ pub fn @"utf_codepoint"(@"v$value": Value) Value {
     }
     c2: {
         const @"v$i$2" = P.dup(@"s$0");
-        if (!((P.ltInt(P.dup(@"v$i$2"), P.intValue(0))).bool)) { P.drop(@"v$i$2"); break :c2; }
+        if (!(((@"v$i$2").int < 0))) { P.drop(@"v$i$2"); break :c2; }
         const @"r$2" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$i$2");
         P.drop(@"s$0");
@@ -610,8 +577,7 @@ pub fn @"utf_codepoint"(@"v$value": Value) Value {
     }
     {
         const @"v$i$3" = P.dup(@"s$0");
-        const @"r$3" = P.makeRecordL("Ok", &[_]Value{ @"unsafe_int_to_utf_codepoint"(P.dup(@"v$i$3")) }, &[_]?[]const u8{});
-        P.drop(@"v$i$3");
+        const @"r$3" = P.makeRecordL("Ok", &[_]Value{ @"unsafe_int_to_utf_codepoint"(@"v$i$3") }, &[_]?[]const u8{});
         P.drop(@"s$0");
         return @"r$3";
     }
@@ -625,19 +591,13 @@ pub fn @"utf_codepoint_to_int"(@"a$0": Value) Value {
 }
 
 pub fn @"to_option"(@"v$string": Value) Value {
-    const @"s$0" = P.dup(@"v$string");
     c0: {
-        if (!(P.stringLiteralEquals(@"s$0", ""))) break :c0;
-        const @"r$0" = P.makeRecord("None", &[_]Value{});
-        P.drop(@"s$0");
+        if (!(P.stringLiteralEquals(@"v$string", ""))) break :c0;
         P.drop(@"v$string");
-        return @"r$0";
+        return P.makeRecord("None", &[_]Value{});
     }
     {
-        const @"r$1" = P.makeRecordL("Some", &[_]Value{ P.dup(@"v$string") }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        P.drop(@"v$string");
-        return @"r$1";
+        return P.makeRecordL("Some", &[_]Value{ @"v$string" }, &[_]?[]const u8{});
     }
     unreachable;
 }
@@ -648,17 +608,13 @@ pub fn @"first"(@"v$string": Value) Value {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$first" = P.dup(((@"s$0").record.fields[0]).tuple[0]);
         const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$first") }, &[_]?[]const u8{});
-        P.drop(@"v$first");
-        return @"r$0";
+        return P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ @"v$first" }, &[_]?[]const u8{});
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
         const @"v$e" = P.dup((@"s$0").record.fields[0]);
         const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
-        P.drop(@"v$e");
-        return @"r$1";
+        return P.makeRecordReuse(@"reuse$1", "Error", &[_]Value{ @"v$e" }, &[_]?[]const u8{});
     }
     unreachable;
 }
@@ -669,25 +625,19 @@ pub fn @"last"(@"v$string": Value) Value {
         if (!(P.recordHasName(@"s$0", "Ok") and P.stringLiteralEquals(((@"s$0").record.fields[0]).tuple[1], ""))) break :c0;
         const @"v$first" = P.dup(((@"s$0").record.fields[0]).tuple[0]);
         const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$first") }, &[_]?[]const u8{});
-        P.drop(@"v$first");
-        return @"r$0";
+        return P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ @"v$first" }, &[_]?[]const u8{});
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c1;
         const @"v$rest" = P.dup(((@"s$0").record.fields[0]).tuple[1]);
         const @"reuse$1" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$1" = P.makeRecordReuse(@"reuse$1", "Ok", &[_]Value{ @"slice"(P.dup(@"v$rest"), P.intValue(-1), P.intValue(1)) }, &[_]?[]const u8{});
-        P.drop(@"v$rest");
-        return @"r$1";
+        return P.makeRecordReuse(@"reuse$1", "Ok", &[_]Value{ @"slice"(@"v$rest", P.intValue(-1), P.intValue(1)) }, &[_]?[]const u8{});
     }
     c2: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c2;
         const @"v$e" = P.dup((@"s$0").record.fields[0]);
         const @"reuse$2" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$2" = P.makeRecordReuse(@"reuse$2", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
-        P.drop(@"v$e");
-        return @"r$2";
+        return P.makeRecordReuse(@"reuse$2", "Error", &[_]Value{ @"v$e" }, &[_]?[]const u8{});
     }
     unreachable;
 }
@@ -698,9 +648,7 @@ pub fn @"capitalise"(@"v$string": Value) Value {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$first" = P.dup(((@"s$0").record.fields[0]).tuple[0]);
         const @"v$rest" = P.dup(((@"s$0").record.fields[0]).tuple[1]);
-        const @"r$0" = @"append"(@"uppercase"(P.dup(@"v$first")), @"lowercase"(P.dup(@"v$rest")));
-        P.drop(@"v$first");
-        P.drop(@"v$rest");
+        const @"r$0" = @"append"(@"uppercase"(@"v$first"), @"lowercase"(@"v$rest"));
         P.drop(@"s$0");
         return @"r$0";
     }

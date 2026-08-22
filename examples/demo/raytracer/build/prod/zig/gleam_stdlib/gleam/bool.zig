@@ -83,18 +83,16 @@ pub fn @"guard"(@"v$requirement": Value, @"v$consequence": Value, @"v$alternativ
     const @"s$0" = @"v$requirement";
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.dup(@"v$consequence");
-        P.drop(@"s$0");
-        P.drop(@"v$consequence");
         P.drop(@"v$alternative");
+        const @"r$0" = @"v$consequence";
+        P.drop(@"s$0");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.call0(P.dup(@"v$alternative"));
-        P.drop(@"s$0");
         P.drop(@"v$consequence");
-        P.drop(@"v$alternative");
+        const @"r$1" = P.call0(@"v$alternative");
+        P.drop(@"s$0");
         return @"r$1";
     }
     unreachable;
@@ -104,18 +102,16 @@ pub fn @"lazy_guard"(@"v$requirement": Value, @"v$consequence": Value, @"v$alter
     const @"s$0" = @"v$requirement";
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.call0(P.dup(@"v$consequence"));
-        P.drop(@"s$0");
-        P.drop(@"v$consequence");
         P.drop(@"v$alternative");
+        const @"r$0" = P.call0(@"v$consequence");
+        P.drop(@"s$0");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.call0(P.dup(@"v$alternative"));
-        P.drop(@"s$0");
         P.drop(@"v$consequence");
-        P.drop(@"v$alternative");
+        const @"r$1" = P.call0(@"v$alternative");
+        P.drop(@"s$0");
         return @"r$1";
     }
     unreachable;

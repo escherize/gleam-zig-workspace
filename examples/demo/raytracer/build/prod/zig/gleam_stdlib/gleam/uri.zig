@@ -71,58 +71,40 @@ fn @"remove_dot_segments_loop"(@"p$input": Value, @"p$accumulator": Value) Value
             const @"v$segment" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$accumulator$5" = case2: {
-                const @"s$1" = P.dup(@"v$segment");
-                const @"s$2" = P.dup(@"v$accumulator");
                 c3: {
-                    if (!(P.stringLiteralEquals(@"s$1", ""))) break :c3;
-                    const @"v$accumulator$1" = P.dup(@"s$2");
-                    const @"r$1" = P.dup(@"v$accumulator$1");
-                    P.drop(@"v$accumulator$1");
-                    P.drop(@"s$1");
-                    P.drop(@"s$2");
+                    if (!(P.stringLiteralEquals(@"v$segment", ""))) break :c3;
+                    const @"v$accumulator$1" = P.dup(@"v$accumulator");
+                    const @"r$1" = @"v$accumulator$1";
                     break :case2 @"r$1";
                 }
                 c4: {
-                    if (!(P.stringLiteralEquals(@"s$1", "."))) break :c4;
-                    const @"v$accumulator$2" = P.dup(@"s$2");
-                    const @"r$2" = P.dup(@"v$accumulator$2");
-                    P.drop(@"v$accumulator$2");
-                    P.drop(@"s$1");
-                    P.drop(@"s$2");
+                    if (!(P.stringLiteralEquals(@"v$segment", "."))) break :c4;
+                    const @"v$accumulator$2" = P.dup(@"v$accumulator");
+                    const @"r$2" = @"v$accumulator$2";
                     break :case2 @"r$2";
                 }
                 c5: {
-                    if (!(P.stringLiteralEquals(@"s$1", "..") and (@"s$2").list == null)) break :c5;
+                    if (!(P.stringLiteralEquals(@"v$segment", "..") and (@"v$accumulator").list == null)) break :c5;
                     const @"r$3" = P.emptyList();
-                    P.drop(@"s$1");
-                    P.drop(@"s$2");
                     break :case2 @"r$3";
                 }
                 c6: {
-                    if (!(P.stringLiteralEquals(@"s$1", "..") and (@"s$2").list != null)) break :c6;
-                    const @"v$accumulator$3" = P.dup(P.listValue((@"s$2").list.?.tail));
-                    const @"r$4" = P.dup(@"v$accumulator$3");
-                    P.drop(@"v$accumulator$3");
-                    P.drop(@"s$1");
-                    P.drop(@"s$2");
+                    if (!(P.stringLiteralEquals(@"v$segment", "..") and (@"v$accumulator").list != null)) break :c6;
+                    const @"v$accumulator$3" = P.dup(P.listValue((@"v$accumulator").list.?.tail));
+                    const @"r$4" = @"v$accumulator$3";
                     break :case2 @"r$4";
                 }
                 {
-                    const @"v$segment$1" = P.dup(@"s$1");
-                    const @"v$accumulator$4" = P.dup(@"s$2");
-                    const @"r$5" = P.listFromSlice(&[_]Value{ P.dup(@"v$segment$1") }, P.dup(@"v$accumulator$4"));
-                    P.drop(@"v$segment$1");
-                    P.drop(@"v$accumulator$4");
-                    P.drop(@"s$1");
-                    P.drop(@"s$2");
+                    const @"v$segment$1" = P.dup(@"v$segment");
+                    const @"v$accumulator$4" = P.dup(@"v$accumulator");
+                    const @"r$5" = P.listFromSlice(&[_]Value{ @"v$segment$1" }, @"v$accumulator$4");
                     break :case2 @"r$5";
                 }
                 unreachable;
             };
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = @"v$accumulator$5";
             P.drop(@"v$segment");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$accumulator");
             @"v$input" = @"tail$0";
@@ -147,8 +129,7 @@ fn @"borrowed$to_string"(@"v$uri": Value) Value {
         c1: {
             if (!(P.recordHasName(@"s$0", "Some"))) break :c1;
             const @"v$scheme" = P.dup((@"s$0").record.fields[0]);
-            const @"r$0" = P.concatenate(P.dup(@"v$scheme"), P.copyString(":"));
-            P.drop(@"v$scheme");
+            const @"r$0" = P.concatenate(@"v$scheme", P.copyString(":"));
             P.drop(@"s$0");
             break :case0 @"r$0";
         }
@@ -180,8 +161,7 @@ fn @"borrowed$to_string"(@"v$uri": Value) Value {
                     c9: {
                         if (!(P.recordHasName(@"s$2", "Some"))) break :c9;
                         const @"v$userinfo" = P.dup((@"s$2").record.fields[0]);
-                        const @"r$3" = P.concatenate(P.concatenate(P.dup(@"v$out$1"), P.dup(@"v$userinfo")), P.copyString("@"));
-                        P.drop(@"v$userinfo");
+                        const @"r$3" = P.concatenate(P.concatenate(P.dup(@"v$out$1"), @"v$userinfo"), P.copyString("@"));
                         P.drop(@"s$2");
                         break :case8 @"r$3";
                     }
@@ -193,14 +173,13 @@ fn @"borrowed$to_string"(@"v$uri": Value) Value {
                     }
                     unreachable;
                 };
-                const @"v$out$3" = P.concatenate(@"v$out$2", P.dup(@"v$host"));
+                const @"v$out$3" = P.concatenate(@"v$out$2", @"v$host");
                 const @"v$out$4" = case11: {
                     const @"s$3" = P.dup((@"v$uri").record.fields[3]);
                     c12: {
                         if (!(P.recordHasName(@"s$3", "Some"))) break :c12;
                         const @"v$port" = P.dup((@"s$3").record.fields[0]);
-                        const @"r$5" = P.concatenate(P.concatenate(P.dup(@"v$out$3"), P.copyString(":")), @"M$gleam/int".@"to_string"(P.dup(@"v$port")));
-                        P.drop(@"v$port");
+                        const @"r$5" = P.concatenate(P.concatenate(P.dup(@"v$out$3"), P.copyString(":")), @"M$gleam/int".@"to_string"(@"v$port"));
                         P.drop(@"s$3");
                         break :case11 @"r$5";
                     }
@@ -239,7 +218,6 @@ fn @"borrowed$to_string"(@"v$uri": Value) Value {
                 P.drop(@"v$out$4");
                 break :blk7 @"r$10";
             };
-            P.drop(@"v$host");
             P.drop(@"s$1");
             break :case3 @"r$11";
         }
@@ -250,8 +228,7 @@ fn @"borrowed$to_string"(@"v$uri": Value) Value {
         c19: {
             if (!(P.recordHasName(@"s$5", "Some"))) break :c19;
             const @"v$query" = P.dup((@"s$5").record.fields[0]);
-            const @"r$12" = P.concatenate(P.concatenate(P.dup(@"v$out$6"), P.copyString("?")), P.dup(@"v$query"));
-            P.drop(@"v$query");
+            const @"r$12" = P.concatenate(P.concatenate(P.dup(@"v$out$6"), P.copyString("?")), @"v$query");
             P.drop(@"s$5");
             break :case18 @"r$12";
         }
@@ -268,8 +245,7 @@ fn @"borrowed$to_string"(@"v$uri": Value) Value {
         c22: {
             if (!(P.recordHasName(@"s$6", "Some"))) break :c22;
             const @"v$fragment" = P.dup((@"s$6").record.fields[0]);
-            const @"r$14" = P.concatenate(P.concatenate(P.dup(@"v$out$7"), P.copyString("#")), P.dup(@"v$fragment"));
-            P.drop(@"v$fragment");
+            const @"r$14" = P.concatenate(P.concatenate(P.dup(@"v$out$7"), P.copyString("#")), @"v$fragment");
             P.drop(@"s$6");
             break :case21 @"r$14";
         }
@@ -301,63 +277,47 @@ pub fn @"origin"(@"v$uri": Value) Value {
     const @"v$host" = P.dup((@"subject$0").record.fields[2]);
     const @"v$port" = P.dup((@"subject$0").record.fields[3]);
     P.drop(@"subject$0");
-    const @"s$0" = P.dup(@"v$host");
-    const @"s$1" = P.dup(@"v$scheme");
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some") and P.recordHasName(@"s$1", "Some") and P.stringLiteralEquals((@"s$1").record.fields[0], "https"))) break :c0;
-        const @"v$h" = P.dup((@"s$0").record.fields[0]);
+        if (!(P.recordHasName(@"v$host", "Some") and P.recordHasName(@"v$scheme", "Some") and P.stringLiteralEquals((@"v$scheme").record.fields[0], "https"))) break :c0;
+        const @"v$h" = P.dup((@"v$host").record.fields[0]);
         if (!((P.eq(P.dup(@"v$port"), P.makeRecordL("Some", &[_]Value{ P.intValue(443) }, &[_]?[]const u8{}))).bool)) { P.drop(@"v$h"); break :c0; }
-        const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.concatenate(P.copyString("https://"), P.dup(@"v$h")) }, &[_]?[]const u8{});
-        P.drop(@"v$h");
-        P.drop(@"s$0");
-        P.drop(@"s$1");
+        const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.concatenate(P.copyString("https://"), @"v$h") }, &[_]?[]const u8{});
         P.drop(@"v$scheme");
         P.drop(@"v$host");
         P.drop(@"v$port");
         return @"r$0";
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Some") and P.recordHasName(@"s$1", "Some") and P.stringLiteralEquals((@"s$1").record.fields[0], "http"))) break :c1;
-        const @"v$h$1" = P.dup((@"s$0").record.fields[0]);
+        if (!(P.recordHasName(@"v$host", "Some") and P.recordHasName(@"v$scheme", "Some") and P.stringLiteralEquals((@"v$scheme").record.fields[0], "http"))) break :c1;
+        const @"v$h$1" = P.dup((@"v$host").record.fields[0]);
         if (!((P.eq(P.dup(@"v$port"), P.makeRecordL("Some", &[_]Value{ P.intValue(80) }, &[_]?[]const u8{}))).bool)) { P.drop(@"v$h$1"); break :c1; }
-        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.concatenate(P.copyString("http://"), P.dup(@"v$h$1")) }, &[_]?[]const u8{});
-        P.drop(@"v$h$1");
-        P.drop(@"s$0");
-        P.drop(@"s$1");
+        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.concatenate(P.copyString("http://"), @"v$h$1") }, &[_]?[]const u8{});
         P.drop(@"v$scheme");
         P.drop(@"v$host");
         P.drop(@"v$port");
         return @"r$1";
     }
     c2: {
-        if (!(P.recordHasName(@"s$0", "Some") and P.recordHasName(@"s$1", "Some"))) break :c2;
-        const @"v$h$2" = P.dup((@"s$0").record.fields[0]);
-        const @"v$s" = P.dup((@"s$1").record.fields[0]);
-        if (!((P.boolValue(if ((P.eq(P.dup(@"v$s"), P.copyString("http"))).bool) true else (P.eq(P.dup(@"v$s"), P.copyString("https"))).bool)).bool)) { P.drop(@"v$h$2"); P.drop(@"v$s"); break :c2; }
-        const @"s$2" = P.dup(@"v$port");
+        if (!(P.recordHasName(@"v$host", "Some") and P.recordHasName(@"v$scheme", "Some"))) break :c2;
+        const @"v$h$2" = P.dup((@"v$host").record.fields[0]);
+        const @"v$s" = P.dup((@"v$scheme").record.fields[0]);
+        if (!(((P.eq(P.dup(@"v$s"), P.copyString("http"))).bool or (P.eq(P.dup(@"v$s"), P.copyString("https"))).bool))) { P.drop(@"v$h$2"); P.drop(@"v$s"); break :c2; }
         c3: {
-            if (!(P.recordHasName(@"s$2", "Some"))) break :c3;
-            const @"v$p" = P.dup((@"s$2").record.fields[0]);
-            const @"reuse$0" = P.dropReuseRecord(@"s$2", 1);
-            const @"r$2" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.concatenate(P.concatenate(P.concatenate(P.concatenate(P.dup(@"v$s"), P.copyString("://")), P.dup(@"v$h$2")), P.copyString(":")), @"M$gleam/int".@"to_string"(P.dup(@"v$p"))) }, &[_]?[]const u8{});
-            P.drop(@"v$p");
+            if (!(P.recordHasName(@"v$port", "Some"))) break :c3;
+            const @"v$p" = P.dup((@"v$port").record.fields[0]);
+            const @"r$2" = P.makeRecordL("Ok", &[_]Value{ P.concatenate(P.concatenate(P.concatenate(P.concatenate(P.dup(@"v$s"), P.copyString("://")), P.dup(@"v$h$2")), P.copyString(":")), @"M$gleam/int".@"to_string"(@"v$p")) }, &[_]?[]const u8{});
             P.drop(@"v$h$2");
             P.drop(@"v$s");
-            P.drop(@"s$0");
-            P.drop(@"s$1");
             P.drop(@"v$scheme");
             P.drop(@"v$host");
             P.drop(@"v$port");
             return @"r$2";
         }
         c4: {
-            if (!(P.recordHasName(@"s$2", "None"))) break :c4;
+            if (!(P.recordHasName(@"v$port", "None"))) break :c4;
             const @"r$3" = P.makeRecordL("Ok", &[_]Value{ P.concatenate(P.concatenate(P.dup(@"v$s"), P.copyString("://")), P.dup(@"v$h$2")) }, &[_]?[]const u8{});
-            P.drop(@"s$2");
             P.drop(@"v$h$2");
             P.drop(@"v$s");
-            P.drop(@"s$0");
-            P.drop(@"s$1");
             P.drop(@"v$scheme");
             P.drop(@"v$host");
             P.drop(@"v$port");
@@ -367,8 +327,6 @@ pub fn @"origin"(@"v$uri": Value) Value {
     }
     {
         const @"r$4" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        P.drop(@"s$1");
         P.drop(@"v$scheme");
         P.drop(@"v$host");
         P.drop(@"v$port");
@@ -387,13 +345,11 @@ fn @"drop_last"(@"v$elements": Value) Value {
     return @"r$0";
 }
 
-pub fn @"merge"(@"v$base": Value, @"v$relative": Value) Value {
-    const @"s$0" = P.dup(@"v$base");
+fn @"borrowed$merge"(@"v$base": Value, @"v$relative": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Uri") and P.recordHasName((@"s$0").record.fields[0], "Some") and P.recordHasName((@"s$0").record.fields[2], "Some"))) break :c0;
-        const @"s$1" = P.dup(@"v$relative");
+        if (!(P.recordHasName(@"v$base", "Uri") and P.recordHasName((@"v$base").record.fields[0], "Some") and P.recordHasName((@"v$base").record.fields[2], "Some"))) break :c0;
         c1: {
-            if (!(P.recordHasName(@"s$1", "Uri") and P.recordHasName((@"s$1").record.fields[2], "Some"))) break :c1;
+            if (!(P.recordHasName(@"v$relative", "Uri") and P.recordHasName((@"v$relative").record.fields[2], "Some"))) break :c1;
             const @"v$path" = blk2: {
                 const @"v$_pipe" = P.dup((@"v$relative").record.fields[4]);
                 const @"v$_pipe$1" = @"M$gleam/string".@"split"(@"v$_pipe", P.copyString("/"));
@@ -402,56 +358,51 @@ pub fn @"merge"(@"v$base": Value, @"v$relative": Value) Value {
                 break :blk2 @"r$0";
             };
             const @"v$resolved" = P.makeRecordL("Uri", &[_]Value{ @"M$gleam/option".@"or"(P.dup((@"v$relative").record.fields[0]), P.dup((@"v$base").record.fields[0])), P.makeRecord("None", &[_]Value{}), P.dup((@"v$relative").record.fields[2]), @"M$gleam/option".@"or"(P.dup((@"v$relative").record.fields[3]), P.dup((@"v$base").record.fields[3])), @"v$path", P.dup((@"v$relative").record.fields[5]), P.dup((@"v$relative").record.fields[6]) }, &[_]?[]const u8{ "scheme", "userinfo", "host", "port", "path", "query", "fragment" });
-            const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"v$resolved" }, &[_]?[]const u8{});
-            P.drop(@"s$1");
-            P.drop(@"s$0");
-            P.drop(@"v$base");
-            P.drop(@"v$relative");
-            return @"r$1";
+            return P.makeRecordL("Ok", &[_]Value{ @"v$resolved" }, &[_]?[]const u8{});
         }
         {
             const @"subject$0" = case4: {
-                const @"s$2" = P.dup((@"v$relative").record.fields[4]);
+                const @"s$0" = P.dup((@"v$relative").record.fields[4]);
                 c5: {
-                    if (!(P.stringLiteralEquals(@"s$2", ""))) break :c5;
-                    const @"r$2" = P.tupleValue(&[_]Value{ P.dup((@"v$base").record.fields[4]), @"M$gleam/option".@"or"(P.dup((@"v$relative").record.fields[5]), P.dup((@"v$base").record.fields[5])) });
-                    P.drop(@"s$2");
-                    break :case4 @"r$2";
+                    if (!(P.stringLiteralEquals(@"s$0", ""))) break :c5;
+                    const @"r$1" = P.tupleValue(&[_]Value{ P.dup((@"v$base").record.fields[4]), @"M$gleam/option".@"or"(P.dup((@"v$relative").record.fields[5]), P.dup((@"v$base").record.fields[5])) });
+                    P.drop(@"s$0");
+                    break :case4 @"r$1";
                 }
                 {
-                    const @"r$7" = blk7: {
+                    const @"r$6" = blk7: {
                         const @"v$path_segments" = case8: {
-                            const @"s$3" = @"M$gleam/string".@"starts_with"(P.dup((@"v$relative").record.fields[4]), P.copyString("/"));
+                            const @"s$1" = @"M$gleam/string".@"starts_with"(P.dup((@"v$relative").record.fields[4]), P.copyString("/"));
                             c9: {
-                                if (!((@"s$3").bool)) break :c9;
-                                const @"r$3" = @"M$gleam/string".@"split"(P.dup((@"v$relative").record.fields[4]), P.copyString("/"));
-                                P.drop(@"s$3");
-                                break :case8 @"r$3";
+                                if (!((@"s$1").bool)) break :c9;
+                                const @"r$2" = @"M$gleam/string".@"split"(P.dup((@"v$relative").record.fields[4]), P.copyString("/"));
+                                P.drop(@"s$1");
+                                break :case8 @"r$2";
                             }
                             c10: {
-                                if (!(!((@"s$3").bool))) break :c10;
-                                const @"r$5" = blk11: {
+                                if (!(!((@"s$1").bool))) break :c10;
+                                const @"r$4" = blk11: {
                                     const @"v$_pipe$3" = P.dup((@"v$base").record.fields[4]);
                                     const @"v$_pipe$4" = @"M$gleam/string".@"split"(@"v$_pipe$3", P.copyString("/"));
                                     const @"v$_pipe$5" = @"drop_last"(@"v$_pipe$4");
-                                    const @"r$4" = @"M$gleam/list".@"append"(@"v$_pipe$5", @"M$gleam/string".@"split"(P.dup((@"v$relative").record.fields[4]), P.copyString("/")));
-                                    break :blk11 @"r$4";
+                                    const @"r$3" = @"M$gleam/list".@"append"(@"v$_pipe$5", @"M$gleam/string".@"split"(P.dup((@"v$relative").record.fields[4]), P.copyString("/")));
+                                    break :blk11 @"r$3";
                                 };
-                                P.drop(@"s$3");
-                                break :case8 @"r$5";
+                                P.drop(@"s$1");
+                                break :case8 @"r$4";
                             }
                             unreachable;
                         };
                         const @"v$path$1" = blk12: {
                             const @"v$_pipe$6" = @"v$path_segments";
                             const @"v$_pipe$7" = @"remove_dot_segments"(@"v$_pipe$6");
-                            const @"r$6" = @"join_segments"(@"v$_pipe$7");
-                            break :blk12 @"r$6";
+                            const @"r$5" = @"join_segments"(@"v$_pipe$7");
+                            break :blk12 @"r$5";
                         };
                         break :blk7 P.tupleValue(&[_]Value{ @"v$path$1", P.dup((@"v$relative").record.fields[5]) });
                     };
-                    P.drop(@"s$2");
-                    break :case4 @"r$7";
+                    P.drop(@"s$0");
+                    break :case4 @"r$6";
                 }
                 unreachable;
             };
@@ -459,24 +410,23 @@ pub fn @"merge"(@"v$base": Value, @"v$relative": Value) Value {
             const @"v$new_query" = P.dup((@"subject$0").tuple[1]);
             P.drop(@"subject$0");
             const @"v$resolved$1" = P.makeRecordL("Uri", &[_]Value{ P.dup((@"v$base").record.fields[0]), P.makeRecord("None", &[_]Value{}), P.dup((@"v$base").record.fields[2]), P.dup((@"v$base").record.fields[3]), P.dup(@"v$new_path"), P.dup(@"v$new_query"), P.dup((@"v$relative").record.fields[6]) }, &[_]?[]const u8{ "scheme", "userinfo", "host", "port", "path", "query", "fragment" });
-            const @"r$8" = P.makeRecordL("Ok", &[_]Value{ @"v$resolved$1" }, &[_]?[]const u8{});
+            const @"r$7" = P.makeRecordL("Ok", &[_]Value{ @"v$resolved$1" }, &[_]?[]const u8{});
             P.drop(@"v$new_path");
             P.drop(@"v$new_query");
-            P.drop(@"s$1");
-            P.drop(@"s$0");
-            P.drop(@"v$base");
-            P.drop(@"v$relative");
-            return @"r$8";
+            return @"r$7";
         }
         unreachable;
     }
     {
-        const @"r$9" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        P.drop(@"v$base");
-        P.drop(@"v$relative");
-        return @"r$9";
+        return P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
     }
     unreachable;
+}
+
+pub fn @"merge"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$merge"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    P.drop(@"a$1");
+    return result;
 }
 

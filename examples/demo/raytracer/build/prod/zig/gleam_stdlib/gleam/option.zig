@@ -9,9 +9,8 @@ fn @"reverse_and_prepend"(@"p$prefix": Value, @"p$suffix": Value) Value {
         const @"s$0" = @"v$prefix";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$suffix");
+            const @"r$0" = @"v$suffix";
             P.drop(@"s$0");
-            P.drop(@"v$suffix");
             return @"r$0";
         }
         c1: {
@@ -19,11 +18,8 @@ fn @"reverse_and_prepend"(@"p$prefix": Value, @"p$suffix": Value) Value {
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$suffix"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
-            P.drop(@"v$suffix");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.consReuse(@"reuse$0", @"v$first", @"v$suffix");
             @"v$prefix" = @"tail$0";
             @"v$suffix" = @"tail$1";
             continue;
@@ -43,16 +39,15 @@ fn @"all_loop"(@"p$list": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecordL("Some", &[_]Value{ @"reverse"(P.dup(@"v$acc")) }, &[_]?[]const u8{});
+            const @"r$0" = P.makeRecordL("Some", &[_]Value{ @"reverse"(@"v$acc") }, &[_]?[]const u8{});
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null and P.recordHasName((@"s$0").list.?.head, "None"))) break :c1;
+            P.drop(@"v$acc");
             const @"r$1" = P.makeRecord("None", &[_]Value{});
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             return @"r$1";
         }
         c2: {
@@ -60,11 +55,8 @@ fn @"all_loop"(@"p$list": Value, @"p$acc": Value) Value {
             const @"v$first" = P.dup(((@"s$0").list.?.head).record.fields[0]);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$acc"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
-            P.drop(@"v$acc");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.consReuse(@"reuse$0", @"v$first", @"v$acc");
             @"v$list" = @"tail$0";
             @"v$acc" = @"tail$1";
             continue;
@@ -85,187 +77,168 @@ pub fn @"is_none"(@"v$option": Value) Value {
     return P.eq(@"v$option", P.makeRecord("None", &[_]Value{}));
 }
 
-pub fn @"to_result"(@"v$option": Value, @"v$e": Value) Value {
-    const @"s$0" = @"v$option";
+fn @"borrowed$to_result"(@"v$option": Value, @"v$e": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"v$a" = P.dup((@"s$0").record.fields[0]);
-        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$a") }, &[_]?[]const u8{});
-        P.drop(@"v$a");
+        if (!(P.recordHasName(@"v$option", "Some"))) break :c0;
+        const @"v$a" = P.dup((@"v$option").record.fields[0]);
         P.drop(@"v$e");
-        return @"r$0";
+        return P.makeRecordL("Ok", &[_]Value{ @"v$a" }, &[_]?[]const u8{});
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        P.drop(@"v$e");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$option", "None"))) break :c1;
+        return P.makeRecordL("Error", &[_]Value{ @"v$e" }, &[_]?[]const u8{});
     }
     unreachable;
 }
 
-pub fn @"from_result"(@"v$result": Value) Value {
-    const @"s$0" = @"v$result";
+pub fn @"to_result"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$to_result"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$from_result"(@"v$result": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
-        const @"v$a" = P.dup((@"s$0").record.fields[0]);
-        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Some", &[_]Value{ P.dup(@"v$a") }, &[_]?[]const u8{});
-        P.drop(@"v$a");
-        return @"r$0";
+        if (!(P.recordHasName(@"v$result", "Ok"))) break :c0;
+        const @"v$a" = P.dup((@"v$result").record.fields[0]);
+        return P.makeRecordL("Some", &[_]Value{ @"v$a" }, &[_]?[]const u8{});
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
-        const @"r$1" = P.makeRecord("None", &[_]Value{});
-        P.drop(@"s$0");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$result", "Error"))) break :c1;
+        return P.makeRecord("None", &[_]Value{});
     }
     unreachable;
 }
 
-pub fn @"unwrap"(@"v$option": Value, @"v$default": Value) Value {
-    const @"s$0" = @"v$option";
+pub fn @"from_result"(@"a$0": Value) Value {
+    const result = @"borrowed$from_result"(@"a$0");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$unwrap"(@"v$option": Value, @"v$default": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.dup(@"v$x");
-        P.drop(@"v$x");
-        P.drop(@"s$0");
+        if (!(P.recordHasName(@"v$option", "Some"))) break :c0;
+        const @"v$x" = P.dup((@"v$option").record.fields[0]);
         P.drop(@"v$default");
-        return @"r$0";
+        return @"v$x";
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.dup(@"v$default");
-        P.drop(@"s$0");
+        if (!(P.recordHasName(@"v$option", "None"))) break :c1;
+        return @"v$default";
+    }
+    unreachable;
+}
+
+pub fn @"unwrap"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$unwrap"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$lazy_unwrap"(@"v$option": Value, @"v$default": Value) Value {
+    c0: {
+        if (!(P.recordHasName(@"v$option", "Some"))) break :c0;
+        const @"v$x" = P.dup((@"v$option").record.fields[0]);
         P.drop(@"v$default");
-        return @"r$1";
+        return @"v$x";
+    }
+    c1: {
+        if (!(P.recordHasName(@"v$option", "None"))) break :c1;
+        return P.call0(@"v$default");
     }
     unreachable;
 }
 
-pub fn @"lazy_unwrap"(@"v$option": Value, @"v$default": Value) Value {
-    const @"s$0" = @"v$option";
+pub fn @"lazy_unwrap"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$lazy_unwrap"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$map"(@"v$option": Value, @"v$fun": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.dup(@"v$x");
-        P.drop(@"v$x");
-        P.drop(@"s$0");
-        P.drop(@"v$default");
-        return @"r$0";
+        if (!(P.recordHasName(@"v$option", "Some"))) break :c0;
+        const @"v$x" = P.dup((@"v$option").record.fields[0]);
+        return P.makeRecordL("Some", &[_]Value{ P.call1(@"v$fun", @"v$x") }, &[_]?[]const u8{});
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.call0(P.dup(@"v$default"));
-        P.drop(@"s$0");
-        P.drop(@"v$default");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$option", "None"))) break :c1;
+        P.drop(@"v$fun");
+        return P.makeRecord("None", &[_]Value{});
     }
     unreachable;
 }
 
-pub fn @"map"(@"v$option": Value, @"v$fun": Value) Value {
-    const @"s$0" = @"v$option";
+pub fn @"map"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$map"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$flatten"(@"v$option": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"reuse$0" = P.dropReuseRecord(@"s$0", 1);
-        const @"r$0" = P.makeRecordReuse(@"reuse$0", "Some", &[_]Value{ P.call1(P.dup(@"v$fun"), P.dup(@"v$x")) }, &[_]?[]const u8{});
-        P.drop(@"v$x");
-        P.drop(@"v$fun");
-        return @"r$0";
+        if (!(P.recordHasName(@"v$option", "Some"))) break :c0;
+        const @"v$x" = P.dup((@"v$option").record.fields[0]);
+        return @"v$x";
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.makeRecord("None", &[_]Value{});
-        P.drop(@"s$0");
-        P.drop(@"v$fun");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$option", "None"))) break :c1;
+        return P.makeRecord("None", &[_]Value{});
     }
     unreachable;
 }
 
-pub fn @"flatten"(@"v$option": Value) Value {
-    const @"s$0" = @"v$option";
+pub fn @"flatten"(@"a$0": Value) Value {
+    const result = @"borrowed$flatten"(@"a$0");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$then"(@"v$option": Value, @"v$fun": Value) Value {
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.dup(@"v$x");
-        P.drop(@"v$x");
-        P.drop(@"s$0");
-        return @"r$0";
+        if (!(P.recordHasName(@"v$option", "Some"))) break :c0;
+        const @"v$x" = P.dup((@"v$option").record.fields[0]);
+        return P.call1(@"v$fun", @"v$x");
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.makeRecord("None", &[_]Value{});
-        P.drop(@"s$0");
-        return @"r$1";
+        if (!(P.recordHasName(@"v$option", "None"))) break :c1;
+        P.drop(@"v$fun");
+        return P.makeRecord("None", &[_]Value{});
     }
     unreachable;
 }
 
-pub fn @"then"(@"v$option": Value, @"v$fun": Value) Value {
-    const @"s$0" = @"v$option";
-    c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"v$x" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.call1(P.dup(@"v$fun"), P.dup(@"v$x"));
-        P.drop(@"v$x");
-        P.drop(@"s$0");
-        P.drop(@"v$fun");
-        return @"r$0";
-    }
-    c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.makeRecord("None", &[_]Value{});
-        P.drop(@"s$0");
-        P.drop(@"v$fun");
-        return @"r$1";
-    }
-    unreachable;
+pub fn @"then"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$then"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 pub fn @"or"(@"v$first": Value, @"v$second": Value) Value {
-    const @"s$0" = P.dup(@"v$first");
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"r$0" = P.dup(@"v$first");
-        P.drop(@"s$0");
-        P.drop(@"v$first");
+        if (!(P.recordHasName(@"v$first", "Some"))) break :c0;
         P.drop(@"v$second");
-        return @"r$0";
+        return @"v$first";
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.dup(@"v$second");
-        P.drop(@"s$0");
+        if (!(P.recordHasName(@"v$first", "None"))) break :c1;
         P.drop(@"v$first");
-        P.drop(@"v$second");
-        return @"r$1";
+        return @"v$second";
     }
     unreachable;
 }
 
 pub fn @"lazy_or"(@"v$first": Value, @"v$second": Value) Value {
-    const @"s$0" = P.dup(@"v$first");
     c0: {
-        if (!(P.recordHasName(@"s$0", "Some"))) break :c0;
-        const @"r$0" = P.dup(@"v$first");
-        P.drop(@"s$0");
-        P.drop(@"v$first");
+        if (!(P.recordHasName(@"v$first", "Some"))) break :c0;
         P.drop(@"v$second");
-        return @"r$0";
+        return @"v$first";
     }
     c1: {
-        if (!(P.recordHasName(@"s$0", "None"))) break :c1;
-        const @"r$1" = P.call0(P.dup(@"v$second"));
-        P.drop(@"s$0");
+        if (!(P.recordHasName(@"v$first", "None"))) break :c1;
         P.drop(@"v$first");
-        P.drop(@"v$second");
-        return @"r$1";
+        return P.call0(@"v$second");
     }
     unreachable;
 }
@@ -277,19 +250,16 @@ fn @"values_loop"(@"p$list": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null and P.recordHasName((@"s$0").list.?.head, "None"))) break :c1;
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.dup(@"v$acc");
-            P.drop(@"v$rest");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = @"v$acc";
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             @"v$list" = @"tail$0";
             @"v$acc" = @"tail$1";
             continue;
@@ -299,11 +269,8 @@ fn @"values_loop"(@"p$list": Value, @"p$acc": Value) Value {
             const @"v$first" = P.dup(((@"s$0").list.?.head).record.fields[0]);
             const @"v$rest$1" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$2" = P.dup(@"v$rest$1");
-            const @"tail$3" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$acc"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest$1");
-            P.drop(@"v$acc");
+            const @"tail$2" = @"v$rest$1";
+            const @"tail$3" = P.consReuse(@"reuse$0", @"v$first", @"v$acc");
             @"v$list" = @"tail$2";
             @"v$acc" = @"tail$3";
             continue;

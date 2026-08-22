@@ -60,17 +60,16 @@ pub fn @"base_parse"(@"v$string": Value, @"v$base": Value) Value {
     const @"s$0" = P.boolValue((((@"v$base").int >= 2) and ((@"v$base").int <= 36)));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = @"do_base_parse"(P.dup(@"v$string"), P.dup(@"v$base"));
+        const @"r$0" = @"do_base_parse"(@"v$string", P.dup(@"v$base"));
         P.drop(@"s$0");
-        P.drop(@"v$string");
         P.drop(@"v$base");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
+        P.drop(@"v$string");
         const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
-        P.drop(@"v$string");
         P.drop(@"v$base");
         return @"r$1";
     }
@@ -94,17 +93,16 @@ pub fn @"to_base_string"(@"v$x": Value, @"v$base": Value) Value {
     const @"s$0" = P.boolValue((((@"v$base").int >= 2) and ((@"v$base").int <= 36)));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = P.makeRecordL("Ok", &[_]Value{ @"do_to_base_string"(P.dup(@"v$x"), P.dup(@"v$base")) }, &[_]?[]const u8{});
+        const @"r$0" = P.makeRecordL("Ok", &[_]Value{ @"do_to_base_string"(@"v$x", P.dup(@"v$base")) }, &[_]?[]const u8{});
         P.drop(@"s$0");
-        P.drop(@"v$x");
         P.drop(@"v$base");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
+        P.drop(@"v$x");
         const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"s$0");
-        P.drop(@"v$x");
         P.drop(@"v$base");
         return @"r$1";
     }
@@ -263,21 +261,17 @@ fn @"sum_loop"(@"p$numbers": Value, @"p$initial": Value) Value {
             if (!((@"s$0").list != null)) break :c0;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.intValue(((@"v$first").int +% (@"v$initial").int));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             @"v$numbers" = @"tail$0";
             @"v$initial" = @"tail$1";
             continue;
         }
         c1: {
             if (!((@"s$0").list == null)) break :c1;
-            const @"r$0" = P.dup(@"v$initial");
+            const @"r$0" = @"v$initial";
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             return @"r$0";
         }
         unreachable;
@@ -297,21 +291,17 @@ fn @"product_loop"(@"p$numbers": Value, @"p$initial": Value) Value {
             if (!((@"s$0").list != null)) break :c0;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.intValue(((@"v$first").int *% (@"v$initial").int));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             @"v$numbers" = @"tail$0";
             @"v$initial" = @"tail$1";
             continue;
         }
         c1: {
             if (!((@"s$0").list == null)) break :c1;
-            const @"r$0" = P.dup(@"v$initial");
+            const @"r$0" = @"v$initial";
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             return @"r$0";
         }
         unreachable;
@@ -335,21 +325,16 @@ pub fn @"random"(@"a$0": Value) Value {
 }
 
 pub fn @"divide"(@"v$dividend": Value, @"v$divisor": Value) Value {
-    const @"s$0" = P.dup(@"v$divisor");
     c0: {
-        if (!((@"s$0").int == 0)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
+        if (!((@"v$divisor").int == 0)) break :c0;
         P.drop(@"v$dividend");
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$divisor");
         return @"r$0";
     }
     {
-        const @"v$divisor$1" = P.dup(@"s$0");
+        const @"v$divisor$1" = P.dup(@"v$divisor");
         const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.intValue(P.rawDivInt((@"v$dividend").int, (@"v$divisor$1").int)) }, &[_]?[]const u8{});
-        P.drop(@"v$divisor$1");
-        P.drop(@"s$0");
-        P.drop(@"v$dividend");
         P.drop(@"v$divisor");
         return @"r$1";
     }
@@ -357,21 +342,16 @@ pub fn @"divide"(@"v$dividend": Value, @"v$divisor": Value) Value {
 }
 
 pub fn @"remainder"(@"v$dividend": Value, @"v$divisor": Value) Value {
-    const @"s$0" = P.dup(@"v$divisor");
     c0: {
-        if (!((@"s$0").int == 0)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
+        if (!((@"v$divisor").int == 0)) break :c0;
         P.drop(@"v$dividend");
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$divisor");
         return @"r$0";
     }
     {
-        const @"v$divisor$1" = P.dup(@"s$0");
+        const @"v$divisor$1" = P.dup(@"v$divisor");
         const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.intValue(P.rawRemInt((@"v$dividend").int, (@"v$divisor$1").int)) }, &[_]?[]const u8{});
-        P.drop(@"v$divisor$1");
-        P.drop(@"s$0");
-        P.drop(@"v$dividend");
         P.drop(@"v$divisor");
         return @"r$1";
     }
@@ -379,33 +359,27 @@ pub fn @"remainder"(@"v$dividend": Value, @"v$divisor": Value) Value {
 }
 
 pub fn @"modulo"(@"v$dividend": Value, @"v$divisor": Value) Value {
-    const @"s$0" = P.dup(@"v$divisor");
     c0: {
-        if (!((@"s$0").int == 0)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
+        if (!((@"v$divisor").int == 0)) break :c0;
         P.drop(@"v$dividend");
+        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
         P.drop(@"v$divisor");
         return @"r$0";
     }
     {
         const @"v$remainder": i64 = P.rawRemInt((@"v$dividend").int, (@"v$divisor").int);
-        const @"s$1" = P.boolValue(((@"v$remainder" *% (@"v$divisor").int) < 0));
+        const @"s$0" = P.boolValue(((@"v$remainder" *% (@"v$divisor").int) < 0));
         c2: {
-            if (!((@"s$1").bool)) break :c2;
+            if (!((@"s$0").bool)) break :c2;
             const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.intValue((@"v$remainder" +% (@"v$divisor").int)) }, &[_]?[]const u8{});
-            P.drop(@"s$1");
             P.drop(@"s$0");
-            P.drop(@"v$dividend");
             P.drop(@"v$divisor");
             return @"r$1";
         }
         c3: {
-            if (!(!((@"s$1").bool))) break :c3;
+            if (!(!((@"s$0").bool))) break :c3;
             const @"r$2" = P.makeRecordL("Ok", &[_]Value{ P.intValue(@"v$remainder") }, &[_]?[]const u8{});
-            P.drop(@"s$1");
             P.drop(@"s$0");
-            P.drop(@"v$dividend");
             P.drop(@"v$divisor");
             return @"r$2";
         }
@@ -415,34 +389,30 @@ pub fn @"modulo"(@"v$dividend": Value, @"v$divisor": Value) Value {
 }
 
 pub fn @"floor_divide"(@"v$dividend": Value, @"v$divisor": Value) Value {
-    const @"s$0" = P.dup(@"v$divisor");
     c0: {
-        if (!((@"s$0").int == 0)) break :c0;
+        if (!((@"v$divisor").int == 0)) break :c0;
         const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
         P.drop(@"v$dividend");
         P.drop(@"v$divisor");
         return @"r$0";
     }
     {
-        const @"v$divisor$1" = P.dup(@"s$0");
-        const @"s$1" = P.boolValue(((((@"v$dividend").int *% (@"v$divisor$1").int) < 0) and (P.rawRemInt((@"v$dividend").int, (@"v$divisor$1").int) != 0)));
+        const @"v$divisor$1" = P.dup(@"v$divisor");
+        const @"s$0" = P.boolValue(((((@"v$dividend").int *% (@"v$divisor$1").int) < 0) and (P.rawRemInt((@"v$dividend").int, (@"v$divisor$1").int) != 0)));
         c2: {
-            if (!((@"s$1").bool)) break :c2;
+            if (!((@"s$0").bool)) break :c2;
             const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.intValue((P.rawDivInt((@"v$dividend").int, (@"v$divisor$1").int) -% 1)) }, &[_]?[]const u8{});
-            P.drop(@"s$1");
-            P.drop(@"v$divisor$1");
             P.drop(@"s$0");
+            P.drop(@"v$divisor$1");
             P.drop(@"v$dividend");
             P.drop(@"v$divisor");
             return @"r$1";
         }
         c3: {
-            if (!(!((@"s$1").bool))) break :c3;
+            if (!(!((@"s$0").bool))) break :c3;
             const @"r$2" = P.makeRecordL("Ok", &[_]Value{ P.intValue(P.rawDivInt((@"v$dividend").int, (@"v$divisor$1").int)) }, &[_]?[]const u8{});
-            P.drop(@"s$1");
-            P.drop(@"v$divisor$1");
             P.drop(@"s$0");
+            P.drop(@"v$divisor$1");
             P.drop(@"v$dividend");
             P.drop(@"v$divisor");
             return @"r$2";

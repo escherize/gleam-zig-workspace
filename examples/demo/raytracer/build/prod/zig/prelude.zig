@@ -93,7 +93,17 @@ pub const Record = struct {
     /// Field labels for inspection, null when a field is positional.
     /// Empty when no field has a label. Always static strings.
     labels: []const ?[]const u8 = &.{},
+    /// Storage for small records: `fields` points here for arity <= 4,
+    /// halving allocator traffic on the dominant record shapes (Ok/Error,
+    /// pairs, vectors). Readers only ever see the slice.
+    inline_fields: [max_inline_fields]Value = undefined,
+
+    pub fn fieldsAreInline(self: *const Record) bool {
+        return @intFromPtr(self.fields.ptr) == @intFromPtr(&self.inline_fields);
+    }
 };
+
+pub const max_inline_fields = 4;
 
 /// All function values share one shape: a type-erased pointer to a lifted
 /// function whose first parameter is the captured environment. Call sites
@@ -220,6 +230,21 @@ fn stringWordCount(byte_length: usize) usize {
     return 1 + (byte_length + 7) / 8;
 }
 
+// The string header word packs the reference count in the low 32 bits
+// and, when the allocation is larger than the length implies (a buffer
+// grown for in-place append), the allocated word count in the high 32.
+// Zero high bits mean the exact stringWordCount(len) fit.
+
+fn stringRefCount(header: u64) u32 {
+    return @truncate(header);
+}
+
+/// The allocated size in words of a string's buffer.
+fn stringAllocWords(payload: []const u8) usize {
+    const capacity = stringRc(payload).* >> 32;
+    return if (capacity != 0) capacity else stringWordCount(payload.len);
+}
+
 fn allocString(byte_length: usize) []u8 {
     const word_count = stringWordCount(byte_length);
     if (poolPopString(word_count)) |recycled| {
@@ -238,7 +263,7 @@ fn stringRc(payload: []const u8) *u64 {
 
 fn freeString(payload: []const u8) void {
     const base: [*]u64 = @alignCast(@as([*]u64, @ptrFromInt(@intFromPtr(payload.ptr))) - 1);
-    const word_count = stringWordCount(payload.len);
+    const word_count = stringAllocWords(payload);
     if (poolPushString(base, word_count)) return;
     rc_allocator().free(base[0..word_count]);
 }
@@ -277,7 +302,7 @@ pub fn drop(value: Value) void {
         .string => |s| if (s.len != 0) {
             const rc = stringRc(s);
             rc.* -= 1;
-            if (rc.* == 0) freeString(s);
+            if (stringRefCount(rc.*) == 0) freeString(s);
         },
         .list => |cell| dropList(cell),
         .tuple => |t| if (t.len != 0) {
@@ -293,7 +318,7 @@ pub fn drop(value: Value) void {
             mutable.rc -= 1;
             if (mutable.rc == 0) {
                 for (r.fields) |field| drop(field);
-                if (r.fields.len != 0) freeValueSlice(r.fields);
+                if (r.fields.len != 0 and !r.fieldsAreInline()) freeValueSlice(r.fields);
                 if (!poolPushRecord(mutable)) rc_allocator().destroy(mutable);
             }
         },
@@ -312,7 +337,7 @@ pub fn drop(value: Value) void {
                 if (b.buffer.len != 0) {
                     const rc = stringRc(b.buffer);
                     rc.* -= 1;
-                    if (rc.* == 0) freeString(b.buffer);
+                    if (stringRefCount(rc.*) == 0) freeString(b.buffer);
                 }
                 rc_allocator().destroy(mutable);
             }
@@ -421,13 +446,19 @@ pub fn makeRecordL(
 ) Value {
     const record = poolPopRecord() orelse
         rc_allocator().create(Record) catch @panic("out of memory");
-    var owned_fields: []const Value = &.{};
-    if (fields.len != 0) {
+    record.rc = 1;
+    record.name = name;
+    record.labels = labels;
+    if (fields.len == 0) {
+        record.fields = &.{};
+    } else if (fields.len <= max_inline_fields) {
+        @memcpy(record.inline_fields[0..fields.len], fields);
+        record.fields = record.inline_fields[0..fields.len];
+    } else {
         const copied = allocValueSlice(fields.len);
         @memcpy(copied, fields);
-        owned_fields = copied;
+        record.fields = copied;
     }
-    record.* = Record{ .rc = 1, .name = name, .fields = owned_fields, .labels = labels };
     return Value{ .record = record };
 }
 
@@ -730,13 +761,21 @@ pub fn deepCopy(value: Value) Value {
         },
         .record => |r| {
             const record = rc_allocator().create(Record) catch @panic("out of memory");
-            var fields: []const Value = &.{};
-            if (r.fields.len != 0) {
+            record.rc = 1;
+            record.name = r.name;
+            record.labels = r.labels;
+            if (r.fields.len == 0) {
+                record.fields = &.{};
+            } else if (r.fields.len <= max_inline_fields) {
+                for (r.fields, 0..) |field, index| {
+                    record.inline_fields[index] = deepCopy(field);
+                }
+                record.fields = record.inline_fields[0..r.fields.len];
+            } else {
                 const copied = allocValueSlice(r.fields.len);
                 for (r.fields, 0..) |field, index| copied[index] = deepCopy(field);
-                fields = copied;
+                record.fields = copied;
             }
-            record.* = Record{ .rc = 1, .name = r.name, .fields = fields, .labels = r.labels };
             return Value{ .record = record };
         },
         .closure => |c| {
@@ -1093,12 +1132,43 @@ pub fn notEq(a: Value, b: Value) Value {
 
 /// Consumes both operands.
 pub fn concatenate(a: Value, b: Value) Value {
-    if (a.string.len + b.string.len == 0) {
-        drop(a);
+    if (b.string.len == 0) {
         drop(b);
-        return Value{ .string = &.{} };
+        return a;
     }
-    const out = allocString(a.string.len + b.string.len);
+    if (a.string.len == 0) {
+        drop(a);
+        return b;
+    }
+    const total = a.string.len + b.string.len;
+    // An unshared left operand appends in place: the buffer grows by
+    // doubling (allocated size tracked in the header's high bits), so a
+    // left-associative `acc <> piece` chain is amortized linear instead
+    // of copying the accumulator on every step.
+    if (stringRefCount(stringRc(a.string).*) == 1) {
+        const base: [*]u64 = @alignCast(
+            @as([*]u64, @ptrFromInt(@intFromPtr(a.string.ptr))) - 1,
+        );
+        const have = stringAllocWords(a.string);
+        const need = stringWordCount(total);
+        if (need <= have) {
+            const out = std.mem.sliceAsBytes(base[1..have])[0..total];
+            @memcpy(out[a.string.len..], b.string);
+            base[0] = 1 | (@as(u64, have) << 32);
+            drop(b);
+            return Value{ .string = out };
+        }
+        var new_words = have;
+        while (new_words < need) new_words *= 2;
+        const grown = rc_allocator().realloc(base[0..have], new_words) catch
+            @panic("out of memory");
+        grown[0] = 1 | (@as(u64, new_words) << 32);
+        const out = std.mem.sliceAsBytes(grown[1..])[0..total];
+        @memcpy(out[a.string.len..], b.string);
+        drop(b);
+        return Value{ .string = out };
+    }
+    const out = allocString(total);
     @memcpy(out[0..a.string.len], a.string);
     @memcpy(out[a.string.len..], b.string);
     drop(a);

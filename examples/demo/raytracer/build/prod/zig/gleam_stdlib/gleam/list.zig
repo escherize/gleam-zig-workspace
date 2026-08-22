@@ -13,26 +13,20 @@ fn @"length_loop"(@"p$list": Value, @"p$count": Value) Value {
     var @"v$list" = @"p$list";
     var @"v$count" = @"p$count";
     while (true) {
-        const @"s$0" = P.dup(@"v$list");
         c0: {
-            if (!((@"s$0").list != null)) break :c0;
-            const @"v$list$1" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$list$1");
+            if (!((@"v$list").list != null)) break :c0;
+            const @"v$list$1" = P.dup(P.listValue((@"v$list").list.?.tail));
+            const @"tail$0" = @"v$list$1";
             const @"tail$1" = P.intValue(((@"v$count").int +% 1));
-            P.drop(@"v$list$1");
-            P.drop(@"s$0");
             P.drop(@"v$list");
-            P.drop(@"v$count");
             @"v$list" = @"tail$0";
             @"v$count" = @"tail$1";
             continue;
         }
         c1: {
-            if (!((@"s$0").list == null)) break :c1;
-            const @"r$0" = P.dup(@"v$count");
-            P.drop(@"s$0");
+            if (!((@"v$list").list == null)) break :c1;
+            const @"r$0" = @"v$count";
             P.drop(@"v$list");
-            P.drop(@"v$count");
             return @"r$0";
         }
         unreachable;
@@ -61,14 +55,13 @@ fn @"count_loop"(@"p$list": Value, @"p$predicate": Value, @"p$acc": Value) Value
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$1" = P.call1(P.dup(@"v$predicate"), P.dup(@"v$first"));
+            const @"s$1" = P.call1(P.dup(@"v$predicate"), @"v$first");
             c2: {
                 if (!((@"s$1").bool)) break :c2;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$predicate");
                 const @"tail$2" = P.intValue(((@"v$acc").int +% 1));
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$predicate");
@@ -84,7 +77,6 @@ fn @"count_loop"(@"p$list": Value, @"p$predicate": Value, @"p$acc": Value) Value
                 const @"tail$4" = P.dup(@"v$predicate");
                 const @"tail$5" = P.dup(@"v$acc");
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$predicate");
@@ -111,9 +103,8 @@ fn @"reverse_and_prepend"(@"p$prefix": Value, @"p$suffix": Value) Value {
         const @"s$0" = @"v$prefix";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$suffix");
+            const @"r$0" = @"v$suffix";
             P.drop(@"s$0");
-            P.drop(@"v$suffix");
             return @"r$0";
         }
         c1: {
@@ -121,11 +112,8 @@ fn @"reverse_and_prepend"(@"p$prefix": Value, @"p$suffix": Value) Value {
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$suffix"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
-            P.drop(@"v$suffix");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.consReuse(@"reuse$0", @"v$first", @"v$suffix");
             @"v$prefix" = @"tail$0";
             @"v$suffix" = @"tail$1";
             continue;
@@ -149,29 +137,27 @@ pub fn @"contains"(@"p$list": Value, @"p$elem": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
+            P.drop(@"v$elem");
             const @"r$0" = P.FALSE;
             P.drop(@"s$0");
-            P.drop(@"v$elem");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             if (!((P.eq(P.dup(@"v$first"), P.dup(@"v$elem"))).bool)) { P.drop(@"v$first"); break :c1; }
+            P.drop(@"v$elem");
             const @"r$1" = P.TRUE;
             P.drop(@"v$first");
             P.drop(@"s$0");
-            P.drop(@"v$elem");
             return @"r$1";
         }
         c2: {
             if (!((@"s$0").list != null)) break :c2;
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.dup(@"v$elem");
-            P.drop(@"v$rest");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = @"v$elem";
             P.drop(@"s$0");
-            P.drop(@"v$elem");
             @"v$list" = @"tail$0";
             @"v$elem" = @"tail$1";
             continue;
@@ -180,42 +166,42 @@ pub fn @"contains"(@"p$list": Value, @"p$elem": Value) Value {
     }
 }
 
-pub fn @"first"(@"v$list": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"borrowed$first"(@"v$list": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        return @"r$0";
+        if (!((@"v$list").list == null)) break :c0;
+        return P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$first") }, &[_]?[]const u8{});
-        P.drop(@"v$first");
-        P.drop(@"s$0");
-        return @"r$1";
+        if (!((@"v$list").list != null)) break :c1;
+        const @"v$first" = P.dup((@"v$list").list.?.head);
+        return P.makeRecordL("Ok", &[_]Value{ @"v$first" }, &[_]?[]const u8{});
     }
     unreachable;
 }
 
-pub fn @"rest"(@"v$list": Value) Value {
-    const @"s$0" = @"v$list";
+pub fn @"first"(@"a$0": Value) Value {
+    const result = @"borrowed$first"(@"a$0");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$rest"(@"v$list": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
-        return @"r$0";
+        if (!((@"v$list").list == null)) break :c0;
+        return P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$rest") }, &[_]?[]const u8{});
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
-        return @"r$1";
+        if (!((@"v$list").list != null)) break :c1;
+        const @"v$rest" = P.dup(P.listValue((@"v$list").list.?.tail));
+        return P.makeRecordL("Ok", &[_]Value{ @"v$rest" }, &[_]?[]const u8{});
     }
     unreachable;
+}
+
+pub fn @"rest"(@"a$0": Value) Value {
+    const result = @"borrowed$rest"(@"a$0");
+    P.drop(@"a$0");
+    return result;
 }
 
 pub fn @"group"(@"v$list": Value, @"v$key": Value) Value {
@@ -256,11 +242,10 @@ fn @"filter_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value {
                 }
                 unreachable;
             };
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$fun");
             const @"tail$2" = @"v$new_acc";
             P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$fun");
             P.drop(@"v$acc");
@@ -300,8 +285,7 @@ fn @"filter_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value 
                 c3: {
                     if (!(P.recordHasName(@"s$1", "Ok"))) break :c3;
                     const @"v$first$1" = P.dup((@"s$1").record.fields[0]);
-                    const @"r$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$first$1") }, P.dup(@"v$acc"));
-                    P.drop(@"v$first$1");
+                    const @"r$1" = P.listFromSlice(&[_]Value{ @"v$first$1" }, P.dup(@"v$acc"));
                     P.drop(@"s$1");
                     break :case2 @"r$1";
                 }
@@ -313,11 +297,10 @@ fn @"filter_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value 
                 }
                 unreachable;
             };
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$fun");
             const @"tail$2" = @"v$new_acc";
             P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$fun");
             P.drop(@"v$acc");
@@ -342,10 +325,9 @@ fn @"map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$fun");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
@@ -353,13 +335,10 @@ fn @"map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value {
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$fun");
-            const @"tail$2" = P.consReuse(@"reuse$0", P.call1(P.dup(@"v$fun"), P.dup(@"v$first")), P.dup(@"v$acc"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
+            const @"tail$2" = P.consReuse(@"reuse$0", P.call1(P.dup(@"v$fun"), @"v$first"), @"v$acc");
             P.drop(@"v$fun");
-            P.drop(@"v$acc");
             @"v$list" = @"tail$0";
             @"v$fun" = @"tail$1";
             @"v$acc" = @"tail$2";
@@ -383,20 +362,18 @@ fn @"map2_loop"(@"p$list1": Value, @"p$list2": Value, @"p$fun": Value, @"p$acc":
         const @"s$1" = @"v$list2";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"s$1");
             P.drop(@"v$fun");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$1").list == null)) break :c1;
-            const @"r$1" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$1" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"s$1");
             P.drop(@"v$fun");
-            P.drop(@"v$acc");
             return @"r$1";
         }
         c2: {
@@ -405,18 +382,13 @@ fn @"map2_loop"(@"p$list1": Value, @"p$list2": Value, @"p$fun": Value, @"p$acc":
             const @"v$as_" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$b" = P.dup((@"s$1").list.?.head);
             const @"v$bs" = P.dup(P.listValue((@"s$1").list.?.tail));
-            const @"tail$0" = P.dup(@"v$as_");
-            const @"tail$1" = P.dup(@"v$bs");
+            const @"tail$0" = @"v$as_";
+            const @"tail$1" = @"v$bs";
             const @"tail$2" = P.dup(@"v$fun");
-            const @"tail$3" = P.listFromSlice(&[_]Value{ P.call2(P.dup(@"v$fun"), P.dup(@"v$a"), P.dup(@"v$b")) }, P.dup(@"v$acc"));
-            P.drop(@"v$a");
-            P.drop(@"v$as_");
-            P.drop(@"v$b");
-            P.drop(@"v$bs");
+            const @"tail$3" = P.listFromSlice(&[_]Value{ P.call2(P.dup(@"v$fun"), @"v$a", @"v$b") }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"s$1");
             P.drop(@"v$fun");
-            P.drop(@"v$acc");
             @"v$list1" = @"tail$0";
             @"v$list2" = @"tail$1";
             @"v$fun" = @"tail$2";
@@ -440,11 +412,10 @@ fn @"map_fold_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value, @"p$list
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.tupleValue(&[_]Value{ P.dup(@"v$acc"), @"reverse"(P.dup(@"v$list_acc")) });
+            const @"r$0" = P.tupleValue(&[_]Value{ P.dup(@"v$acc"), @"reverse"(@"v$list_acc") });
             P.drop(@"s$0");
             P.drop(@"v$fun");
             P.drop(@"v$acc");
-            P.drop(@"v$list_acc");
             return @"r$0";
         }
         c1: {
@@ -455,18 +426,16 @@ fn @"map_fold_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value, @"p$list
             const @"v$acc$1" = P.dup((@"subject$0").tuple[0]);
             const @"v$first$1" = P.dup((@"subject$0").tuple[1]);
             P.drop(@"subject$0");
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$fun");
             const @"tail$2" = P.dup(@"v$acc$1");
-            const @"tail$3" = P.listFromSlice(&[_]Value{ P.dup(@"v$first$1") }, P.dup(@"v$list_acc"));
+            const @"tail$3" = P.listFromSlice(&[_]Value{ P.dup(@"v$first$1") }, @"v$list_acc");
             P.drop(@"v$acc$1");
             P.drop(@"v$first$1");
             P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$fun");
             P.drop(@"v$acc");
-            P.drop(@"v$list_acc");
             @"v$list" = @"tail$0";
             @"v$fun" = @"tail$1";
             @"v$acc" = @"tail$2";
@@ -501,13 +470,11 @@ fn @"index_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$index": Value, @"p$a
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$acc$1" = P.listFromSlice(&[_]Value{ P.call2(P.dup(@"v$fun"), P.dup(@"v$first"), P.dup(@"v$index")) }, P.dup(@"v$acc"));
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"v$acc$1" = P.listFromSlice(&[_]Value{ P.call2(P.dup(@"v$fun"), @"v$first", P.dup(@"v$index")) }, P.dup(@"v$acc"));
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$fun");
             const @"tail$2" = P.intValue(((@"v$index").int +% 1));
             const @"tail$3" = @"v$acc$1";
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$fun");
             P.drop(@"v$index");
@@ -550,8 +517,7 @@ fn @"try_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value {
                 const @"v$first$1" = P.dup((@"s$1").record.fields[0]);
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$fun");
-                const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$first$1") }, P.dup(@"v$acc"));
-                P.drop(@"v$first$1");
+                const @"tail$2" = P.listFromSlice(&[_]Value{ @"v$first$1" }, P.dup(@"v$acc"));
                 P.drop(@"s$1");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
@@ -567,8 +533,7 @@ fn @"try_map_loop"(@"p$list": Value, @"p$fun": Value, @"p$acc": Value) Value {
                 if (!(P.recordHasName(@"s$1", "Error"))) break :c3;
                 const @"v$error" = P.dup((@"s$1").record.fields[0]);
                 const @"reuse$0" = P.dropReuseRecord(@"s$1", 1);
-                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ P.dup(@"v$error") }, &[_]?[]const u8{});
-                P.drop(@"v$error");
+                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ @"v$error" }, &[_]?[]const u8{});
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -593,33 +558,29 @@ pub fn @"drop"(@"p$list": Value, @"p$n": Value) Value {
         const @"s$0" = P.boolValue(((@"v$n").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
-            const @"r$0" = P.dup(@"v$list");
+            const @"r$0" = @"v$list";
             P.drop(@"s$0");
-            P.drop(@"v$list");
             P.drop(@"v$n");
             return @"r$0";
         }
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
-            const @"s$1" = P.dup(@"v$list");
+            const @"s$1" = @"v$list";
             c2: {
                 if (!((@"s$1").list == null)) break :c2;
                 const @"r$1" = P.emptyList();
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$n");
                 return @"r$1";
             }
             c3: {
                 if (!((@"s$1").list != null)) break :c3;
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
-                const @"tail$0" = P.dup(@"v$rest");
+                const @"tail$0" = @"v$rest";
                 const @"tail$1" = P.intValue(((@"v$n").int -% 1));
-                P.drop(@"v$rest");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$n");
                 @"v$list" = @"tail$0";
                 @"v$n" = @"tail$1";
@@ -639,22 +600,21 @@ fn @"take_loop"(@"p$list": Value, @"p$n": Value, @"p$acc": Value) Value {
         const @"s$0" = P.boolValue(((@"v$n").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
+            P.drop(@"v$list");
             const @"r$0" = @"reverse"(P.dup(@"v$acc"));
             P.drop(@"s$0");
-            P.drop(@"v$list");
             P.drop(@"v$n");
             P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
-            const @"s$1" = P.dup(@"v$list");
+            const @"s$1" = @"v$list";
             c2: {
                 if (!((@"s$1").list == null)) break :c2;
                 const @"r$1" = @"reverse"(P.dup(@"v$acc"));
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$n");
                 P.drop(@"v$acc");
                 return @"r$1";
@@ -664,13 +624,10 @@ fn @"take_loop"(@"p$list": Value, @"p$n": Value, @"p$acc": Value) Value {
                 const @"v$first" = P.dup((@"s$1").list.?.head);
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
                 const @"reuse$0" = P.dropReuseCons(@"s$1");
-                const @"tail$0" = P.dup(@"v$rest");
+                const @"tail$0" = @"v$rest";
                 const @"tail$1" = P.intValue(((@"v$n").int -% 1));
-                const @"tail$2" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$acc"));
-                P.drop(@"v$first");
-                P.drop(@"v$rest");
+                const @"tail$2" = P.consReuse(@"reuse$0", @"v$first", P.dup(@"v$acc"));
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$n");
                 P.drop(@"v$acc");
                 @"v$list" = @"tail$0";
@@ -700,26 +657,19 @@ fn @"append_loop"(@"p$first": Value, @"p$second": Value) Value {
     var @"v$first" = @"p$first";
     var @"v$second" = @"p$second";
     while (true) {
-        const @"s$0" = P.dup(@"v$first");
         c0: {
-            if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$second");
-            P.drop(@"s$0");
+            if (!((@"v$first").list == null)) break :c0;
+            const @"r$0" = @"v$second";
             P.drop(@"v$first");
-            P.drop(@"v$second");
             return @"r$0";
         }
         c1: {
-            if (!((@"s$0").list != null)) break :c1;
-            const @"v$first$1" = P.dup((@"s$0").list.?.head);
-            const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.consReuse(@"reuse$0", P.dup(@"v$first$1"), P.dup(@"v$second"));
-            P.drop(@"v$first$1");
-            P.drop(@"v$rest");
+            if (!((@"v$first").list != null)) break :c1;
+            const @"v$first$1" = P.dup((@"v$first").list.?.head);
+            const @"v$rest" = P.dup(P.listValue((@"v$first").list.?.tail));
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.listFromSlice(&[_]Value{ @"v$first$1" }, @"v$second");
             P.drop(@"v$first");
-            P.drop(@"v$second");
             @"v$first" = @"tail$0";
             @"v$second" = @"tail$1";
             continue;
@@ -743,21 +693,17 @@ fn @"flatten_loop"(@"p$lists": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$lists";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$list" = P.dup((@"s$0").list.?.head);
             const @"v$further_lists" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$further_lists");
-            const @"tail$1" = @"reverse_and_prepend"(P.dup(@"v$list"), P.dup(@"v$acc"));
-            P.drop(@"v$list");
-            P.drop(@"v$further_lists");
+            const @"tail$0" = @"v$further_lists";
+            const @"tail$1" = @"reverse_and_prepend"(@"v$list", @"v$acc");
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             @"v$lists" = @"tail$0";
             @"v$acc" = @"tail$1";
             continue;
@@ -782,9 +728,8 @@ pub fn @"fold"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$initial");
+            const @"r$0" = @"v$initial";
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             P.drop(@"v$fun");
             return @"r$0";
         }
@@ -792,13 +737,10 @@ pub fn @"fold"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Value {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.call2(P.dup(@"v$fun"), P.dup(@"v$initial"), P.dup(@"v$first"));
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.call2(P.dup(@"v$fun"), @"v$initial", @"v$first");
             const @"tail$2" = P.dup(@"v$fun");
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             P.drop(@"v$fun");
             @"v$list" = @"tail$0";
             @"v$initial" = @"tail$1";
@@ -809,29 +751,28 @@ pub fn @"fold"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Value {
     }
 }
 
-pub fn @"fold_right"(@"v$list": Value, @"v$initial": Value, @"v$fun": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"borrowed$fold_right"(@"v$list": Value, @"v$initial": Value, @"v$fun": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.dup(@"v$initial");
-        P.drop(@"s$0");
-        P.drop(@"v$initial");
+        if (!((@"v$list").list == null)) break :c0;
+        const @"r$0" = @"v$initial";
         P.drop(@"v$fun");
         return @"r$0";
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = P.call2(P.dup(@"v$fun"), @"fold_right"(P.dup(@"v$rest"), P.dup(@"v$initial"), P.dup(@"v$fun")), P.dup(@"v$first"));
-        P.drop(@"v$first");
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
-        P.drop(@"v$initial");
+        if (!((@"v$list").list != null)) break :c1;
+        const @"v$first" = P.dup((@"v$list").list.?.head);
+        const @"v$rest" = P.listValue((@"v$list").list.?.tail);
+        const @"r$1" = P.call2(P.dup(@"v$fun"), @"borrowed$fold_right"(@"v$rest", @"v$initial", P.dup(@"v$fun")), @"v$first");
         P.drop(@"v$fun");
         return @"r$1";
     }
     unreachable;
+}
+
+pub fn @"fold_right"(@"a$0": Value, @"a$1": Value, @"a$2": Value) Value {
+    const result = @"borrowed$fold_right"(@"a$0", @"a$1", @"a$2");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"index_fold_loop"(@"p$over": Value, @"p$acc": Value, @"p$with": Value, @"p$index": Value) Value {
@@ -843,9 +784,8 @@ fn @"index_fold_loop"(@"p$over": Value, @"p$acc": Value, @"p$with": Value, @"p$i
         const @"s$0" = @"v$over";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$acc");
+            const @"r$0" = @"v$acc";
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             P.drop(@"v$with");
             P.drop(@"v$index");
             return @"r$0";
@@ -854,14 +794,11 @@ fn @"index_fold_loop"(@"p$over": Value, @"p$acc": Value, @"p$with": Value, @"p$i
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.call3(P.dup(@"v$with"), P.dup(@"v$acc"), P.dup(@"v$first"), P.dup(@"v$index"));
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.call3(P.dup(@"v$with"), @"v$acc", @"v$first", P.dup(@"v$index"));
             const @"tail$2" = P.dup(@"v$with");
             const @"tail$3" = P.intValue(((@"v$index").int +% 1));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             P.drop(@"v$with");
             P.drop(@"v$index");
             @"v$over" = @"tail$0";
@@ -886,9 +823,8 @@ pub fn @"try_fold"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Value
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$initial") }, &[_]?[]const u8{});
+            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ @"v$initial" }, &[_]?[]const u8{});
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             P.drop(@"v$fun");
             return @"r$0";
         }
@@ -896,19 +832,16 @@ pub fn @"try_fold"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Value
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$1" = P.call2(P.dup(@"v$fun"), P.dup(@"v$initial"), P.dup(@"v$first"));
+            const @"s$1" = P.call2(P.dup(@"v$fun"), @"v$initial", @"v$first");
             c2: {
                 if (!(P.recordHasName(@"s$1", "Ok"))) break :c2;
                 const @"v$result" = P.dup((@"s$1").record.fields[0]);
                 const @"tail$0" = P.dup(@"v$rest");
-                const @"tail$1" = P.dup(@"v$result");
+                const @"tail$1" = @"v$result";
                 const @"tail$2" = P.dup(@"v$fun");
-                P.drop(@"v$result");
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
-                P.drop(@"v$initial");
                 P.drop(@"v$fun");
                 @"v$list" = @"tail$0";
                 @"v$initial" = @"tail$1";
@@ -918,13 +851,10 @@ pub fn @"try_fold"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Value
             c3: {
                 if (!(P.recordHasName(@"s$1", "Error"))) break :c3;
                 const @"v$error" = P.dup(@"s$1");
-                const @"r$1" = P.dup(@"v$error");
-                P.drop(@"v$error");
+                const @"r$1" = @"v$error";
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
-                P.drop(@"v$initial");
                 P.drop(@"v$fun");
                 return @"r$1";
             }
@@ -942,9 +872,8 @@ pub fn @"fold_until"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Val
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$initial");
+            const @"r$0" = @"v$initial";
             P.drop(@"s$0");
-            P.drop(@"v$initial");
             P.drop(@"v$fun");
             return @"r$0";
         }
@@ -952,19 +881,16 @@ pub fn @"fold_until"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Val
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$1" = P.call2(P.dup(@"v$fun"), P.dup(@"v$initial"), P.dup(@"v$first"));
+            const @"s$1" = P.call2(P.dup(@"v$fun"), @"v$initial", @"v$first");
             c2: {
                 if (!(P.recordHasName(@"s$1", "Continue"))) break :c2;
                 const @"v$next_accumulator" = P.dup((@"s$1").record.fields[0]);
                 const @"tail$0" = P.dup(@"v$rest");
-                const @"tail$1" = P.dup(@"v$next_accumulator");
+                const @"tail$1" = @"v$next_accumulator";
                 const @"tail$2" = P.dup(@"v$fun");
-                P.drop(@"v$next_accumulator");
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
-                P.drop(@"v$initial");
                 P.drop(@"v$fun");
                 @"v$list" = @"tail$0";
                 @"v$initial" = @"tail$1";
@@ -974,13 +900,10 @@ pub fn @"fold_until"(@"p$list": Value, @"p$initial": Value, @"p$fun": Value) Val
             c3: {
                 if (!(P.recordHasName(@"s$1", "Stop"))) break :c3;
                 const @"v$b" = P.dup((@"s$1").record.fields[0]);
-                const @"r$1" = P.dup(@"v$b");
-                P.drop(@"v$b");
+                const @"r$1" = @"v$b";
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
-                P.drop(@"v$initial");
                 P.drop(@"v$fun");
                 return @"r$1";
             }
@@ -1057,8 +980,7 @@ pub fn @"find_map"(@"p$list": Value, @"p$fun": Value) Value {
                 if (!(P.recordHasName(@"s$1", "Ok"))) break :c2;
                 const @"v$first$1" = P.dup((@"s$1").record.fields[0]);
                 const @"reuse$0" = P.dropReuseRecord(@"s$1", 1);
-                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ P.dup(@"v$first$1") }, &[_]?[]const u8{});
-                P.drop(@"v$first$1");
+                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Ok", &[_]Value{ @"v$first$1" }, &[_]?[]const u8{});
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -1100,13 +1022,12 @@ pub fn @"all"(@"p$list": Value, @"p$predicate": Value) Value {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$1" = P.call1(P.dup(@"v$predicate"), P.dup(@"v$first"));
+            const @"s$1" = P.call1(P.dup(@"v$predicate"), @"v$first");
             c2: {
                 if (!((@"s$1").bool)) break :c2;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$predicate");
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$predicate");
@@ -1118,7 +1039,6 @@ pub fn @"all"(@"p$list": Value, @"p$predicate": Value) Value {
                 if (!(!((@"s$1").bool))) break :c3;
                 const @"r$1" = P.FALSE;
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$predicate");
@@ -1146,12 +1066,11 @@ pub fn @"any"(@"p$list": Value, @"p$predicate": Value) Value {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$1" = P.call1(P.dup(@"v$predicate"), P.dup(@"v$first"));
+            const @"s$1" = P.call1(P.dup(@"v$predicate"), @"v$first");
             c2: {
                 if (!((@"s$1").bool)) break :c2;
                 const @"r$1" = P.TRUE;
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$predicate");
@@ -1162,7 +1081,6 @@ pub fn @"any"(@"p$list": Value, @"p$predicate": Value) Value {
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$predicate");
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$predicate");
@@ -1189,26 +1107,20 @@ fn @"zip_loop"(@"p$one": Value, @"p$other": Value, @"p$acc": Value) Value {
             const @"v$rest_one" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$first_other" = P.dup((@"s$1").list.?.head);
             const @"v$rest_other" = P.dup(P.listValue((@"s$1").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest_one");
-            const @"tail$1" = P.dup(@"v$rest_other");
-            const @"tail$2" = P.listFromSlice(&[_]Value{ P.tupleValue(&[_]Value{ P.dup(@"v$first_one"), P.dup(@"v$first_other") }) }, P.dup(@"v$acc"));
-            P.drop(@"v$first_one");
-            P.drop(@"v$rest_one");
-            P.drop(@"v$first_other");
-            P.drop(@"v$rest_other");
+            const @"tail$0" = @"v$rest_one";
+            const @"tail$1" = @"v$rest_other";
+            const @"tail$2" = P.listFromSlice(&[_]Value{ P.tupleValue(&[_]Value{ @"v$first_one", @"v$first_other" }) }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"s$1");
-            P.drop(@"v$acc");
             @"v$one" = @"tail$0";
             @"v$other" = @"tail$1";
             @"v$acc" = @"tail$2";
             continue;
         }
         {
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"s$1");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         unreachable;
@@ -1228,26 +1140,25 @@ fn @"strict_zip_loop"(@"p$one": Value, @"p$other": Value, @"p$acc": Value) Value
         const @"s$1" = @"v$other";
         c0: {
             if (!((@"s$0").list == null and (@"s$1").list == null)) break :c0;
-            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ @"reverse"(P.dup(@"v$acc")) }, &[_]?[]const u8{});
+            const @"r$0" = P.makeRecordL("Ok", &[_]Value{ @"reverse"(@"v$acc") }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"s$1");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list == null)) break :c1;
+            P.drop(@"v$acc");
             const @"r$1" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"s$1");
-            P.drop(@"v$acc");
             return @"r$1";
         }
         c2: {
             if (!((@"s$1").list == null)) break :c2;
+            P.drop(@"v$acc");
             const @"r$2" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
             P.drop(@"s$0");
             P.drop(@"s$1");
-            P.drop(@"v$acc");
             return @"r$2";
         }
         c3: {
@@ -1256,16 +1167,11 @@ fn @"strict_zip_loop"(@"p$one": Value, @"p$other": Value, @"p$acc": Value) Value
             const @"v$rest_one" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$first_other" = P.dup((@"s$1").list.?.head);
             const @"v$rest_other" = P.dup(P.listValue((@"s$1").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest_one");
-            const @"tail$1" = P.dup(@"v$rest_other");
-            const @"tail$2" = P.listFromSlice(&[_]Value{ P.tupleValue(&[_]Value{ P.dup(@"v$first_one"), P.dup(@"v$first_other") }) }, P.dup(@"v$acc"));
-            P.drop(@"v$first_one");
-            P.drop(@"v$rest_one");
-            P.drop(@"v$first_other");
-            P.drop(@"v$rest_other");
+            const @"tail$0" = @"v$rest_one";
+            const @"tail$1" = @"v$rest_other";
+            const @"tail$2" = P.listFromSlice(&[_]Value{ P.tupleValue(&[_]Value{ @"v$first_one", @"v$first_other" }) }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"s$1");
-            P.drop(@"v$acc");
             @"v$one" = @"tail$0";
             @"v$other" = @"tail$1";
             @"v$acc" = @"tail$2";
@@ -1287,10 +1193,8 @@ fn @"unzip_loop"(@"p$input": Value, @"p$one": Value, @"p$other": Value) Value {
         const @"s$0" = @"v$input";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$one")), @"reverse"(P.dup(@"v$other")) });
+            const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(@"v$one"), @"reverse"(@"v$other") });
             P.drop(@"s$0");
-            P.drop(@"v$one");
-            P.drop(@"v$other");
             return @"r$0";
         }
         c1: {
@@ -1299,14 +1203,9 @@ fn @"unzip_loop"(@"p$input": Value, @"p$one": Value, @"p$other": Value) Value {
             const @"v$first_other" = P.dup(((@"s$0").list.?.head).tuple[1]);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.consReuse(@"reuse$0", P.dup(@"v$first_one"), P.dup(@"v$one"));
-            const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$first_other") }, P.dup(@"v$other"));
-            P.drop(@"v$first_one");
-            P.drop(@"v$first_other");
-            P.drop(@"v$rest");
-            P.drop(@"v$one");
-            P.drop(@"v$other");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = P.consReuse(@"reuse$0", @"v$first_one", @"v$one");
+            const @"tail$2" = P.listFromSlice(&[_]Value{ @"v$first_other" }, @"v$other");
             @"v$input" = @"tail$0";
             @"v$one" = @"tail$1";
             @"v$other" = @"tail$2";
@@ -1328,24 +1227,20 @@ fn @"intersperse_loop"(@"p$list": Value, @"p$separator": Value, @"p$acc": Value)
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$separator");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$separator");
-            const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$first"), P.dup(@"v$separator") }, P.dup(@"v$acc"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
+            const @"tail$2" = P.listFromSlice(&[_]Value{ @"v$first", P.dup(@"v$separator") }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$separator");
-            P.drop(@"v$acc");
             @"v$list" = @"tail$0";
             @"v$separator" = @"tail$1";
             @"v$acc" = @"tail$2";
@@ -1356,34 +1251,22 @@ fn @"intersperse_loop"(@"p$list": Value, @"p$separator": Value, @"p$acc": Value)
 }
 
 pub fn @"intersperse"(@"v$list": Value, @"v$elem": Value) Value {
-    const @"s$0" = P.dup(@"v$list");
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.dup(@"v$list");
-        P.drop(@"s$0");
-        P.drop(@"v$list");
+        if (!((@"v$list").list == null)) break :c0;
         P.drop(@"v$elem");
-        return @"r$0";
+        return @"v$list";
     }
     c1: {
-        if (!((@"s$0").list != null and (@"s$0").list.?.tail == null)) break :c1;
-        const @"r$1" = P.dup(@"v$list");
-        P.drop(@"s$0");
-        P.drop(@"v$list");
+        if (!((@"v$list").list != null and (@"v$list").list.?.tail == null)) break :c1;
         P.drop(@"v$elem");
-        return @"r$1";
+        return @"v$list";
     }
     c2: {
-        if (!((@"s$0").list != null)) break :c2;
-        const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$2" = @"intersperse_loop"(P.dup(@"v$rest"), P.dup(@"v$elem"), P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.emptyList()));
-        P.drop(@"v$first");
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
+        if (!((@"v$list").list != null)) break :c2;
+        const @"v$first" = P.dup((@"v$list").list.?.head);
+        const @"v$rest" = P.dup(P.listValue((@"v$list").list.?.tail));
         P.drop(@"v$list");
-        P.drop(@"v$elem");
-        return @"r$2";
+        return @"intersperse_loop"(@"v$rest", @"v$elem", P.listFromSlice(&[_]Value{ @"v$first" }, P.emptyList()));
     }
     unreachable;
 }
@@ -1455,15 +1338,10 @@ fn @"merge_descendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Valu
     var @"v$compare" = @"p$compare";
     var @"v$acc" = @"p$acc";
     while (true) {
-        const @"s$0" = P.dup(@"v$list1");
-        const @"s$1" = P.dup(@"v$list2");
         c0: {
-            if (!((@"s$0").list == null)) break :c0;
-            const @"v$list" = P.dup(@"s$1");
-            const @"r$0" = @"reverse_and_prepend"(P.dup(@"v$list"), P.dup(@"v$acc"));
-            P.drop(@"v$list");
-            P.drop(@"s$0");
-            P.drop(@"s$1");
+            if (!((@"v$list1").list == null)) break :c0;
+            const @"v$list" = P.dup(@"v$list2");
+            const @"r$0" = @"reverse_and_prepend"(@"v$list", P.dup(@"v$acc"));
             P.drop(@"v$list1");
             P.drop(@"v$list2");
             P.drop(@"v$compare");
@@ -1471,12 +1349,9 @@ fn @"merge_descendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Valu
             return @"r$0";
         }
         c1: {
-            if (!((@"s$1").list == null)) break :c1;
-            const @"v$list$1" = P.dup(@"s$0");
-            const @"r$1" = @"reverse_and_prepend"(P.dup(@"v$list$1"), P.dup(@"v$acc"));
-            P.drop(@"v$list$1");
-            P.drop(@"s$0");
-            P.drop(@"s$1");
+            if (!((@"v$list2").list == null)) break :c1;
+            const @"v$list$1" = P.dup(@"v$list1");
+            const @"r$1" = @"reverse_and_prepend"(@"v$list$1", P.dup(@"v$acc"));
             P.drop(@"v$list1");
             P.drop(@"v$list2");
             P.drop(@"v$compare");
@@ -1484,25 +1359,23 @@ fn @"merge_descendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Valu
             return @"r$1";
         }
         c2: {
-            if (!((@"s$0").list != null and (@"s$1").list != null)) break :c2;
-            const @"v$first1" = P.dup((@"s$0").list.?.head);
-            const @"v$rest1" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$first2" = P.dup((@"s$1").list.?.head);
-            const @"v$rest2" = P.dup(P.listValue((@"s$1").list.?.tail));
-            const @"s$2" = P.call2(P.dup(@"v$compare"), P.dup(@"v$first1"), P.dup(@"v$first2"));
+            if (!((@"v$list1").list != null and (@"v$list2").list != null)) break :c2;
+            const @"v$first1" = P.dup((@"v$list1").list.?.head);
+            const @"v$rest1" = P.dup(P.listValue((@"v$list1").list.?.tail));
+            const @"v$first2" = P.dup((@"v$list2").list.?.head);
+            const @"v$rest2" = P.dup(P.listValue((@"v$list2").list.?.tail));
+            const @"s$0" = P.call2(P.dup(@"v$compare"), P.dup(@"v$first1"), P.dup(@"v$first2"));
             c3: {
-                if (!(P.recordHasName(@"s$2", "Lt"))) break :c3;
+                if (!(P.recordHasName(@"s$0", "Lt"))) break :c3;
                 const @"tail$0" = P.dup(@"v$list1");
                 const @"tail$1" = P.dup(@"v$rest2");
                 const @"tail$2" = P.dup(@"v$compare");
                 const @"tail$3" = P.listFromSlice(&[_]Value{ P.dup(@"v$first2") }, P.dup(@"v$acc"));
-                P.drop(@"s$2");
+                P.drop(@"s$0");
                 P.drop(@"v$first1");
                 P.drop(@"v$rest1");
                 P.drop(@"v$first2");
                 P.drop(@"v$rest2");
-                P.drop(@"s$0");
-                P.drop(@"s$1");
                 P.drop(@"v$list1");
                 P.drop(@"v$list2");
                 P.drop(@"v$compare");
@@ -1514,18 +1387,16 @@ fn @"merge_descendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Valu
                 continue;
             }
             c4: {
-                if (!(P.recordHasName(@"s$2", "Gt"))) break :c4;
+                if (!(P.recordHasName(@"s$0", "Gt"))) break :c4;
                 const @"tail$4" = P.dup(@"v$rest1");
                 const @"tail$5" = P.dup(@"v$list2");
                 const @"tail$6" = P.dup(@"v$compare");
                 const @"tail$7" = P.listFromSlice(&[_]Value{ P.dup(@"v$first1") }, P.dup(@"v$acc"));
-                P.drop(@"s$2");
+                P.drop(@"s$0");
                 P.drop(@"v$first1");
                 P.drop(@"v$rest1");
                 P.drop(@"v$first2");
                 P.drop(@"v$rest2");
-                P.drop(@"s$0");
-                P.drop(@"s$1");
                 P.drop(@"v$list1");
                 P.drop(@"v$list2");
                 P.drop(@"v$compare");
@@ -1537,18 +1408,16 @@ fn @"merge_descendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Valu
                 continue;
             }
             c5: {
-                if (!(P.recordHasName(@"s$2", "Eq"))) break :c5;
+                if (!(P.recordHasName(@"s$0", "Eq"))) break :c5;
                 const @"tail$8" = P.dup(@"v$rest1");
                 const @"tail$9" = P.dup(@"v$list2");
                 const @"tail$10" = P.dup(@"v$compare");
                 const @"tail$11" = P.listFromSlice(&[_]Value{ P.dup(@"v$first1") }, P.dup(@"v$acc"));
-                P.drop(@"s$2");
+                P.drop(@"s$0");
                 P.drop(@"v$first1");
                 P.drop(@"v$rest1");
                 P.drop(@"v$first2");
                 P.drop(@"v$rest2");
-                P.drop(@"s$0");
-                P.drop(@"s$1");
                 P.drop(@"v$list1");
                 P.drop(@"v$list2");
                 P.drop(@"v$compare");
@@ -1573,20 +1442,17 @@ fn @"merge_descending_pairs"(@"p$sequences": Value, @"p$compare": Value, @"p$acc
         const @"s$0" = @"v$sequences";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$compare");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null and (@"s$0").list.?.tail == null)) break :c1;
             const @"v$sequence" = P.dup((@"s$0").list.?.head);
-            const @"r$1" = @"reverse"(P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$sequence")) }, P.dup(@"v$acc")));
-            P.drop(@"v$sequence");
+            const @"r$1" = @"reverse"(P.listFromSlice(&[_]Value{ @"reverse"(@"v$sequence") }, @"v$acc"));
             P.drop(@"s$0");
             P.drop(@"v$compare");
-            P.drop(@"v$acc");
             return @"r$1";
         }
         c2: {
@@ -1594,16 +1460,12 @@ fn @"merge_descending_pairs"(@"p$sequences": Value, @"p$compare": Value, @"p$acc
             const @"v$descending1" = P.dup((@"s$0").list.?.head);
             const @"v$descending2" = P.dup((@"s$0").list.?.tail.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail.?.tail));
-            const @"v$ascending" = @"merge_descendings"(P.dup(@"v$descending1"), P.dup(@"v$descending2"), P.dup(@"v$compare"), P.emptyList());
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"v$ascending" = @"merge_descendings"(@"v$descending1", @"v$descending2", P.dup(@"v$compare"), P.emptyList());
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$compare");
-            const @"tail$2" = P.listFromSlice(&[_]Value{ @"v$ascending" }, P.dup(@"v$acc"));
-            P.drop(@"v$descending1");
-            P.drop(@"v$descending2");
-            P.drop(@"v$rest");
+            const @"tail$2" = P.listFromSlice(&[_]Value{ @"v$ascending" }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$compare");
-            P.drop(@"v$acc");
             @"v$sequences" = @"tail$0";
             @"v$compare" = @"tail$1";
             @"v$acc" = @"tail$2";
@@ -1619,15 +1481,10 @@ fn @"merge_ascendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Value
     var @"v$compare" = @"p$compare";
     var @"v$acc" = @"p$acc";
     while (true) {
-        const @"s$0" = P.dup(@"v$list1");
-        const @"s$1" = P.dup(@"v$list2");
         c0: {
-            if (!((@"s$0").list == null)) break :c0;
-            const @"v$list" = P.dup(@"s$1");
-            const @"r$0" = @"reverse_and_prepend"(P.dup(@"v$list"), P.dup(@"v$acc"));
-            P.drop(@"v$list");
-            P.drop(@"s$0");
-            P.drop(@"s$1");
+            if (!((@"v$list1").list == null)) break :c0;
+            const @"v$list" = P.dup(@"v$list2");
+            const @"r$0" = @"reverse_and_prepend"(@"v$list", P.dup(@"v$acc"));
             P.drop(@"v$list1");
             P.drop(@"v$list2");
             P.drop(@"v$compare");
@@ -1635,12 +1492,9 @@ fn @"merge_ascendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Value
             return @"r$0";
         }
         c1: {
-            if (!((@"s$1").list == null)) break :c1;
-            const @"v$list$1" = P.dup(@"s$0");
-            const @"r$1" = @"reverse_and_prepend"(P.dup(@"v$list$1"), P.dup(@"v$acc"));
-            P.drop(@"v$list$1");
-            P.drop(@"s$0");
-            P.drop(@"s$1");
+            if (!((@"v$list2").list == null)) break :c1;
+            const @"v$list$1" = P.dup(@"v$list1");
+            const @"r$1" = @"reverse_and_prepend"(@"v$list$1", P.dup(@"v$acc"));
             P.drop(@"v$list1");
             P.drop(@"v$list2");
             P.drop(@"v$compare");
@@ -1648,25 +1502,23 @@ fn @"merge_ascendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Value
             return @"r$1";
         }
         c2: {
-            if (!((@"s$0").list != null and (@"s$1").list != null)) break :c2;
-            const @"v$first1" = P.dup((@"s$0").list.?.head);
-            const @"v$rest1" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$first2" = P.dup((@"s$1").list.?.head);
-            const @"v$rest2" = P.dup(P.listValue((@"s$1").list.?.tail));
-            const @"s$2" = P.call2(P.dup(@"v$compare"), P.dup(@"v$first1"), P.dup(@"v$first2"));
+            if (!((@"v$list1").list != null and (@"v$list2").list != null)) break :c2;
+            const @"v$first1" = P.dup((@"v$list1").list.?.head);
+            const @"v$rest1" = P.dup(P.listValue((@"v$list1").list.?.tail));
+            const @"v$first2" = P.dup((@"v$list2").list.?.head);
+            const @"v$rest2" = P.dup(P.listValue((@"v$list2").list.?.tail));
+            const @"s$0" = P.call2(P.dup(@"v$compare"), P.dup(@"v$first1"), P.dup(@"v$first2"));
             c3: {
-                if (!(P.recordHasName(@"s$2", "Lt"))) break :c3;
+                if (!(P.recordHasName(@"s$0", "Lt"))) break :c3;
                 const @"tail$0" = P.dup(@"v$rest1");
                 const @"tail$1" = P.dup(@"v$list2");
                 const @"tail$2" = P.dup(@"v$compare");
                 const @"tail$3" = P.listFromSlice(&[_]Value{ P.dup(@"v$first1") }, P.dup(@"v$acc"));
-                P.drop(@"s$2");
+                P.drop(@"s$0");
                 P.drop(@"v$first1");
                 P.drop(@"v$rest1");
                 P.drop(@"v$first2");
                 P.drop(@"v$rest2");
-                P.drop(@"s$0");
-                P.drop(@"s$1");
                 P.drop(@"v$list1");
                 P.drop(@"v$list2");
                 P.drop(@"v$compare");
@@ -1678,18 +1530,16 @@ fn @"merge_ascendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Value
                 continue;
             }
             c4: {
-                if (!(P.recordHasName(@"s$2", "Gt"))) break :c4;
+                if (!(P.recordHasName(@"s$0", "Gt"))) break :c4;
                 const @"tail$4" = P.dup(@"v$list1");
                 const @"tail$5" = P.dup(@"v$rest2");
                 const @"tail$6" = P.dup(@"v$compare");
                 const @"tail$7" = P.listFromSlice(&[_]Value{ P.dup(@"v$first2") }, P.dup(@"v$acc"));
-                P.drop(@"s$2");
+                P.drop(@"s$0");
                 P.drop(@"v$first1");
                 P.drop(@"v$rest1");
                 P.drop(@"v$first2");
                 P.drop(@"v$rest2");
-                P.drop(@"s$0");
-                P.drop(@"s$1");
                 P.drop(@"v$list1");
                 P.drop(@"v$list2");
                 P.drop(@"v$compare");
@@ -1701,18 +1551,16 @@ fn @"merge_ascendings"(@"p$list1": Value, @"p$list2": Value, @"p$compare": Value
                 continue;
             }
             c5: {
-                if (!(P.recordHasName(@"s$2", "Eq"))) break :c5;
+                if (!(P.recordHasName(@"s$0", "Eq"))) break :c5;
                 const @"tail$8" = P.dup(@"v$list1");
                 const @"tail$9" = P.dup(@"v$rest2");
                 const @"tail$10" = P.dup(@"v$compare");
                 const @"tail$11" = P.listFromSlice(&[_]Value{ P.dup(@"v$first2") }, P.dup(@"v$acc"));
-                P.drop(@"s$2");
+                P.drop(@"s$0");
                 P.drop(@"v$first1");
                 P.drop(@"v$rest1");
                 P.drop(@"v$first2");
                 P.drop(@"v$rest2");
-                P.drop(@"s$0");
-                P.drop(@"s$1");
                 P.drop(@"v$list1");
                 P.drop(@"v$list2");
                 P.drop(@"v$compare");
@@ -1737,20 +1585,17 @@ fn @"merge_ascending_pairs"(@"p$sequences": Value, @"p$compare": Value, @"p$acc"
         const @"s$0" = @"v$sequences";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$compare");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null and (@"s$0").list.?.tail == null)) break :c1;
             const @"v$sequence" = P.dup((@"s$0").list.?.head);
-            const @"r$1" = @"reverse"(P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$sequence")) }, P.dup(@"v$acc")));
-            P.drop(@"v$sequence");
+            const @"r$1" = @"reverse"(P.listFromSlice(&[_]Value{ @"reverse"(@"v$sequence") }, @"v$acc"));
             P.drop(@"s$0");
             P.drop(@"v$compare");
-            P.drop(@"v$acc");
             return @"r$1";
         }
         c2: {
@@ -1758,16 +1603,12 @@ fn @"merge_ascending_pairs"(@"p$sequences": Value, @"p$compare": Value, @"p$acc"
             const @"v$ascending1" = P.dup((@"s$0").list.?.head);
             const @"v$ascending2" = P.dup((@"s$0").list.?.tail.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail.?.tail));
-            const @"v$descending" = @"merge_ascendings"(P.dup(@"v$ascending1"), P.dup(@"v$ascending2"), P.dup(@"v$compare"), P.emptyList());
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"v$descending" = @"merge_ascendings"(@"v$ascending1", @"v$ascending2", P.dup(@"v$compare"), P.emptyList());
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$compare");
-            const @"tail$2" = P.listFromSlice(&[_]Value{ @"v$descending" }, P.dup(@"v$acc"));
-            P.drop(@"v$ascending1");
-            P.drop(@"v$ascending2");
-            P.drop(@"v$rest");
+            const @"tail$2" = P.listFromSlice(&[_]Value{ @"v$descending" }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$compare");
-            P.drop(@"v$acc");
             @"v$sequences" = @"tail$0";
             @"v$compare" = @"tail$1";
             @"v$acc" = @"tail$2";
@@ -1782,47 +1623,40 @@ fn @"merge_all"(@"p$sequences": Value, @"p$direction": Value, @"p$compare": Valu
     var @"v$direction" = @"p$direction";
     var @"v$compare" = @"p$compare";
     while (true) {
-        const @"s$0" = P.dup(@"v$sequences");
-        const @"s$1" = @"v$direction";
+        const @"s$0" = @"v$direction";
         c0: {
-            if (!((@"s$0").list == null)) break :c0;
+            if (!((@"v$sequences").list == null)) break :c0;
             const @"r$0" = P.emptyList();
             P.drop(@"s$0");
-            P.drop(@"s$1");
             P.drop(@"v$sequences");
             P.drop(@"v$compare");
             return @"r$0";
         }
         c1: {
-            if (!((@"s$0").list != null and (@"s$0").list.?.tail == null and P.recordHasName(@"s$1", "Ascending"))) break :c1;
-            const @"v$sequence" = P.dup((@"s$0").list.?.head);
-            const @"r$1" = P.dup(@"v$sequence");
-            P.drop(@"v$sequence");
+            if (!((@"v$sequences").list != null and (@"v$sequences").list.?.tail == null and P.recordHasName(@"s$0", "Ascending"))) break :c1;
+            const @"v$sequence" = P.dup((@"v$sequences").list.?.head);
+            const @"r$1" = @"v$sequence";
             P.drop(@"s$0");
-            P.drop(@"s$1");
             P.drop(@"v$sequences");
             P.drop(@"v$compare");
             return @"r$1";
         }
         c2: {
-            if (!((@"s$0").list != null and (@"s$0").list.?.tail == null and P.recordHasName(@"s$1", "Descending"))) break :c2;
-            const @"v$sequence$1" = P.dup((@"s$0").list.?.head);
-            const @"r$2" = @"reverse"(P.dup(@"v$sequence$1"));
-            P.drop(@"v$sequence$1");
+            if (!((@"v$sequences").list != null and (@"v$sequences").list.?.tail == null and P.recordHasName(@"s$0", "Descending"))) break :c2;
+            const @"v$sequence$1" = P.dup((@"v$sequences").list.?.head);
+            const @"r$2" = @"reverse"(@"v$sequence$1");
             P.drop(@"s$0");
-            P.drop(@"s$1");
             P.drop(@"v$sequences");
             P.drop(@"v$compare");
             return @"r$2";
         }
         c3: {
-            if (!(P.recordHasName(@"s$1", "Ascending"))) break :c3;
+            if (!(P.recordHasName(@"s$0", "Ascending"))) break :c3;
             const @"v$sequences$1" = @"merge_ascending_pairs"(P.dup(@"v$sequences"), P.dup(@"v$compare"), P.emptyList());
             const @"tail$0" = @"v$sequences$1";
             const @"tail$1" = P.makeRecord("Descending", &[_]Value{});
             const @"tail$2" = P.dup(@"v$compare");
             P.drop(@"s$0");
-            P.drop(@"s$1");
             P.drop(@"v$sequences");
             P.drop(@"v$compare");
             @"v$sequences" = @"tail$0";
@@ -1831,13 +1665,12 @@ fn @"merge_all"(@"p$sequences": Value, @"p$direction": Value, @"p$compare": Valu
             continue;
         }
         c4: {
-            if (!(P.recordHasName(@"s$1", "Descending"))) break :c4;
+            if (!(P.recordHasName(@"s$0", "Descending"))) break :c4;
             const @"v$sequences$2" = @"merge_descending_pairs"(P.dup(@"v$sequences"), P.dup(@"v$compare"), P.emptyList());
             const @"tail$3" = @"v$sequences$2";
             const @"tail$4" = P.makeRecord("Ascending", &[_]Value{});
             const @"tail$5" = P.dup(@"v$compare");
             P.drop(@"s$0");
-            P.drop(@"s$1");
             P.drop(@"v$sequences");
             P.drop(@"v$compare");
             @"v$sequences" = @"tail$3";
@@ -1861,11 +1694,9 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"s$1" = P.dup(@"v$direction");
             c1: {
-                if (!(P.recordHasName(@"s$1", "Ascending"))) break :c1;
+                if (!(P.recordHasName(@"v$direction", "Ascending"))) break :c1;
                 const @"r$0" = P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$growing$1")) }, P.dup(@"v$acc"));
-                P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$growing$1");
                 P.drop(@"v$compare");
@@ -1875,9 +1706,8 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                 return @"r$0";
             }
             c2: {
-                if (!(P.recordHasName(@"s$1", "Descending"))) break :c2;
+                if (!(P.recordHasName(@"v$direction", "Descending"))) break :c2;
                 const @"r$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$growing$1") }, P.dup(@"v$acc"));
-                P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$growing$1");
                 P.drop(@"v$compare");
@@ -1892,18 +1722,16 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
             if (!((@"s$0").list != null)) break :c3;
             const @"v$new" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$2" = P.call2(P.dup(@"v$compare"), P.dup(@"v$prev"), P.dup(@"v$new"));
-            const @"s$3" = P.dup(@"v$direction");
+            const @"s$1" = P.call2(P.dup(@"v$compare"), P.dup(@"v$prev"), P.dup(@"v$new"));
             c4: {
-                if (!(P.recordHasName(@"s$2", "Gt") and P.recordHasName(@"s$3", "Descending"))) break :c4;
+                if (!(P.recordHasName(@"s$1", "Gt") and P.recordHasName(@"v$direction", "Descending"))) break :c4;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$compare");
                 const @"tail$2" = P.dup(@"v$growing$1");
                 const @"tail$3" = P.dup(@"v$direction");
                 const @"tail$4" = P.dup(@"v$new");
                 const @"tail$5" = P.dup(@"v$acc");
-                P.drop(@"s$2");
-                P.drop(@"s$3");
+                P.drop(@"s$1");
                 P.drop(@"v$new");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -1921,15 +1749,14 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                 continue;
             }
             c5: {
-                if (!(P.recordHasName(@"s$2", "Lt") and P.recordHasName(@"s$3", "Ascending"))) break :c5;
+                if (!(P.recordHasName(@"s$1", "Lt") and P.recordHasName(@"v$direction", "Ascending"))) break :c5;
                 const @"tail$6" = P.dup(@"v$rest");
                 const @"tail$7" = P.dup(@"v$compare");
                 const @"tail$8" = P.dup(@"v$growing$1");
                 const @"tail$9" = P.dup(@"v$direction");
                 const @"tail$10" = P.dup(@"v$new");
                 const @"tail$11" = P.dup(@"v$acc");
-                P.drop(@"s$2");
-                P.drop(@"s$3");
+                P.drop(@"s$1");
                 P.drop(@"v$new");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -1947,15 +1774,14 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                 continue;
             }
             c6: {
-                if (!(P.recordHasName(@"s$2", "Eq") and P.recordHasName(@"s$3", "Ascending"))) break :c6;
+                if (!(P.recordHasName(@"s$1", "Eq") and P.recordHasName(@"v$direction", "Ascending"))) break :c6;
                 const @"tail$12" = P.dup(@"v$rest");
                 const @"tail$13" = P.dup(@"v$compare");
                 const @"tail$14" = P.dup(@"v$growing$1");
                 const @"tail$15" = P.dup(@"v$direction");
                 const @"tail$16" = P.dup(@"v$new");
                 const @"tail$17" = P.dup(@"v$acc");
-                P.drop(@"s$2");
-                P.drop(@"s$3");
+                P.drop(@"s$1");
                 P.drop(@"v$new");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
@@ -1973,31 +1799,24 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                 continue;
             }
             c7: {
-                if (!(P.recordHasName(@"s$2", "Gt") and P.recordHasName(@"s$3", "Ascending"))) break :c7;
+                if (!(P.recordHasName(@"s$1", "Gt") and P.recordHasName(@"v$direction", "Ascending"))) break :c7;
                 const @"v$acc$1" = case8: {
-                    const @"s$4" = P.dup(@"v$direction");
                     c9: {
-                        if (!(P.recordHasName(@"s$4", "Ascending"))) break :c9;
+                        if (!(P.recordHasName(@"v$direction", "Ascending"))) break :c9;
                         const @"r$2" = P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$growing$1")) }, P.dup(@"v$acc"));
-                        P.drop(@"s$4");
                         break :case8 @"r$2";
                     }
                     c10: {
-                        if (!(P.recordHasName(@"s$4", "Descending"))) break :c10;
+                        if (!(P.recordHasName(@"v$direction", "Descending"))) break :c10;
                         const @"r$3" = P.listFromSlice(&[_]Value{ P.dup(@"v$growing$1") }, P.dup(@"v$acc"));
-                        P.drop(@"s$4");
                         break :case8 @"r$3";
                     }
                     unreachable;
                 };
-                const @"s$5" = P.dup(@"v$rest");
                 c11: {
-                    if (!((@"s$5").list == null)) break :c11;
-                    const @"r$4" = P.listFromSlice(&[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList()) }, P.dup(@"v$acc$1"));
-                    P.drop(@"s$5");
-                    P.drop(@"v$acc$1");
-                    P.drop(@"s$2");
-                    P.drop(@"s$3");
+                    if (!((@"v$rest").list == null)) break :c11;
+                    const @"r$4" = P.listFromSlice(&[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList()) }, @"v$acc$1");
+                    P.drop(@"s$1");
                     P.drop(@"v$new");
                     P.drop(@"v$rest");
                     P.drop(@"s$0");
@@ -2009,43 +1828,39 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                     return @"r$4";
                 }
                 c12: {
-                    if (!((@"s$5").list != null)) break :c12;
-                    const @"v$next" = P.dup((@"s$5").list.?.head);
-                    const @"v$rest$1" = P.dup(P.listValue((@"s$5").list.?.tail));
+                    if (!((@"v$rest").list != null)) break :c12;
+                    const @"v$next" = P.dup((@"v$rest").list.?.head);
+                    const @"v$rest$1" = P.dup(P.listValue((@"v$rest").list.?.tail));
                     const @"v$direction$1" = case13: {
-                        const @"s$6" = P.call2(P.dup(@"v$compare"), P.dup(@"v$new"), P.dup(@"v$next"));
+                        const @"s$2" = P.call2(P.dup(@"v$compare"), P.dup(@"v$new"), P.dup(@"v$next"));
                         c14: {
-                            if (!(P.recordHasName(@"s$6", "Lt"))) break :c14;
+                            if (!(P.recordHasName(@"s$2", "Lt"))) break :c14;
                             const @"r$5" = P.makeRecord("Ascending", &[_]Value{});
-                            P.drop(@"s$6");
+                            P.drop(@"s$2");
                             break :case13 @"r$5";
                         }
                         c15: {
-                            if (!(P.recordHasName(@"s$6", "Eq"))) break :c15;
+                            if (!(P.recordHasName(@"s$2", "Eq"))) break :c15;
                             const @"r$6" = P.makeRecord("Ascending", &[_]Value{});
-                            P.drop(@"s$6");
+                            P.drop(@"s$2");
                             break :case13 @"r$6";
                         }
                         c16: {
-                            if (!(P.recordHasName(@"s$6", "Gt"))) break :c16;
+                            if (!(P.recordHasName(@"s$2", "Gt"))) break :c16;
                             const @"r$7" = P.makeRecord("Descending", &[_]Value{});
-                            P.drop(@"s$6");
+                            P.drop(@"s$2");
                             break :case13 @"r$7";
                         }
                         unreachable;
                     };
-                    const @"tail$18" = P.dup(@"v$rest$1");
+                    const @"tail$18" = @"v$rest$1";
                     const @"tail$19" = P.dup(@"v$compare");
                     const @"tail$20" = P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList());
                     const @"tail$21" = @"v$direction$1";
                     const @"tail$22" = P.dup(@"v$next");
-                    const @"tail$23" = P.dup(@"v$acc$1");
+                    const @"tail$23" = @"v$acc$1";
                     P.drop(@"v$next");
-                    P.drop(@"v$rest$1");
-                    P.drop(@"s$5");
-                    P.drop(@"v$acc$1");
-                    P.drop(@"s$2");
-                    P.drop(@"s$3");
+                    P.drop(@"s$1");
                     P.drop(@"v$new");
                     P.drop(@"v$rest");
                     P.drop(@"s$0");
@@ -2065,31 +1880,24 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                 unreachable;
             }
             c17: {
-                if (!(P.recordHasName(@"s$2", "Lt") and P.recordHasName(@"s$3", "Descending"))) break :c17;
+                if (!(P.recordHasName(@"s$1", "Lt") and P.recordHasName(@"v$direction", "Descending"))) break :c17;
                 const @"v$acc$2" = case18: {
-                    const @"s$7" = P.dup(@"v$direction");
                     c19: {
-                        if (!(P.recordHasName(@"s$7", "Ascending"))) break :c19;
+                        if (!(P.recordHasName(@"v$direction", "Ascending"))) break :c19;
                         const @"r$8" = P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$growing$1")) }, P.dup(@"v$acc"));
-                        P.drop(@"s$7");
                         break :case18 @"r$8";
                     }
                     c20: {
-                        if (!(P.recordHasName(@"s$7", "Descending"))) break :c20;
+                        if (!(P.recordHasName(@"v$direction", "Descending"))) break :c20;
                         const @"r$9" = P.listFromSlice(&[_]Value{ P.dup(@"v$growing$1") }, P.dup(@"v$acc"));
-                        P.drop(@"s$7");
                         break :case18 @"r$9";
                     }
                     unreachable;
                 };
-                const @"s$8" = P.dup(@"v$rest");
                 c21: {
-                    if (!((@"s$8").list == null)) break :c21;
-                    const @"r$10" = P.listFromSlice(&[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList()) }, P.dup(@"v$acc$2"));
-                    P.drop(@"s$8");
-                    P.drop(@"v$acc$2");
-                    P.drop(@"s$2");
-                    P.drop(@"s$3");
+                    if (!((@"v$rest").list == null)) break :c21;
+                    const @"r$10" = P.listFromSlice(&[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList()) }, @"v$acc$2");
+                    P.drop(@"s$1");
                     P.drop(@"v$new");
                     P.drop(@"v$rest");
                     P.drop(@"s$0");
@@ -2101,43 +1909,39 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                     return @"r$10";
                 }
                 c22: {
-                    if (!((@"s$8").list != null)) break :c22;
-                    const @"v$next$1" = P.dup((@"s$8").list.?.head);
-                    const @"v$rest$2" = P.dup(P.listValue((@"s$8").list.?.tail));
+                    if (!((@"v$rest").list != null)) break :c22;
+                    const @"v$next$1" = P.dup((@"v$rest").list.?.head);
+                    const @"v$rest$2" = P.dup(P.listValue((@"v$rest").list.?.tail));
                     const @"v$direction$2" = case23: {
-                        const @"s$9" = P.call2(P.dup(@"v$compare"), P.dup(@"v$new"), P.dup(@"v$next$1"));
+                        const @"s$3" = P.call2(P.dup(@"v$compare"), P.dup(@"v$new"), P.dup(@"v$next$1"));
                         c24: {
-                            if (!(P.recordHasName(@"s$9", "Lt"))) break :c24;
+                            if (!(P.recordHasName(@"s$3", "Lt"))) break :c24;
                             const @"r$11" = P.makeRecord("Ascending", &[_]Value{});
-                            P.drop(@"s$9");
+                            P.drop(@"s$3");
                             break :case23 @"r$11";
                         }
                         c25: {
-                            if (!(P.recordHasName(@"s$9", "Eq"))) break :c25;
+                            if (!(P.recordHasName(@"s$3", "Eq"))) break :c25;
                             const @"r$12" = P.makeRecord("Ascending", &[_]Value{});
-                            P.drop(@"s$9");
+                            P.drop(@"s$3");
                             break :case23 @"r$12";
                         }
                         c26: {
-                            if (!(P.recordHasName(@"s$9", "Gt"))) break :c26;
+                            if (!(P.recordHasName(@"s$3", "Gt"))) break :c26;
                             const @"r$13" = P.makeRecord("Descending", &[_]Value{});
-                            P.drop(@"s$9");
+                            P.drop(@"s$3");
                             break :case23 @"r$13";
                         }
                         unreachable;
                     };
-                    const @"tail$24" = P.dup(@"v$rest$2");
+                    const @"tail$24" = @"v$rest$2";
                     const @"tail$25" = P.dup(@"v$compare");
                     const @"tail$26" = P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList());
                     const @"tail$27" = @"v$direction$2";
                     const @"tail$28" = P.dup(@"v$next$1");
-                    const @"tail$29" = P.dup(@"v$acc$2");
+                    const @"tail$29" = @"v$acc$2";
                     P.drop(@"v$next$1");
-                    P.drop(@"v$rest$2");
-                    P.drop(@"s$8");
-                    P.drop(@"v$acc$2");
-                    P.drop(@"s$2");
-                    P.drop(@"s$3");
+                    P.drop(@"s$1");
                     P.drop(@"v$new");
                     P.drop(@"v$rest");
                     P.drop(@"s$0");
@@ -2157,31 +1961,24 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                 unreachable;
             }
             c27: {
-                if (!(P.recordHasName(@"s$2", "Eq") and P.recordHasName(@"s$3", "Descending"))) break :c27;
+                if (!(P.recordHasName(@"s$1", "Eq") and P.recordHasName(@"v$direction", "Descending"))) break :c27;
                 const @"v$acc$3" = case28: {
-                    const @"s$10" = P.dup(@"v$direction");
                     c29: {
-                        if (!(P.recordHasName(@"s$10", "Ascending"))) break :c29;
+                        if (!(P.recordHasName(@"v$direction", "Ascending"))) break :c29;
                         const @"r$14" = P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$growing$1")) }, P.dup(@"v$acc"));
-                        P.drop(@"s$10");
                         break :case28 @"r$14";
                     }
                     c30: {
-                        if (!(P.recordHasName(@"s$10", "Descending"))) break :c30;
+                        if (!(P.recordHasName(@"v$direction", "Descending"))) break :c30;
                         const @"r$15" = P.listFromSlice(&[_]Value{ P.dup(@"v$growing$1") }, P.dup(@"v$acc"));
-                        P.drop(@"s$10");
                         break :case28 @"r$15";
                     }
                     unreachable;
                 };
-                const @"s$11" = P.dup(@"v$rest");
                 c31: {
-                    if (!((@"s$11").list == null)) break :c31;
-                    const @"r$16" = P.listFromSlice(&[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList()) }, P.dup(@"v$acc$3"));
-                    P.drop(@"s$11");
-                    P.drop(@"v$acc$3");
-                    P.drop(@"s$2");
-                    P.drop(@"s$3");
+                    if (!((@"v$rest").list == null)) break :c31;
+                    const @"r$16" = P.listFromSlice(&[_]Value{ P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList()) }, @"v$acc$3");
+                    P.drop(@"s$1");
                     P.drop(@"v$new");
                     P.drop(@"v$rest");
                     P.drop(@"s$0");
@@ -2193,43 +1990,39 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
                     return @"r$16";
                 }
                 c32: {
-                    if (!((@"s$11").list != null)) break :c32;
-                    const @"v$next$2" = P.dup((@"s$11").list.?.head);
-                    const @"v$rest$3" = P.dup(P.listValue((@"s$11").list.?.tail));
+                    if (!((@"v$rest").list != null)) break :c32;
+                    const @"v$next$2" = P.dup((@"v$rest").list.?.head);
+                    const @"v$rest$3" = P.dup(P.listValue((@"v$rest").list.?.tail));
                     const @"v$direction$3" = case33: {
-                        const @"s$12" = P.call2(P.dup(@"v$compare"), P.dup(@"v$new"), P.dup(@"v$next$2"));
+                        const @"s$4" = P.call2(P.dup(@"v$compare"), P.dup(@"v$new"), P.dup(@"v$next$2"));
                         c34: {
-                            if (!(P.recordHasName(@"s$12", "Lt"))) break :c34;
+                            if (!(P.recordHasName(@"s$4", "Lt"))) break :c34;
                             const @"r$17" = P.makeRecord("Ascending", &[_]Value{});
-                            P.drop(@"s$12");
+                            P.drop(@"s$4");
                             break :case33 @"r$17";
                         }
                         c35: {
-                            if (!(P.recordHasName(@"s$12", "Eq"))) break :c35;
+                            if (!(P.recordHasName(@"s$4", "Eq"))) break :c35;
                             const @"r$18" = P.makeRecord("Ascending", &[_]Value{});
-                            P.drop(@"s$12");
+                            P.drop(@"s$4");
                             break :case33 @"r$18";
                         }
                         c36: {
-                            if (!(P.recordHasName(@"s$12", "Gt"))) break :c36;
+                            if (!(P.recordHasName(@"s$4", "Gt"))) break :c36;
                             const @"r$19" = P.makeRecord("Descending", &[_]Value{});
-                            P.drop(@"s$12");
+                            P.drop(@"s$4");
                             break :case33 @"r$19";
                         }
                         unreachable;
                     };
-                    const @"tail$30" = P.dup(@"v$rest$3");
+                    const @"tail$30" = @"v$rest$3";
                     const @"tail$31" = P.dup(@"v$compare");
                     const @"tail$32" = P.listFromSlice(&[_]Value{ P.dup(@"v$new") }, P.emptyList());
                     const @"tail$33" = @"v$direction$3";
                     const @"tail$34" = P.dup(@"v$next$2");
-                    const @"tail$35" = P.dup(@"v$acc$3");
+                    const @"tail$35" = @"v$acc$3";
                     P.drop(@"v$next$2");
-                    P.drop(@"v$rest$3");
-                    P.drop(@"s$11");
-                    P.drop(@"v$acc$3");
-                    P.drop(@"s$2");
-                    P.drop(@"s$3");
+                    P.drop(@"s$1");
                     P.drop(@"v$new");
                     P.drop(@"v$rest");
                     P.drop(@"s$0");
@@ -2254,61 +2047,61 @@ fn @"sequences"(@"p$list": Value, @"p$compare": Value, @"p$growing": Value, @"p$
     }
 }
 
-pub fn @"sort"(@"v$list": Value, @"v$compare": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"borrowed$sort"(@"v$list": Value, @"v$compare": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
+        if (!((@"v$list").list == null)) break :c0;
         const @"r$0" = P.emptyList();
-        P.drop(@"s$0");
         P.drop(@"v$compare");
         return @"r$0";
     }
     c1: {
-        if (!((@"s$0").list != null and (@"s$0").list.?.tail == null)) break :c1;
-        const @"v$x" = P.dup((@"s$0").list.?.head);
-        const @"r$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$x") }, P.emptyList());
-        P.drop(@"v$x");
-        P.drop(@"s$0");
+        if (!((@"v$list").list != null and (@"v$list").list.?.tail == null)) break :c1;
+        const @"v$x" = P.dup((@"v$list").list.?.head);
+        const @"r$1" = P.listFromSlice(&[_]Value{ @"v$x" }, P.emptyList());
         P.drop(@"v$compare");
         return @"r$1";
     }
     c2: {
-        if (!((@"s$0").list != null and (@"s$0").list.?.tail != null)) break :c2;
-        const @"v$x$1" = P.dup((@"s$0").list.?.head);
-        const @"v$y" = P.dup((@"s$0").list.?.tail.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail.?.tail));
+        if (!((@"v$list").list != null and (@"v$list").list.?.tail != null)) break :c2;
+        const @"v$x$1" = P.dup((@"v$list").list.?.head);
+        const @"v$y" = P.dup((@"v$list").list.?.tail.?.head);
+        const @"v$rest" = P.dup(P.listValue((@"v$list").list.?.tail.?.tail));
         const @"v$direction" = case3: {
-            const @"s$1" = P.call2(P.dup(@"v$compare"), P.dup(@"v$x$1"), P.dup(@"v$y"));
+            const @"s$0" = P.call2(P.dup(@"v$compare"), P.dup(@"v$x$1"), P.dup(@"v$y"));
             c4: {
-                if (!(P.recordHasName(@"s$1", "Lt"))) break :c4;
+                if (!(P.recordHasName(@"s$0", "Lt"))) break :c4;
                 const @"r$2" = P.makeRecord("Ascending", &[_]Value{});
-                P.drop(@"s$1");
+                P.drop(@"s$0");
                 break :case3 @"r$2";
             }
             c5: {
-                if (!(P.recordHasName(@"s$1", "Eq"))) break :c5;
+                if (!(P.recordHasName(@"s$0", "Eq"))) break :c5;
                 const @"r$3" = P.makeRecord("Ascending", &[_]Value{});
-                P.drop(@"s$1");
+                P.drop(@"s$0");
                 break :case3 @"r$3";
             }
             c6: {
-                if (!(P.recordHasName(@"s$1", "Gt"))) break :c6;
+                if (!(P.recordHasName(@"s$0", "Gt"))) break :c6;
                 const @"r$4" = P.makeRecord("Descending", &[_]Value{});
-                P.drop(@"s$1");
+                P.drop(@"s$0");
                 break :case3 @"r$4";
             }
             unreachable;
         };
-        const @"v$sequences" = @"sequences"(P.dup(@"v$rest"), P.dup(@"v$compare"), P.listFromSlice(&[_]Value{ P.dup(@"v$x$1") }, P.emptyList()), @"v$direction", P.dup(@"v$y"), P.emptyList());
+        const @"v$sequences" = @"sequences"(@"v$rest", P.dup(@"v$compare"), P.listFromSlice(&[_]Value{ P.dup(@"v$x$1") }, P.emptyList()), @"v$direction", P.dup(@"v$y"), P.emptyList());
         const @"r$5" = @"merge_all"(@"v$sequences", P.makeRecord("Ascending", &[_]Value{}), P.dup(@"v$compare"));
         P.drop(@"v$x$1");
         P.drop(@"v$y");
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
         P.drop(@"v$compare");
         return @"r$5";
     }
     unreachable;
+}
+
+pub fn @"sort"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$sort"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"repeat_loop"(@"p$item": Value, @"p$times": Value, @"p$acc": Value) Value {
@@ -2319,22 +2112,20 @@ fn @"repeat_loop"(@"p$item": Value, @"p$times": Value, @"p$acc": Value) Value {
         const @"s$0" = P.boolValue(((@"v$times").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
-            const @"r$0" = P.dup(@"v$acc");
+            const @"r$0" = @"v$acc";
             P.drop(@"s$0");
             P.drop(@"v$item");
             P.drop(@"v$times");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
             const @"tail$0" = P.dup(@"v$item");
             const @"tail$1" = P.intValue(((@"v$times").int -% 1));
-            const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$item") }, P.dup(@"v$acc"));
+            const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$item") }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$item");
             P.drop(@"v$times");
-            P.drop(@"v$acc");
             @"v$item" = @"tail$0";
             @"v$times" = @"tail$1";
             @"v$acc" = @"tail$2";
@@ -2356,22 +2147,20 @@ fn @"split_loop"(@"p$list": Value, @"p$n": Value, @"p$taken": Value) Value {
         const @"s$0" = P.boolValue(((@"v$n").int <= 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
-            const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$taken")), P.dup(@"v$list") });
+            const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$taken")), @"v$list" });
             P.drop(@"s$0");
-            P.drop(@"v$list");
             P.drop(@"v$n");
             P.drop(@"v$taken");
             return @"r$0";
         }
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
-            const @"s$1" = P.dup(@"v$list");
+            const @"s$1" = @"v$list";
             c2: {
                 if (!((@"s$1").list == null)) break :c2;
                 const @"r$1" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$taken")), P.emptyList() });
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$n");
                 P.drop(@"v$taken");
                 return @"r$1";
@@ -2381,13 +2170,10 @@ fn @"split_loop"(@"p$list": Value, @"p$n": Value, @"p$taken": Value) Value {
                 const @"v$first" = P.dup((@"s$1").list.?.head);
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
                 const @"reuse$0" = P.dropReuseCons(@"s$1");
-                const @"tail$0" = P.dup(@"v$rest");
+                const @"tail$0" = @"v$rest";
                 const @"tail$1" = P.intValue(((@"v$n").int -% 1));
-                const @"tail$2" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$taken"));
-                P.drop(@"v$first");
-                P.drop(@"v$rest");
+                const @"tail$2" = P.consReuse(@"reuse$0", @"v$first", P.dup(@"v$taken"));
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$n");
                 P.drop(@"v$taken");
                 @"v$list" = @"tail$0";
@@ -2410,30 +2196,27 @@ fn @"split_while_loop"(@"p$list": Value, @"p$f": Value, @"p$acc": Value) Value {
     var @"v$f" = @"p$f";
     var @"v$acc" = @"p$acc";
     while (true) {
-        const @"s$0" = P.dup(@"v$list");
         c0: {
-            if (!((@"s$0").list == null)) break :c0;
+            if (!((@"v$list").list == null)) break :c0;
             const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$acc")), P.emptyList() });
-            P.drop(@"s$0");
             P.drop(@"v$list");
             P.drop(@"v$f");
             P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
-            if (!((@"s$0").list != null)) break :c1;
-            const @"v$first" = P.dup((@"s$0").list.?.head);
-            const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$1" = P.call1(P.dup(@"v$f"), P.dup(@"v$first"));
+            if (!((@"v$list").list != null)) break :c1;
+            const @"v$first" = P.dup((@"v$list").list.?.head);
+            const @"v$rest" = P.dup(P.listValue((@"v$list").list.?.tail));
+            const @"s$0" = P.call1(P.dup(@"v$f"), P.dup(@"v$first"));
             c2: {
-                if (!((@"s$1").bool)) break :c2;
+                if (!((@"s$0").bool)) break :c2;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$f");
                 const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.dup(@"v$acc"));
-                P.drop(@"s$1");
+                P.drop(@"s$0");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
-                P.drop(@"s$0");
                 P.drop(@"v$list");
                 P.drop(@"v$f");
                 P.drop(@"v$acc");
@@ -2443,12 +2226,11 @@ fn @"split_while_loop"(@"p$list": Value, @"p$f": Value, @"p$acc": Value) Value {
                 continue;
             }
             c3: {
-                if (!(!((@"s$1").bool))) break :c3;
+                if (!(!((@"s$0").bool))) break :c3;
                 const @"r$1" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$acc")), P.dup(@"v$list") });
-                P.drop(@"s$1");
+                P.drop(@"s$0");
                 P.drop(@"v$first");
                 P.drop(@"v$rest");
-                P.drop(@"s$0");
                 P.drop(@"v$list");
                 P.drop(@"v$f");
                 P.drop(@"v$acc");
@@ -2484,10 +2266,10 @@ fn @"key_pop_loop"(@"p$list": Value, @"p$key": Value, @"p$checked": Value) Value
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-            P.drop(@"s$0");
             P.drop(@"v$key");
             P.drop(@"v$checked");
+            const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
+            P.drop(@"s$0");
             return @"r$0";
         }
         c1: {
@@ -2496,13 +2278,10 @@ fn @"key_pop_loop"(@"p$list": Value, @"p$key": Value, @"p$checked": Value) Value
             const @"v$v" = P.dup(((@"s$0").list.?.head).tuple[1]);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             if (!((P.eq(P.dup(@"v$k"), P.dup(@"v$key"))).bool)) { P.drop(@"v$k"); P.drop(@"v$v"); P.drop(@"v$rest"); break :c1; }
-            const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.tupleValue(&[_]Value{ P.dup(@"v$v"), @"reverse_and_prepend"(P.dup(@"v$checked"), P.dup(@"v$rest")) }) }, &[_]?[]const u8{});
-            P.drop(@"v$k");
-            P.drop(@"v$v");
-            P.drop(@"v$rest");
-            P.drop(@"s$0");
             P.drop(@"v$key");
-            P.drop(@"v$checked");
+            const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.tupleValue(&[_]Value{ @"v$v", @"reverse_and_prepend"(@"v$checked", @"v$rest") }) }, &[_]?[]const u8{});
+            P.drop(@"v$k");
+            P.drop(@"s$0");
             return @"r$1";
         }
         c2: {
@@ -2510,13 +2289,9 @@ fn @"key_pop_loop"(@"p$list": Value, @"p$key": Value, @"p$checked": Value) Value
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest$1" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest$1");
-            const @"tail$1" = P.dup(@"v$key");
-            const @"tail$2" = P.consReuse(@"reuse$0", P.dup(@"v$first"), P.dup(@"v$checked"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest$1");
-            P.drop(@"v$key");
-            P.drop(@"v$checked");
+            const @"tail$0" = @"v$rest$1";
+            const @"tail$1" = @"v$key";
+            const @"tail$2" = P.consReuse(@"reuse$0", @"v$first", @"v$checked");
             @"v$list" = @"tail$0";
             @"v$key" = @"tail$1";
             @"v$checked" = @"tail$2";
@@ -2542,29 +2317,19 @@ fn @"key_set_loop"(@"p$list": Value, @"p$key": Value, @"p$value": Value, @"p$ins
             const @"v$k" = P.dup(((@"s$0").list.?.head).tuple[0]);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             if (!((P.eq(P.dup(@"v$k"), P.dup(@"v$key"))).bool)) { P.drop(@"v$k"); P.drop(@"v$rest"); break :c0; }
-            const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"r$0" = @"reverse_and_prepend"(P.dup(@"v$inspected"), P.consReuse(@"reuse$0", P.tupleValue(&[_]Value{ P.dup(@"v$k"), P.dup(@"v$value") }), P.dup(@"v$rest")));
-            P.drop(@"v$k");
-            P.drop(@"v$rest");
             P.drop(@"v$key");
-            P.drop(@"v$value");
-            P.drop(@"v$inspected");
-            return @"r$0";
+            const @"reuse$0" = P.dropReuseCons(@"s$0");
+            return @"reverse_and_prepend"(@"v$inspected", P.consReuse(@"reuse$0", P.tupleValue(&[_]Value{ @"v$k", @"v$value" }), @"v$rest"));
         }
         c1: {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest$1" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$1" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$rest$1");
-            const @"tail$1" = P.dup(@"v$key");
-            const @"tail$2" = P.dup(@"v$value");
-            const @"tail$3" = P.consReuse(@"reuse$1", P.dup(@"v$first"), P.dup(@"v$inspected"));
-            P.drop(@"v$first");
-            P.drop(@"v$rest$1");
-            P.drop(@"v$key");
-            P.drop(@"v$value");
-            P.drop(@"v$inspected");
+            const @"tail$0" = @"v$rest$1";
+            const @"tail$1" = @"v$key";
+            const @"tail$2" = @"v$value";
+            const @"tail$3" = P.consReuse(@"reuse$1", @"v$first", @"v$inspected");
             @"v$list" = @"tail$0";
             @"v$key" = @"tail$1";
             @"v$value" = @"tail$2";
@@ -2573,12 +2338,9 @@ fn @"key_set_loop"(@"p$list": Value, @"p$key": Value, @"p$value": Value, @"p$ins
         }
         c2: {
             if (!((@"s$0").list == null)) break :c2;
-            const @"r$1" = @"reverse"(P.listFromSlice(&[_]Value{ P.tupleValue(&[_]Value{ P.dup(@"v$key"), P.dup(@"v$value") }) }, P.dup(@"v$inspected")));
+            const @"r$0" = @"reverse"(P.listFromSlice(&[_]Value{ P.tupleValue(&[_]Value{ @"v$key", @"v$value" }) }, @"v$inspected"));
             P.drop(@"s$0");
-            P.drop(@"v$key");
-            P.drop(@"v$value");
-            P.drop(@"v$inspected");
-            return @"r$1";
+            return @"r$0";
         }
         unreachable;
     }
@@ -2604,11 +2366,9 @@ pub fn @"each"(@"p$list": Value, @"p$f": Value) Value {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            P.drop(P.call1(P.dup(@"v$f"), P.dup(@"v$first")));
-            const @"tail$0" = P.dup(@"v$rest");
+            P.drop(P.call1(P.dup(@"v$f"), @"v$first"));
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$f");
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$f");
             @"v$list" = @"tail$0";
@@ -2635,13 +2395,12 @@ pub fn @"try_each"(@"p$list": Value, @"p$fun": Value) Value {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"s$1" = P.call1(P.dup(@"v$fun"), P.dup(@"v$first"));
+            const @"s$1" = P.call1(P.dup(@"v$fun"), @"v$first");
             c2: {
                 if (!(P.recordHasName(@"s$1", "Ok"))) break :c2;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$fun");
                 P.drop(@"s$1");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$fun");
@@ -2653,9 +2412,7 @@ pub fn @"try_each"(@"p$list": Value, @"p$fun": Value) Value {
                 if (!(P.recordHasName(@"s$1", "Error"))) break :c3;
                 const @"v$e" = P.dup((@"s$1").record.fields[0]);
                 const @"reuse$0" = P.dropReuseRecord(@"s$1", 1);
-                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ P.dup(@"v$e") }, &[_]?[]const u8{});
-                P.drop(@"v$e");
-                P.drop(@"v$first");
+                const @"r$1" = P.makeRecordReuse(@"reuse$0", "Error", &[_]Value{ @"v$e" }, &[_]?[]const u8{});
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$fun");
@@ -2746,30 +2503,27 @@ fn @"permutation_prepend"(@"p$el": Value, @"p$permutations": Value, @"p$list_1":
         const @"s$0" = @"v$permutations";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"permutation_zip"(P.dup(@"v$list_1"), P.dup(@"v$list_2"), P.dup(@"v$acc"));
+            const @"r$1" = bc1: {
+                const @"bor$0" = @"v$list_1";
+                const @"r$0" = @"borrowed$permutation_zip"(@"bor$0", @"v$list_2", @"v$acc");
+                P.drop(@"bor$0");
+                break :bc1 @"r$0";
+            };
             P.drop(@"s$0");
             P.drop(@"v$el");
-            P.drop(@"v$list_1");
-            P.drop(@"v$list_2");
-            P.drop(@"v$acc");
-            return @"r$0";
+            return @"r$1";
         }
-        c1: {
-            if (!((@"s$0").list != null)) break :c1;
+        c2: {
+            if (!((@"s$0").list != null)) break :c2;
             const @"v$head" = P.dup((@"s$0").list.?.head);
             const @"v$tail" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
             const @"tail$0" = P.dup(@"v$el");
-            const @"tail$1" = P.dup(@"v$tail");
-            const @"tail$2" = P.dup(@"v$list_1");
-            const @"tail$3" = P.dup(@"v$list_2");
-            const @"tail$4" = P.consReuse(@"reuse$0", P.listFromSlice(&[_]Value{ P.dup(@"v$el") }, P.dup(@"v$head")), P.dup(@"v$acc"));
-            P.drop(@"v$head");
-            P.drop(@"v$tail");
+            const @"tail$1" = @"v$tail";
+            const @"tail$2" = @"v$list_1";
+            const @"tail$3" = @"v$list_2";
+            const @"tail$4" = P.consReuse(@"reuse$0", P.listFromSlice(&[_]Value{ P.dup(@"v$el") }, @"v$head"), @"v$acc");
             P.drop(@"v$el");
-            P.drop(@"v$list_1");
-            P.drop(@"v$list_2");
-            P.drop(@"v$acc");
             @"v$el" = @"tail$0";
             @"v$permutations" = @"tail$1";
             @"v$list_1" = @"tail$2";
@@ -2781,47 +2535,58 @@ fn @"permutation_prepend"(@"p$el": Value, @"p$permutations": Value, @"p$list_1":
     }
 }
 
-fn @"permutation_zip"(@"v$list": Value, @"v$rest": Value, @"v$acc": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"borrowed$permutation_zip"(@"v$list": Value, @"v$rest": Value, @"v$acc": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = @"reverse"(P.dup(@"v$acc"));
-        P.drop(@"s$0");
+        if (!((@"v$list").list == null)) break :c0;
+        const @"r$0" = @"reverse"(@"v$acc");
         P.drop(@"v$rest");
-        P.drop(@"v$acc");
         return @"r$0";
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$head" = P.dup((@"s$0").list.?.head);
-        const @"v$tail" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"reuse$0" = P.dropReuseCons(@"s$0");
-        const @"r$1" = @"permutation_prepend"(P.dup(@"v$head"), @"permutations"(@"reverse_and_prepend"(P.dup(@"v$rest"), P.dup(@"v$tail"))), P.dup(@"v$tail"), P.consReuse(@"reuse$0", P.dup(@"v$head"), P.dup(@"v$rest")), P.dup(@"v$acc"));
+        if (!((@"v$list").list != null)) break :c1;
+        const @"v$head" = P.dup((@"v$list").list.?.head);
+        const @"v$tail" = P.dup(P.listValue((@"v$list").list.?.tail));
+        const @"r$2" = @"permutation_prepend"(P.dup(@"v$head"), bc2: {
+            const @"bor$0" = @"reverse_and_prepend"(P.dup(@"v$rest"), P.dup(@"v$tail"));
+            const @"r$1" = @"borrowed$permutations"(@"bor$0");
+            P.drop(@"bor$0");
+            break :bc2 @"r$1";
+        }, P.dup(@"v$tail"), P.listFromSlice(&[_]Value{ P.dup(@"v$head") }, P.dup(@"v$rest")), @"v$acc");
         P.drop(@"v$head");
         P.drop(@"v$tail");
         P.drop(@"v$rest");
-        P.drop(@"v$acc");
-        return @"r$1";
+        return @"r$2";
     }
     unreachable;
 }
 
-pub fn @"permutations"(@"v$list": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"permutation_zip"(@"a$0": Value, @"a$1": Value, @"a$2": Value) Value {
+    const result = @"borrowed$permutation_zip"(@"a$0", @"a$1", @"a$2");
+    P.drop(@"a$0");
+    return result;
+}
+
+fn @"borrowed$permutations"(@"v$list": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.listFromSlice(&[_]Value{ P.emptyList() }, P.emptyList());
-        P.drop(@"s$0");
-        return @"r$0";
+        if (!((@"v$list").list == null)) break :c0;
+        return P.listFromSlice(&[_]Value{ P.emptyList() }, P.emptyList());
     }
     {
-        const @"v$l" = P.dup(@"s$0");
-        const @"r$1" = @"permutation_zip"(P.dup(@"v$l"), P.emptyList(), P.emptyList());
-        P.drop(@"v$l");
-        P.drop(@"s$0");
-        return @"r$1";
+        const @"v$l" = @"v$list";
+        return bc2: {
+            const @"own$0" = P.emptyList();
+            const @"own$1" = P.emptyList();
+            const @"r$0" = @"borrowed$permutation_zip"(@"v$l", @"own$0", @"own$1");
+            break :bc2 @"r$0";
+        };
     }
     unreachable;
+}
+
+pub fn @"permutations"(@"a$0": Value) Value {
+    const result = @"borrowed$permutations"(@"a$0");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"window_loop"(@"p$acc": Value, @"p$list": Value, @"p$n": Value) Value {
@@ -2833,12 +2598,11 @@ fn @"window_loop"(@"p$acc": Value, @"p$list": Value, @"p$n": Value) Value {
         const @"s$0" = P.boolValue(((@"length"(P.dup(@"v$window"))).int == (@"v$n").int));
         c0: {
             if (!((@"s$0").bool)) break :c0;
-            const @"tail$0" = P.listFromSlice(&[_]Value{ P.dup(@"v$window") }, P.dup(@"v$acc"));
+            const @"tail$0" = P.listFromSlice(&[_]Value{ P.dup(@"v$window") }, @"v$acc");
             const @"tail$1" = @"drop"(P.dup(@"v$list"), P.intValue(1));
             const @"tail$2" = P.dup(@"v$n");
             P.drop(@"s$0");
             P.drop(@"v$window");
-            P.drop(@"v$acc");
             P.drop(@"v$list");
             P.drop(@"v$n");
             @"v$acc" = @"tail$0";
@@ -2848,10 +2612,9 @@ fn @"window_loop"(@"p$acc": Value, @"p$list": Value, @"p$n": Value) Value {
         }
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
-            const @"r$0" = @"reverse"(P.dup(@"v$acc"));
+            const @"r$0" = @"reverse"(@"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$window");
-            P.drop(@"v$acc");
             P.drop(@"v$list");
             P.drop(@"v$n");
             return @"r$0";
@@ -2864,17 +2627,16 @@ pub fn @"window"(@"v$list": Value, @"v$n": Value) Value {
     const @"s$0" = P.boolValue(((@"v$n").int <= 0));
     c0: {
         if (!((@"s$0").bool)) break :c0;
+        P.drop(@"v$list");
         const @"r$0" = P.emptyList();
         P.drop(@"s$0");
-        P.drop(@"v$list");
         P.drop(@"v$n");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = @"window_loop"(P.emptyList(), P.dup(@"v$list"), P.dup(@"v$n"));
+        const @"r$1" = @"window_loop"(P.emptyList(), @"v$list", P.dup(@"v$n"));
         P.drop(@"s$0");
-        P.drop(@"v$list");
         P.drop(@"v$n");
         return @"r$1";
     }
@@ -3002,7 +2764,7 @@ fn @"chunk_loop"(@"p$list": Value, @"p$f": Value, @"p$previous_key": Value, @"p$
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$key" = P.call1(P.dup(@"v$f"), P.dup(@"v$first"));
-            const @"s$1" = P.eq(P.dup(@"v$key"), P.dup(@"v$previous_key"));
+            const @"s$1" = P.eq(P.dup(@"v$key"), @"v$previous_key");
             c1: {
                 if (!((@"s$1").bool)) break :c1;
                 const @"tail$0" = P.dup(@"v$rest");
@@ -3016,7 +2778,6 @@ fn @"chunk_loop"(@"p$list": Value, @"p$f": Value, @"p$previous_key": Value, @"p$
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$f");
-                P.drop(@"v$previous_key");
                 P.drop(@"v$current_chunk");
                 P.drop(@"v$acc");
                 @"v$list" = @"tail$0";
@@ -3040,7 +2801,6 @@ fn @"chunk_loop"(@"p$list": Value, @"p$f": Value, @"p$previous_key": Value, @"p$
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$f");
-                P.drop(@"v$previous_key");
                 P.drop(@"v$current_chunk");
                 P.drop(@"v$acc");
                 @"v$list" = @"tail$5";
@@ -3054,10 +2814,10 @@ fn @"chunk_loop"(@"p$list": Value, @"p$f": Value, @"p$previous_key": Value, @"p$
         }
         c3: {
             if (!((@"s$0").list == null)) break :c3;
+            P.drop(@"v$previous_key");
             const @"r$0" = @"reverse"(P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$current_chunk")) }, P.dup(@"v$acc")));
             P.drop(@"s$0");
             P.drop(@"v$f");
-            P.drop(@"v$previous_key");
             P.drop(@"v$current_chunk");
             P.drop(@"v$acc");
             return @"r$0";
@@ -3066,27 +2826,29 @@ fn @"chunk_loop"(@"p$list": Value, @"p$f": Value, @"p$previous_key": Value, @"p$
     }
 }
 
-pub fn @"chunk"(@"v$list": Value, @"v$f": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"borrowed$chunk"(@"v$list": Value, @"v$f": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
+        if (!((@"v$list").list == null)) break :c0;
         const @"r$0" = P.emptyList();
-        P.drop(@"s$0");
         P.drop(@"v$f");
         return @"r$0";
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = @"chunk_loop"(P.dup(@"v$rest"), P.dup(@"v$f"), P.call1(P.dup(@"v$f"), P.dup(@"v$first")), P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.emptyList()), P.emptyList());
+        if (!((@"v$list").list != null)) break :c1;
+        const @"v$first" = P.dup((@"v$list").list.?.head);
+        const @"v$rest" = P.dup(P.listValue((@"v$list").list.?.tail));
+        const @"r$1" = @"chunk_loop"(@"v$rest", P.dup(@"v$f"), P.call1(P.dup(@"v$f"), P.dup(@"v$first")), P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.emptyList()), P.emptyList());
         P.drop(@"v$first");
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
         P.drop(@"v$f");
         return @"r$1";
     }
     unreachable;
+}
+
+pub fn @"chunk"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$chunk"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"sized_chunk_loop"(@"p$list": Value, @"p$count": Value, @"p$left": Value, @"p$current_chunk": Value, @"p$acc": Value) Value {
@@ -3099,7 +2861,7 @@ fn @"sized_chunk_loop"(@"p$list": Value, @"p$count": Value, @"p$left": Value, @"
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"s$1" = P.dup(@"v$current_chunk");
+            const @"s$1" = @"v$current_chunk";
             c1: {
                 if (!((@"s$1").list == null)) break :c1;
                 const @"r$0" = @"reverse"(P.dup(@"v$acc"));
@@ -3107,19 +2869,16 @@ fn @"sized_chunk_loop"(@"p$list": Value, @"p$count": Value, @"p$left": Value, @"
                 P.drop(@"s$0");
                 P.drop(@"v$count");
                 P.drop(@"v$left");
-                P.drop(@"v$current_chunk");
                 P.drop(@"v$acc");
                 return @"r$0";
             }
             {
                 const @"v$remaining" = P.dup(@"s$1");
-                const @"r$1" = @"reverse"(P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$remaining")) }, P.dup(@"v$acc")));
-                P.drop(@"v$remaining");
+                const @"r$1" = @"reverse"(P.listFromSlice(&[_]Value{ @"reverse"(@"v$remaining") }, P.dup(@"v$acc")));
                 P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$count");
                 P.drop(@"v$left");
-                P.drop(@"v$current_chunk");
                 P.drop(@"v$acc");
                 return @"r$1";
             }
@@ -3129,23 +2888,20 @@ fn @"sized_chunk_loop"(@"p$list": Value, @"p$count": Value, @"p$left": Value, @"
             if (!((@"s$0").list != null)) break :c3;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$chunk" = P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.dup(@"v$current_chunk"));
+            const @"v$chunk" = P.listFromSlice(&[_]Value{ @"v$first" }, @"v$current_chunk");
             const @"s$2" = P.boolValue(((@"v$left").int > 1));
             c4: {
                 if (!((@"s$2").bool)) break :c4;
                 const @"tail$0" = P.dup(@"v$rest");
                 const @"tail$1" = P.dup(@"v$count");
                 const @"tail$2" = P.intValue(((@"v$left").int -% 1));
-                const @"tail$3" = P.dup(@"v$chunk");
+                const @"tail$3" = @"v$chunk";
                 const @"tail$4" = P.dup(@"v$acc");
                 P.drop(@"s$2");
-                P.drop(@"v$chunk");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$count");
                 P.drop(@"v$left");
-                P.drop(@"v$current_chunk");
                 P.drop(@"v$acc");
                 @"v$list" = @"tail$0";
                 @"v$count" = @"tail$1";
@@ -3160,15 +2916,12 @@ fn @"sized_chunk_loop"(@"p$list": Value, @"p$count": Value, @"p$left": Value, @"
                 const @"tail$6" = P.dup(@"v$count");
                 const @"tail$7" = P.dup(@"v$count");
                 const @"tail$8" = P.emptyList();
-                const @"tail$9" = P.listFromSlice(&[_]Value{ @"reverse"(P.dup(@"v$chunk")) }, P.dup(@"v$acc"));
+                const @"tail$9" = P.listFromSlice(&[_]Value{ @"reverse"(@"v$chunk") }, P.dup(@"v$acc"));
                 P.drop(@"s$2");
-                P.drop(@"v$chunk");
-                P.drop(@"v$first");
                 P.drop(@"v$rest");
                 P.drop(@"s$0");
                 P.drop(@"v$count");
                 P.drop(@"v$left");
-                P.drop(@"v$current_chunk");
                 P.drop(@"v$acc");
                 @"v$list" = @"tail$5";
                 @"v$count" = @"tail$6";
@@ -3189,27 +2942,25 @@ pub fn @"sized_chunk"(@"v$list": Value, @"v$count": Value) Value {
     return @"r$0";
 }
 
-pub fn @"reduce"(@"v$list": Value, @"v$fun": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"borrowed$reduce"(@"v$list": Value, @"v$fun": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
+        if (!((@"v$list").list == null)) break :c0;
         P.drop(@"v$fun");
-        return @"r$0";
+        return P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"fold"(P.dup(@"v$rest"), P.dup(@"v$first"), P.dup(@"v$fun")) }, &[_]?[]const u8{});
-        P.drop(@"v$first");
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
-        P.drop(@"v$fun");
-        return @"r$1";
+        if (!((@"v$list").list != null)) break :c1;
+        const @"v$first" = P.dup((@"v$list").list.?.head);
+        const @"v$rest" = P.dup(P.listValue((@"v$list").list.?.tail));
+        return P.makeRecordL("Ok", &[_]Value{ @"fold"(@"v$rest", @"v$first", @"v$fun") }, &[_]?[]const u8{});
     }
     unreachable;
+}
+
+pub fn @"reduce"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$reduce"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"scan_loop"(@"p$list": Value, @"p$accumulator": Value, @"p$accumulated": Value, @"p$fun": Value) Value {
@@ -3221,10 +2972,9 @@ fn @"scan_loop"(@"p$list": Value, @"p$accumulator": Value, @"p$accumulated": Val
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$accumulated"));
-            P.drop(@"s$0");
             P.drop(@"v$accumulator");
-            P.drop(@"v$accumulated");
+            const @"r$0" = @"reverse"(@"v$accumulated");
+            P.drop(@"s$0");
             P.drop(@"v$fun");
             return @"r$0";
         }
@@ -3232,17 +2982,13 @@ fn @"scan_loop"(@"p$list": Value, @"p$accumulator": Value, @"p$accumulated": Val
             if (!((@"s$0").list != null)) break :c1;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$next" = P.call2(P.dup(@"v$fun"), P.dup(@"v$accumulator"), P.dup(@"v$first"));
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"v$next" = P.call2(P.dup(@"v$fun"), @"v$accumulator", @"v$first");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = P.dup(@"v$next");
-            const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$next") }, P.dup(@"v$accumulated"));
+            const @"tail$2" = P.listFromSlice(&[_]Value{ P.dup(@"v$next") }, @"v$accumulated");
             const @"tail$3" = P.dup(@"v$fun");
             P.drop(@"v$next");
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$accumulator");
-            P.drop(@"v$accumulated");
             P.drop(@"v$fun");
             @"v$list" = @"tail$0";
             @"v$accumulator" = @"tail$1";
@@ -3271,16 +3017,14 @@ pub fn @"last"(@"p$list": Value) Value {
         c1: {
             if (!((@"s$0").list != null and (@"s$0").list.?.tail == null)) break :c1;
             const @"v$last" = P.dup((@"s$0").list.?.head);
-            const @"r$1" = P.makeRecordL("Ok", &[_]Value{ P.dup(@"v$last") }, &[_]?[]const u8{});
-            P.drop(@"v$last");
+            const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"v$last" }, &[_]?[]const u8{});
             P.drop(@"s$0");
             return @"r$1";
         }
         c2: {
             if (!((@"s$0").list != null)) break :c2;
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
-            P.drop(@"v$rest");
+            const @"tail$0" = @"v$rest";
             P.drop(@"s$0");
             @"v$list" = @"tail$0";
             continue;
@@ -3289,42 +3033,42 @@ pub fn @"last"(@"p$list": Value) Value {
     }
 }
 
-pub fn @"combinations"(@"v$items": Value, @"v$n": Value) Value {
-    const @"s$0" = P.dup(@"v$n");
-    const @"s$1" = @"v$items";
+fn @"borrowed$combinations"(@"v$items": Value, @"v$n": Value) Value {
     c0: {
-        if (!((@"s$0").int == 0)) break :c0;
-        const @"r$0" = P.listFromSlice(&[_]Value{ P.emptyList() }, P.emptyList());
-        P.drop(@"s$0");
-        P.drop(@"s$1");
-        P.drop(@"v$n");
-        return @"r$0";
+        if (!((@"v$n").int == 0)) break :c0;
+        return P.listFromSlice(&[_]Value{ P.emptyList() }, P.emptyList());
     }
     c1: {
-        if (!((@"s$1").list == null)) break :c1;
-        const @"r$1" = P.emptyList();
-        P.drop(@"s$0");
-        P.drop(@"s$1");
-        P.drop(@"v$n");
-        return @"r$1";
+        if (!((@"v$items").list == null)) break :c1;
+        return P.emptyList();
     }
     c2: {
-        if (!((@"s$1").list != null)) break :c2;
-        const @"v$first" = P.dup((@"s$1").list.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
+        if (!((@"v$items").list != null)) break :c2;
+        const @"v$first" = P.dup((@"v$items").list.?.head);
+        const @"v$rest" = P.dup(P.listValue((@"v$items").list.?.tail));
         const @"v$_pipe" = P.dup(@"v$rest");
-        const @"v$_pipe$1" = @"combinations"(@"v$_pipe", P.intValue(((@"v$n").int -% 1)));
+        const @"v$_pipe$1" = bc3: {
+            const @"bor$0" = @"v$_pipe";
+            const @"bor$1" = P.intValue(((@"v$n").int -% 1));
+            const @"r$0" = @"borrowed$combinations"(@"bor$0", @"bor$1");
+            P.drop(@"bor$0");
+            break :bc3 @"r$0";
+        };
         const @"v$_pipe$2" = @"map"(@"v$_pipe$1", P.makeClosure(@ptrCast(&@"lambda$2"), &[_]Value{ P.dup(@"v$first") }));
         const @"v$_pipe$3" = @"reverse"(@"v$_pipe$2");
-        const @"r$2" = @"fold"(@"v$_pipe$3", @"combinations"(P.dup(@"v$rest"), P.dup(@"v$n")), P.makeClosure(@ptrCast(&@"lambda$3"), &[_]Value{  }));
+        const @"r$1" = @"fold"(@"v$_pipe$3", @"borrowed$combinations"(@"v$rest", @"v$n"), P.makeClosure(@ptrCast(&@"lambda$3"), &[_]Value{  }));
         P.drop(@"v$first");
         P.drop(@"v$rest");
-        P.drop(@"s$0");
-        P.drop(@"s$1");
-        P.drop(@"v$n");
-        return @"r$2";
+        return @"r$1";
     }
     unreachable;
+}
+
+pub fn @"combinations"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$combinations"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    P.drop(@"a$1");
+    return result;
 }
 
 fn @"combination_pairs_loop"(@"p$items": Value, @"p$acc": Value) Value {
@@ -3371,21 +3115,18 @@ fn @"take_firsts"(@"p$rows": Value, @"p$column": Value, @"p$remaining_rows": Val
         const @"s$0" = @"v$rows";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(P.dup(@"v$column")), @"reverse"(P.dup(@"v$remaining_rows")) });
+            const @"r$0" = P.tupleValue(&[_]Value{ @"reverse"(@"v$column"), @"reverse"(P.dup(@"v$remaining_rows")) });
             P.drop(@"s$0");
-            P.drop(@"v$column");
             P.drop(@"v$remaining_rows");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null and ((@"s$0").list.?.head).list == null)) break :c1;
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = P.dup(@"v$rest");
-            const @"tail$1" = P.dup(@"v$column");
+            const @"tail$0" = @"v$rest";
+            const @"tail$1" = @"v$column";
             const @"tail$2" = P.dup(@"v$remaining_rows");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$column");
             P.drop(@"v$remaining_rows");
             @"v$rows" = @"tail$0";
             @"v$column" = @"tail$1";
@@ -3397,15 +3138,11 @@ fn @"take_firsts"(@"p$rows": Value, @"p$column": Value, @"p$remaining_rows": Val
             const @"v$first" = P.dup(((@"s$0").list.?.head).list.?.head);
             const @"v$remaining_row" = P.dup(P.listValue(((@"s$0").list.?.head).list.?.tail));
             const @"v$rest_rows" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$remaining_rows$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$remaining_row") }, P.dup(@"v$remaining_rows"));
-            const @"tail$3" = P.dup(@"v$rest_rows");
-            const @"tail$4" = P.listFromSlice(&[_]Value{ P.dup(@"v$first") }, P.dup(@"v$column"));
+            const @"v$remaining_rows$1" = P.listFromSlice(&[_]Value{ @"v$remaining_row" }, P.dup(@"v$remaining_rows"));
+            const @"tail$3" = @"v$rest_rows";
+            const @"tail$4" = P.listFromSlice(&[_]Value{ @"v$first" }, @"v$column");
             const @"tail$5" = @"v$remaining_rows$1";
-            P.drop(@"v$first");
-            P.drop(@"v$remaining_row");
-            P.drop(@"v$rest_rows");
             P.drop(@"s$0");
-            P.drop(@"v$column");
             P.drop(@"v$remaining_rows");
             @"v$rows" = @"tail$3";
             @"v$column" = @"tail$4";
@@ -3420,44 +3157,35 @@ fn @"transpose_loop"(@"p$rows": Value, @"p$columns": Value) Value {
     var @"v$rows" = @"p$rows";
     var @"v$columns" = @"p$columns";
     while (true) {
-        const @"s$0" = P.dup(@"v$rows");
         c0: {
-            if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"reverse"(P.dup(@"v$columns"));
-            P.drop(@"s$0");
+            if (!((@"v$rows").list == null)) break :c0;
             P.drop(@"v$rows");
+            const @"r$0" = @"reverse"(P.dup(@"v$columns"));
             P.drop(@"v$columns");
             return @"r$0";
         }
         {
-            const @"subject$0" = @"take_firsts"(P.dup(@"v$rows"), P.emptyList(), P.emptyList());
+            const @"subject$0" = @"take_firsts"(@"v$rows", P.emptyList(), P.emptyList());
             const @"v$column" = P.dup((@"subject$0").tuple[0]);
             const @"v$rest" = P.dup((@"subject$0").tuple[1]);
             P.drop(@"subject$0");
-            const @"s$1" = P.dup(@"v$column");
             c2: {
-                if (!((@"s$1").list != null)) break :c2;
-                const @"reuse$0" = P.dropReuseCons(@"s$1");
+                if (!((@"v$column").list != null)) break :c2;
                 const @"tail$0" = P.dup(@"v$rest");
-                const @"tail$1" = P.consReuse(@"reuse$0", P.dup(@"v$column"), P.dup(@"v$columns"));
+                const @"tail$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$column") }, P.dup(@"v$columns"));
                 P.drop(@"v$column");
                 P.drop(@"v$rest");
-                P.drop(@"s$0");
-                P.drop(@"v$rows");
                 P.drop(@"v$columns");
                 @"v$rows" = @"tail$0";
                 @"v$columns" = @"tail$1";
                 continue;
             }
             c3: {
-                if (!((@"s$1").list == null)) break :c3;
+                if (!((@"v$column").list == null)) break :c3;
                 const @"tail$2" = P.dup(@"v$rest");
                 const @"tail$3" = P.dup(@"v$columns");
-                P.drop(@"s$1");
                 P.drop(@"v$column");
                 P.drop(@"v$rest");
-                P.drop(@"s$0");
-                P.drop(@"v$rows");
                 P.drop(@"v$columns");
                 @"v$rows" = @"tail$2";
                 @"v$columns" = @"tail$3";
@@ -3486,9 +3214,8 @@ fn @"shuffle_pair_unwrap_loop"(@"p$list": Value, @"p$acc": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = P.dup(@"v$acc");
+            const @"r$0" = @"v$acc";
             P.drop(@"s$0");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
@@ -3496,11 +3223,8 @@ fn @"shuffle_pair_unwrap_loop"(@"p$list": Value, @"p$acc": Value) Value {
             const @"v$elem_pair" = P.dup((@"s$0").list.?.head);
             const @"v$enumerable" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"reuse$0" = P.dropReuseCons(@"s$0");
-            const @"tail$0" = P.dup(@"v$enumerable");
-            const @"tail$1" = P.consReuse(@"reuse$0", P.dup((@"v$elem_pair").tuple[1]), P.dup(@"v$acc"));
-            P.drop(@"v$elem_pair");
-            P.drop(@"v$enumerable");
-            P.drop(@"v$acc");
+            const @"tail$0" = @"v$enumerable";
+            const @"tail$1" = P.consReuse(@"reuse$0", P.tupleField(@"v$elem_pair", 1), @"v$acc");
             @"v$list" = @"tail$0";
             @"v$acc" = @"tail$1";
             continue;
@@ -3509,14 +3233,29 @@ fn @"shuffle_pair_unwrap_loop"(@"p$list": Value, @"p$acc": Value) Value {
     }
 }
 
-fn @"do_shuffle_by_pair_indexes"(@"v$list_of_pairs": Value) Value {
-    return @"sort"(@"v$list_of_pairs", P.makeClosure(@ptrCast(&@"lambda$5"), &[_]Value{  }));
+fn @"borrowed$do_shuffle_by_pair_indexes"(@"v$list_of_pairs": Value) Value {
+    return bc0: {
+        const @"own$0" = P.makeClosure(@ptrCast(&@"lambda$5"), &[_]Value{  });
+        const @"r$0" = @"borrowed$sort"(@"v$list_of_pairs", @"own$0");
+        break :bc0 @"r$0";
+    };
+}
+
+fn @"do_shuffle_by_pair_indexes"(@"a$0": Value) Value {
+    const result = @"borrowed$do_shuffle_by_pair_indexes"(@"a$0");
+    P.drop(@"a$0");
+    return result;
 }
 
 pub fn @"shuffle"(@"v$list": Value) Value {
     const @"v$_pipe" = @"v$list";
     const @"v$_pipe$1" = @"fold"(@"v$_pipe", P.emptyList(), P.makeClosure(@ptrCast(&@"lambda$6"), &[_]Value{  }));
-    const @"v$_pipe$2" = @"do_shuffle_by_pair_indexes"(@"v$_pipe$1");
+    const @"v$_pipe$2" = bc0: {
+        const @"bor$0" = @"v$_pipe$1";
+        const @"r$0" = @"borrowed$do_shuffle_by_pair_indexes"(@"bor$0");
+        P.drop(@"bor$0");
+        break :bc0 @"r$0";
+    };
     return @"shuffle_pair_unwrap_loop"(@"v$_pipe$2", P.emptyList());
 }
 
@@ -3593,27 +3332,25 @@ fn @"max_loop"(@"p$list": Value, @"p$compare": Value, @"p$max": Value) Value {
     }
 }
 
-pub fn @"max"(@"v$list": Value, @"v$compare": Value) Value {
-    const @"s$0" = @"v$list";
+fn @"borrowed$max"(@"v$list": Value, @"v$compare": Value) Value {
     c0: {
-        if (!((@"s$0").list == null)) break :c0;
-        const @"r$0" = P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
-        P.drop(@"s$0");
+        if (!((@"v$list").list == null)) break :c0;
         P.drop(@"v$compare");
-        return @"r$0";
+        return P.makeRecordL("Error", &[_]Value{ P.NIL }, &[_]?[]const u8{});
     }
     c1: {
-        if (!((@"s$0").list != null)) break :c1;
-        const @"v$first" = P.dup((@"s$0").list.?.head);
-        const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-        const @"r$1" = P.makeRecordL("Ok", &[_]Value{ @"max_loop"(P.dup(@"v$rest"), P.dup(@"v$compare"), P.dup(@"v$first")) }, &[_]?[]const u8{});
-        P.drop(@"v$first");
-        P.drop(@"v$rest");
-        P.drop(@"s$0");
-        P.drop(@"v$compare");
-        return @"r$1";
+        if (!((@"v$list").list != null)) break :c1;
+        const @"v$first" = P.dup((@"v$list").list.?.head);
+        const @"v$rest" = P.dup(P.listValue((@"v$list").list.?.tail));
+        return P.makeRecordL("Ok", &[_]Value{ @"max_loop"(@"v$rest", @"v$compare", @"v$first") }, &[_]?[]const u8{});
     }
     unreachable;
+}
+
+pub fn @"max"(@"a$0": Value, @"a$1": Value) Value {
+    const result = @"borrowed$max"(@"a$0", @"a$1");
+    P.drop(@"a$0");
+    return result;
 }
 
 fn @"native$log_random"() f64 {
@@ -3659,14 +3396,12 @@ fn @"sample_loop"(@"p$list": Value, @"p$reservoir": Value, @"p$n": Value, @"p$w"
             if (!((@"s$0").list != null)) break :c2;
             const @"v$first" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"v$reservoir$1" = @"M$gleam/dict".@"insert"(P.dup(@"v$reservoir"), @"M$gleam/int".@"random"(P.dup(@"v$n")), P.dup(@"v$first"));
+            const @"v$reservoir$1" = @"M$gleam/dict".@"insert"(P.dup(@"v$reservoir"), @"M$gleam/int".@"random"(P.dup(@"v$n")), @"v$first");
             const @"v$w$1": f64 = ((@"v$w").float * (@"M$gleam/float".@"exponential"(P.floatValue(P.rawDivFloat(@"native$log_random"(), (@"M$gleam/int".@"to_float"(P.dup(@"v$n"))).float)))).float);
-            const @"tail$0" = P.dup(@"v$rest");
+            const @"tail$0" = @"v$rest";
             const @"tail$1" = @"v$reservoir$1";
             const @"tail$2" = P.dup(@"v$n");
             const @"tail$3" = P.floatValue(@"v$w$1");
-            P.drop(@"v$first");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
             P.drop(@"v$reservoir");
             P.drop(@"v$n");
@@ -3690,22 +3425,20 @@ fn @"build_reservoir_loop"(@"p$list": Value, @"p$size": Value, @"p$reservoir": V
         const @"s$0" = P.boolValue((@"v$reservoir_size" >= (@"v$size").int));
         c0: {
             if (!((@"s$0").bool)) break :c0;
-            const @"r$0" = P.tupleValue(&[_]Value{ P.dup(@"v$reservoir"), P.dup(@"v$list") });
+            const @"r$0" = P.tupleValue(&[_]Value{ P.dup(@"v$reservoir"), @"v$list" });
             P.drop(@"s$0");
-            P.drop(@"v$list");
             P.drop(@"v$size");
             P.drop(@"v$reservoir");
             return @"r$0";
         }
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
-            const @"s$1" = P.dup(@"v$list");
+            const @"s$1" = @"v$list";
             c2: {
                 if (!((@"s$1").list == null)) break :c2;
                 const @"r$1" = P.tupleValue(&[_]Value{ P.dup(@"v$reservoir"), P.emptyList() });
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$size");
                 P.drop(@"v$reservoir");
                 return @"r$1";
@@ -3714,15 +3447,12 @@ fn @"build_reservoir_loop"(@"p$list": Value, @"p$size": Value, @"p$reservoir": V
                 if (!((@"s$1").list != null)) break :c3;
                 const @"v$first" = P.dup((@"s$1").list.?.head);
                 const @"v$rest" = P.dup(P.listValue((@"s$1").list.?.tail));
-                const @"v$reservoir$1" = @"M$gleam/dict".@"insert"(P.dup(@"v$reservoir"), P.intValue(@"v$reservoir_size"), P.dup(@"v$first"));
-                const @"tail$0" = P.dup(@"v$rest");
+                const @"v$reservoir$1" = @"M$gleam/dict".@"insert"(P.dup(@"v$reservoir"), P.intValue(@"v$reservoir_size"), @"v$first");
+                const @"tail$0" = @"v$rest";
                 const @"tail$1" = P.dup(@"v$size");
                 const @"tail$2" = @"v$reservoir$1";
-                P.drop(@"v$first");
-                P.drop(@"v$rest");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
-                P.drop(@"v$list");
                 P.drop(@"v$size");
                 P.drop(@"v$reservoir");
                 @"v$list" = @"tail$0";

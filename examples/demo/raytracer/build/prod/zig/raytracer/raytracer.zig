@@ -83,8 +83,7 @@ fn @"native$float_sqrt"(@"v$x": f64) f64 {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$r" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = P.dup(@"v$r");
-        P.drop(@"v$r");
+        const @"r$0" = @"v$r";
         P.drop(@"s$0");
         return (@"r$0").float;
     }
@@ -131,67 +130,60 @@ fn @"scene"() Value {
 
 fn @"borrowed$intersect"(@"v$origin": Value, @"v$dir": Value, @"v$sphere": Value) Value {
     const @"v$oc" = bc0: {
-        const @"bor$0" = @"v$origin";
-        const @"bor$1" = P.dup((@"v$sphere").record.fields[0]);
-        const @"r$0" = @"borrowed$sub"(@"bor$0", @"bor$1");
+        const @"bor$0" = P.dup((@"v$sphere").record.fields[0]);
+        const @"r$0" = @"borrowed$sub"(@"v$origin", @"bor$0");
         P.drop(@"bor$0");
-        P.drop(@"bor$1");
         break :bc0 @"r$0";
     };
-    const @"v$b": f64 = (2.0 * (bc1: {
-        const @"bor$2" = @"v$dir";
-        const @"r$1" = @"borrowed$dot"(@"v$oc", @"bor$2");
-        P.drop(@"bor$2");
-        break :bc1 @"r$1";
-    }).float);
+    const @"v$b": f64 = (2.0 * (@"borrowed$dot"(@"v$oc", @"v$dir")).float);
     const @"v$c": f64 = ((@"borrowed$dot"(@"v$oc", @"v$oc")).float - (((@"v$sphere").record.fields[1]).float * ((@"v$sphere").record.fields[1]).float));
     const @"v$disc": f64 = ((@"v$b" * @"v$b") - (4.0 * @"v$c"));
     const @"s$0" = P.boolValue((@"v$disc" < 0.0));
-    c2: {
-        if (!((@"s$0").bool)) break :c2;
-        const @"r$2" = P.floatValue(-1.0);
+    c1: {
+        if (!((@"s$0").bool)) break :c1;
+        const @"r$1" = P.floatValue(-1.0);
         P.drop(@"s$0");
         P.drop(@"v$oc");
-        return @"r$2";
+        return @"r$1";
     }
-    c3: {
-        if (!(!((@"s$0").bool))) break :c3;
+    c2: {
+        if (!(!((@"s$0").bool))) break :c2;
         const @"v$sq": f64 = @"native$float_sqrt"(@"v$disc");
-        const @"v$t1": f64 = P.rawDivFloat((blk4: {
-            break :blk4 P.floatValue(((0.0 - @"v$b") - @"v$sq"));
+        const @"v$t1": f64 = P.rawDivFloat((blk3: {
+            break :blk3 P.floatValue(((0.0 - @"v$b") - @"v$sq"));
         }).float, 2.0);
         const @"s$1" = P.boolValue((@"v$t1" > 0.001));
-        c5: {
-            if (!((@"s$1").bool)) break :c5;
-            const @"r$3" = P.floatValue(@"v$t1");
+        c4: {
+            if (!((@"s$1").bool)) break :c4;
+            const @"r$2" = P.floatValue(@"v$t1");
             P.drop(@"s$1");
             P.drop(@"s$0");
             P.drop(@"v$oc");
-            return @"r$3";
+            return @"r$2";
         }
-        c6: {
-            if (!(!((@"s$1").bool))) break :c6;
-            const @"v$t2": f64 = P.rawDivFloat((blk7: {
-                break :blk7 P.floatValue(((0.0 - @"v$b") + @"v$sq"));
+        c5: {
+            if (!(!((@"s$1").bool))) break :c5;
+            const @"v$t2": f64 = P.rawDivFloat((blk6: {
+                break :blk6 P.floatValue(((0.0 - @"v$b") + @"v$sq"));
             }).float, 2.0);
             const @"s$2" = P.boolValue((@"v$t2" > 0.001));
+            c7: {
+                if (!((@"s$2").bool)) break :c7;
+                const @"r$3" = P.floatValue(@"v$t2");
+                P.drop(@"s$2");
+                P.drop(@"s$1");
+                P.drop(@"s$0");
+                P.drop(@"v$oc");
+                return @"r$3";
+            }
             c8: {
-                if (!((@"s$2").bool)) break :c8;
-                const @"r$4" = P.floatValue(@"v$t2");
+                if (!(!((@"s$2").bool))) break :c8;
+                const @"r$4" = P.floatValue(-1.0);
                 P.drop(@"s$2");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$oc");
                 return @"r$4";
-            }
-            c9: {
-                if (!(!((@"s$2").bool))) break :c9;
-                const @"r$5" = P.floatValue(-1.0);
-                P.drop(@"s$2");
-                P.drop(@"s$1");
-                P.drop(@"s$0");
-                P.drop(@"v$oc");
-                return @"r$5";
             }
             unreachable;
         }
@@ -202,6 +194,8 @@ fn @"borrowed$intersect"(@"v$origin": Value, @"v$dir": Value, @"v$sphere": Value
 
 fn @"intersect"(@"a$0": Value, @"a$1": Value, @"a$2": Value) Value {
     const result = @"borrowed$intersect"(@"a$0", @"a$1", @"a$2");
+    P.drop(@"a$0");
+    P.drop(@"a$1");
     P.drop(@"a$2");
     return result;
 }
@@ -227,7 +221,6 @@ fn @"in_shadow"(@"v$point": Value, @"v$spheres": Value) Value {
         if (!(P.recordHasName(@"s$0", "Hit"))) break :c1;
         const @"v$t" = P.dup((@"s$0").record.fields[0]);
         const @"r$1" = P.boolValue(((@"v$t").float < @"v$dist"));
-        P.drop(@"v$t");
         P.drop(@"s$0");
         P.drop(@"v$to_light");
         P.drop(@"v$point");
@@ -282,7 +275,7 @@ fn @"trace"(@"v$origin": Value, @"v$dir": Value, @"v$spheres": Value, @"v$depth"
         const @"v$t$1" = P.dup((@"s$0").record.fields[0]);
         const @"v$sphere" = P.dup((@"s$0").record.fields[1]);
         const @"v$point" = bc6: {
-            const @"bor$5" = @"borrowed$scale"(@"v$dir", @"v$t$1");
+            const @"bor$5" = @"borrowed$scale"(@"v$dir", P.floatValue((@"v$t$1").float));
             const @"r$4" = @"borrowed$add"(@"v$origin", @"bor$5");
             P.drop(@"bor$5");
             break :bc6 @"r$4";
@@ -330,12 +323,10 @@ fn @"trace"(@"v$origin": Value, @"v$dir": Value, @"v$spheres": Value, @"v$depth"
         const @"s$2" = P.boolValue((((@"v$depth").int > 0) and (((@"v$sphere").record.fields[3]).float > 0.0)));
         c14: {
             if (!(!((@"s$2").bool))) break :c14;
-            const @"r$11" = P.dup(@"v$base");
+            const @"r$11" = @"v$base";
             P.drop(@"s$2");
             P.drop(@"v$point");
             P.drop(@"v$normal");
-            P.drop(@"v$base");
-            P.drop(@"v$t$1");
             P.drop(@"v$sphere");
             P.drop(@"s$0");
             P.drop(@"v$origin");
@@ -358,28 +349,28 @@ fn @"trace"(@"v$origin": Value, @"v$dir": Value, @"v$spheres": Value, @"v$depth"
             });
             const @"v$refl" = @"trace"(P.dup(@"v$point"), @"v$refl_dir", P.dup(@"v$spheres"), P.intValue(((@"v$depth").int -% 1)));
             const @"r$17" = bc20: {
-                const @"bor$13" = bc18: {
-                const @"bor$12" = P.floatValue((1.0 - ((@"v$sphere").record.fields[3]).float));
-                const @"r$14" = @"borrowed$scale"(@"v$base", @"bor$12");
+                const @"bor$14" = bc18: {
+                const @"bor$12" = @"v$base";
+                const @"bor$13" = P.floatValue((1.0 - ((@"v$sphere").record.fields[3]).float));
+                const @"r$14" = @"borrowed$scale"(@"bor$12", @"bor$13");
+                P.drop(@"bor$12");
                 break :bc18 @"r$14";
             };
-                const @"bor$16" = bc19: {
-                const @"bor$14" = @"v$refl";
-                const @"bor$15" = P.dup((@"v$sphere").record.fields[3]);
-                const @"r$15" = @"borrowed$scale"(@"bor$14", @"bor$15");
-                P.drop(@"bor$14");
+                const @"bor$17" = bc19: {
+                const @"bor$15" = @"v$refl";
+                const @"bor$16" = P.dup((@"v$sphere").record.fields[3]);
+                const @"r$15" = @"borrowed$scale"(@"bor$15", @"bor$16");
+                P.drop(@"bor$15");
                 break :bc19 @"r$15";
             };
-                const @"r$16" = @"borrowed$add"(@"bor$13", @"bor$16");
-                P.drop(@"bor$13");
-                P.drop(@"bor$16");
+                const @"r$16" = @"borrowed$add"(@"bor$14", @"bor$17");
+                P.drop(@"bor$14");
+                P.drop(@"bor$17");
                 break :bc20 @"r$16";
             };
             P.drop(@"s$2");
             P.drop(@"v$point");
             P.drop(@"v$normal");
-            P.drop(@"v$base");
-            P.drop(@"v$t$1");
             P.drop(@"v$sphere");
             P.drop(@"s$0");
             P.drop(@"v$origin");
@@ -405,19 +396,17 @@ fn @"upto_loop"(@"p$n": Value, @"p$acc": Value) Value {
         const @"s$0" = P.boolValue(((@"v$n").int < 0));
         c0: {
             if (!((@"s$0").bool)) break :c0;
-            const @"r$0" = P.dup(@"v$acc");
+            const @"r$0" = @"v$acc";
             P.drop(@"s$0");
             P.drop(@"v$n");
-            P.drop(@"v$acc");
             return @"r$0";
         }
         c1: {
             if (!(!((@"s$0").bool))) break :c1;
             const @"tail$0" = P.intValue(((@"v$n").int -% 1));
-            const @"tail$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$n") }, P.dup(@"v$acc"));
+            const @"tail$1" = P.listFromSlice(&[_]Value{ P.dup(@"v$n") }, @"v$acc");
             P.drop(@"s$0");
             P.drop(@"v$n");
-            P.drop(@"v$acc");
             @"v$n" = @"tail$0";
             @"v$acc" = @"tail$1";
             continue;
@@ -453,7 +442,7 @@ pub fn @"main"() Value {
 }
 
 fn @"lambda$0"(@"env$": []const Value, @"v$best": Value, @"v$sphere": Value) Value {
-    const @"v$t": f64 = (@"borrowed$intersect"(P.dup(@"env$"[1]), P.dup(@"env$"[0]), @"v$sphere")).float;
+    const @"v$t": f64 = (@"borrowed$intersect"(@"env$"[1], @"env$"[0], @"v$sphere")).float;
     const @"s$0" = P.boolValue((@"v$t" > 0.0));
     c0: {
         if (!(!((@"s$0").bool))) break :c0;
@@ -465,25 +454,21 @@ fn @"lambda$0"(@"env$": []const Value, @"v$best": Value, @"v$sphere": Value) Val
     }
     c1: {
         if (!((@"s$0").bool)) break :c1;
-        const @"s$1" = P.dup(@"v$best");
         c2: {
-            if (!(P.recordHasName(@"s$1", "Miss"))) break :c2;
+            if (!(P.recordHasName(@"v$best", "Miss"))) break :c2;
             const @"r$1" = P.makeRecordL("Hit", &[_]Value{ P.floatValue(@"v$t"), P.dup(@"v$sphere") }, &[_]?[]const u8{ "t", "sphere" });
-            P.drop(@"s$1");
             P.drop(@"s$0");
             P.drop(@"v$best");
             P.drop(@"v$sphere");
             return @"r$1";
         }
         c3: {
-            if (!(P.recordHasName(@"s$1", "Hit"))) break :c3;
-            const @"v$bt" = P.dup((@"s$1").record.fields[0]);
-            const @"s$2" = P.boolValue((@"v$t" < (@"v$bt").float));
+            if (!(P.recordHasName(@"v$best", "Hit"))) break :c3;
+            const @"v$bt" = P.dup((@"v$best").record.fields[0]);
+            const @"s$1" = P.boolValue((@"v$t" < (@"v$bt").float));
             c4: {
-                if (!((@"s$2").bool)) break :c4;
+                if (!((@"s$1").bool)) break :c4;
                 const @"r$2" = P.makeRecordL("Hit", &[_]Value{ P.floatValue(@"v$t"), P.dup(@"v$sphere") }, &[_]?[]const u8{ "t", "sphere" });
-                P.drop(@"s$2");
-                P.drop(@"v$bt");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$best");
@@ -491,10 +476,8 @@ fn @"lambda$0"(@"env$": []const Value, @"v$best": Value, @"v$sphere": Value) Val
                 return @"r$2";
             }
             c5: {
-                if (!(!((@"s$2").bool))) break :c5;
+                if (!(!((@"s$1").bool))) break :c5;
                 const @"r$3" = P.dup(@"v$best");
-                P.drop(@"s$2");
-                P.drop(@"v$bt");
                 P.drop(@"s$1");
                 P.drop(@"s$0");
                 P.drop(@"v$best");

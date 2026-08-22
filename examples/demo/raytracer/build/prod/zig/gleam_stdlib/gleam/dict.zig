@@ -58,9 +58,8 @@ fn @"from_list_loop"(@"p$transient": Value, @"p$list": Value) Value {
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"from_transient"(P.dup(@"v$transient"));
+            const @"r$0" = @"from_transient"(@"v$transient");
             P.drop(@"s$0");
-            P.drop(@"v$transient");
             return @"r$0";
         }
         c1: {
@@ -68,13 +67,9 @@ fn @"from_list_loop"(@"p$transient": Value, @"p$list": Value) Value {
             const @"v$key" = P.dup(((@"s$0").list.?.head).tuple[0]);
             const @"v$value" = P.dup(((@"s$0").list.?.head).tuple[1]);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = @"transient_insert"(P.dup(@"v$key"), P.dup(@"v$value"), P.dup(@"v$transient"));
-            const @"tail$1" = P.dup(@"v$rest");
-            P.drop(@"v$key");
-            P.drop(@"v$value");
-            P.drop(@"v$rest");
+            const @"tail$0" = @"transient_insert"(@"v$key", @"v$value", @"v$transient");
+            const @"tail$1" = @"v$rest";
             P.drop(@"s$0");
-            P.drop(@"v$transient");
             @"v$transient" = @"tail$0";
             @"v$list" = @"tail$1";
             continue;
@@ -163,8 +158,7 @@ fn @"do_take_loop"(@"p$dict": Value, @"p$desired_keys": Value, @"p$acc": Value) 
                 const @"v$value" = P.dup((@"s$1").record.fields[0]);
                 const @"tail$0" = P.dup(@"v$dict");
                 const @"tail$1" = P.dup(@"v$rest");
-                const @"tail$2" = @"transient_insert"(P.dup(@"v$key"), P.dup(@"v$value"), P.dup(@"v$acc"));
-                P.drop(@"v$value");
+                const @"tail$2" = @"transient_insert"(P.dup(@"v$key"), @"v$value", P.dup(@"v$acc"));
                 P.drop(@"s$1");
                 P.drop(@"v$key");
                 P.drop(@"v$rest");
@@ -280,21 +274,17 @@ fn @"drop_loop"(@"p$transient": Value, @"p$disallowed_keys": Value) Value {
         const @"s$0" = @"v$disallowed_keys";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"from_transient"(P.dup(@"v$transient"));
+            const @"r$0" = @"from_transient"(@"v$transient");
             P.drop(@"s$0");
-            P.drop(@"v$transient");
             return @"r$0";
         }
         c1: {
             if (!((@"s$0").list != null)) break :c1;
             const @"v$key" = P.dup((@"s$0").list.?.head);
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
-            const @"tail$0" = @"transient_delete"(P.dup(@"v$key"), P.dup(@"v$transient"));
-            const @"tail$1" = P.dup(@"v$rest");
-            P.drop(@"v$key");
-            P.drop(@"v$rest");
+            const @"tail$0" = @"transient_delete"(@"v$key", @"v$transient");
+            const @"tail$1" = @"v$rest";
             P.drop(@"s$0");
-            P.drop(@"v$transient");
             @"v$transient" = @"tail$0";
             @"v$disallowed_keys" = @"tail$1";
             continue;
@@ -316,21 +306,18 @@ pub fn @"upsert"(@"v$dict": Value, @"v$key": Value, @"v$fun": Value) Value {
     c0: {
         if (!(P.recordHasName(@"s$0", "Ok"))) break :c0;
         const @"v$value" = P.dup((@"s$0").record.fields[0]);
-        const @"r$0" = @"insert"(P.dup(@"v$dict"), P.dup(@"v$key"), P.call1(P.dup(@"v$fun"), P.makeRecordL("Some", &[_]Value{ P.dup(@"v$value") }, &[_]?[]const u8{})));
-        P.drop(@"v$value");
+        const @"r$0" = @"insert"(P.dup(@"v$dict"), P.dup(@"v$key"), P.call1(@"v$fun", P.makeRecordL("Some", &[_]Value{ @"v$value" }, &[_]?[]const u8{})));
         P.drop(@"s$0");
         P.drop(@"v$dict");
         P.drop(@"v$key");
-        P.drop(@"v$fun");
         return @"r$0";
     }
     c1: {
         if (!(P.recordHasName(@"s$0", "Error"))) break :c1;
-        const @"r$1" = @"insert"(P.dup(@"v$dict"), P.dup(@"v$key"), P.call1(P.dup(@"v$fun"), P.makeRecord("None", &[_]Value{})));
+        const @"r$1" = @"insert"(P.dup(@"v$dict"), P.dup(@"v$key"), P.call1(@"v$fun", P.makeRecord("None", &[_]Value{})));
         P.drop(@"s$0");
         P.drop(@"v$dict");
         P.drop(@"v$key");
-        P.drop(@"v$fun");
         return @"r$1";
     }
     unreachable;
@@ -350,9 +337,8 @@ fn @"group_loop"(@"p$transient": Value, @"p$to_key": Value, @"p$list": Value) Va
         const @"s$0" = @"v$list";
         c0: {
             if (!((@"s$0").list == null)) break :c0;
-            const @"r$0" = @"from_transient"(P.dup(@"v$transient"));
+            const @"r$0" = @"from_transient"(@"v$transient");
             P.drop(@"s$0");
-            P.drop(@"v$transient");
             P.drop(@"v$to_key");
             return @"r$0";
         }
@@ -362,17 +348,15 @@ fn @"group_loop"(@"p$transient": Value, @"p$to_key": Value, @"p$list": Value) Va
             const @"v$rest" = P.dup(P.listValue((@"s$0").list.?.tail));
             const @"v$key" = P.call1(P.dup(@"v$to_key"), P.dup(@"v$value"));
             const @"v$update" = P.makeClosure(@ptrCast(&@"lambda$11"), &[_]Value{ P.dup(@"v$value") });
-            const @"v$_pipe" = P.dup(@"v$transient");
+            const @"v$_pipe" = @"v$transient";
             const @"v$_pipe$1" = P.call1(P.makeClosure(@ptrCast(&@"lambda$12"), &[_]Value{ P.dup(@"v$key"), P.dup(@"v$update"), P.dup(@"v$value") }), @"v$_pipe");
             const @"tail$0" = @"v$_pipe$1";
             const @"tail$1" = P.dup(@"v$to_key");
-            const @"tail$2" = P.dup(@"v$rest");
+            const @"tail$2" = @"v$rest";
             P.drop(@"v$key");
             P.drop(@"v$update");
             P.drop(@"v$value");
-            P.drop(@"v$rest");
             P.drop(@"s$0");
-            P.drop(@"v$transient");
             P.drop(@"v$to_key");
             @"v$transient" = @"tail$0";
             @"v$to_key" = @"tail$1";
@@ -410,18 +394,16 @@ fn @"lambda$3"(@"env$": []const Value, @"v$transient": Value, @"v$key": Value, @
     const @"s$0" = P.call2(P.dup(@"env$"[0]), P.dup(@"v$key"), P.dup(@"v$value"));
     c0: {
         if (!((@"s$0").bool)) break :c0;
-        const @"r$0" = @"transient_insert"(P.dup(@"v$key"), P.dup(@"v$value"), P.dup(@"v$transient"));
+        const @"r$0" = @"transient_insert"(P.dup(@"v$key"), P.dup(@"v$value"), @"v$transient");
         P.drop(@"s$0");
-        P.drop(@"v$transient");
         P.drop(@"v$key");
         P.drop(@"v$value");
         return @"r$0";
     }
     c1: {
         if (!(!((@"s$0").bool))) break :c1;
-        const @"r$1" = P.dup(@"v$transient");
+        const @"r$1" = @"v$transient";
         P.drop(@"s$0");
-        P.drop(@"v$transient");
         P.drop(@"v$key");
         P.drop(@"v$value");
         return @"r$1";
