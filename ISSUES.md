@@ -35,8 +35,6 @@ design exists. Move finished items to the Done section with the commit.
   loop). zig `@call(.always_tail)` could exceed the contract.
 
 ### features
-- **#12 Toolchain auto-fetch.** Phase 6 remainder: first build fetches
-  the pinned zig tarball instead of GLEAM_ZIG + manual download.
 - **#13 gleam_native v2.** Event loop, buffered stream writers,
   non-posix. Handle boxes leak a few bytes each by design (alive-flag
   safety); a generation-checked handle table removes that.
@@ -47,7 +45,13 @@ design exists. Move finished items to the Done section with the commit.
   nonzero.
 
 ## Done
-
+- **#12 Toolchain auto-fetch.** (2026-08-22, gleam@2fc4a9be7)
+  First zig-target command resolves the pinned zig 0.16.0 itself:
+  GLEAM_ZIG override, then gleam's global cache, then a PATH zig
+  reporting exactly 0.16.0, else download from ziglang.org with sha256
+  verification and tar extraction into `<cache>/gleam/zig/`.
+  `gleam build --target zig` stays fetch-free. Corpus 119/0/30 twice -
+  vendored toolchain vs freshly fetched cache copy.
 - **#8 Dict HAMT.** (2026-08-21, stdlib@c5a195e, prelude@6fa94bd11)
   Assoc list -> hash array mapped trie (32-way, 5 hash bits/level,
   nodes are RC'd Values so the leak gate covers them). 10k-key

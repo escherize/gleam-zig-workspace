@@ -41,6 +41,10 @@ tar xf zig-aarch64-macos-0.16.0.tar.xz && cd ..
 cd gleam && cargo build -p gleam && cd ..   # debug build; the harness expects it
 ```
 
+The vendored `toolchain/` dir is one option; the compiler also self-fetches
+the pinned zig 0.16.0 (sha256-verified) into gleam's cache on first use of a
+zig-target command, and `GLEAM_ZIG` always overrides.
+
 ## Running the corpus
 
 ```sh
