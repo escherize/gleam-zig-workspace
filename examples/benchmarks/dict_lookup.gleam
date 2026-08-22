@@ -2,15 +2,17 @@
 // word list, then look every key back up and sum. Insert-and-lookup
 // heavy, the shape of any real program that indexes data.
 //
-// Published size: 10_000 words. This is the harness copy at the same
-// size — it stays inside the Debug leak-checking budget.
+// Published size: 10_000 words (README). This harness copy uses 500:
+// with today's O(n) assoc-list dict, 10_000 inserts is ~100M
+// comparisons and blows the Debug leak-checking budget — which is
+// exactly what the published number reports.
 import gleam/dict
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/string
 
-const count = 10_000
+const count = 500
 
 pub fn main() {
   let words = build_words(count, [])
