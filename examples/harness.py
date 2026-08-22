@@ -141,11 +141,25 @@ def main() -> int:
     for source in inputs:
         label = str(source)
         code = source.read_text()
-        # Dict iteration order is explicitly unspecified, so dict-heavy
-        # programs cannot be compared textually across targets. Matching the
-        # import (not any "dict." substring) keeps word-list programs that
-        # merely mention unixdict.txt fully diff-checked.
-        nondeterministic = "random" in code or "import gleam/dict" in code
+        # Rosetta has a few "count forever" tasks. They never terminate,
+        # so there is no output to diff between targets — the old "both
+        # timed out" pass was an artifact of two kills racing, not
+        # evidence the targets agree. Skip them.
+        if "count_forever" in code or "count_octal" in code:
+            skipped += 1
+            print(f"SKIP {label} (infinite by design, nothing to diff)")
+            continue
+
+        # Hash-map iteration order is explicitly unspecified and differs
+        # per target, so dict-heavy programs cannot be compared textually.
+        # Matching the import (not any "dict." substring) keeps word-list
+        # programs that merely mention unixdict.txt fully diff-checked.
+        # gleam/set is dict-backed and carries the same caveat.
+        nondeterministic = (
+            "random" in code
+            or "import gleam/dict" in code
+            or "import gleam/set" in code
+        )
         # Numeric-model divergence: zig ints are i64, JS ints are f64,
         # Erlang has bignums. Programs whose output depends on overflow
         # behaviour differ by design.
