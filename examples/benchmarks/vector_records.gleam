@@ -1,3 +1,5 @@
+// Harness copy: 1M iterations so the Debug leak-checking allocator can
+// finish. The published benchmark uses 10_000_000 — see README.md.
 import gleam/float
 import gleam/int
 import gleam/io
@@ -31,5 +33,5 @@ fn loop(n: Int, v: Vec, acc: Float) -> Float {
 }
 
 pub fn main() {
-  io.println(int.to_string(float.round(loop(10_000_000, Vec(0.1, 0.2, 0.3), 0.0))))
+  io.println(int.to_string(float.round(loop(1_000_000, Vec(0.1, 0.2, 0.3), 0.0))))
 }
