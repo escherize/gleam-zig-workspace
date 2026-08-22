@@ -50,6 +50,14 @@ design exists. Move finished items to the Done section with the commit.
 
 ## Done
 
+- **Bare-file export mode.** (2026-08-21, gleam@89f6e29a7)
+  `gleam export zig-executable file.gleam` / `zig-source file.gleam`:
+  temp-project scaffolding (stdlib via $GLEAM_ZIG_STDLIB or ancestor
+  gleam-stdlib/ search; root canonicalised past the macOS /var
+  symlink). Write 1 gleam file, get 1 native binary: bare raytracer.gleam
+  -> 399KB executable, byte-identical PPM; also exports to one runnable
+  .zig. 6180 tests green.
+
 - **#11 Single-file zig source export.** (2026-08-21, gleam@adb8bee44)
   `gleam export zig-source`: modules and native files wrapped in
   path-keyed namespace structs, imports rewritten, prelude inlined,
