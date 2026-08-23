@@ -6,13 +6,15 @@ design exists. Move finished items to the Done section with the commit.
 ## Open
 
 ### perf
-- **#15 Record constructor tags.** Multi-constructor values carry
-  their name as a string and every match does a memcmp
-  (`P.recordHasName`). A small interned constructor id (or pointer
-  identity for static literals) would make matches integer compares.
-  The tree benchmark (depth-21 binary trees) sits ~8% behind node,
-  and this is the main suspect. Measured: pointer-identity fast path
-  alone was noise; needs the layout change.
+- **#15 Record footprint for sum types.** Multi-constructor values
+  allocate a wide header (rc + name slice + fields slice + labels
+  slice) plus inline fields; allocation traffic dominates the tree
+  benchmark, where node still leads (~8% at depth 21). Name-compare
+  cost is NOT the problem: a pointer-identity fast path for
+  `P.recordHasName` measured as noise. Options: pack the name into a
+  comptime name-hash tag (u64, memcmp fallback for the astronomic
+  collision case), drop the labels slice into the tag word, or pool
+  records by arity. Needs a design pass before it pays.
 - **#3b Full backward liveness.** The scoped per-clause version
   shipped (#3a); remaining: uses spread across MULTIPLE statements
   before the final case, multi-use-per-clause last-use precision, and
