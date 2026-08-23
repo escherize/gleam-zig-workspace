@@ -6,6 +6,13 @@ design exists. Move finished items to the Done section with the commit.
 ## Open
 
 ### perf
+- **#15 Record constructor tags.** Multi-constructor values carry
+  their name as a string and every match does a memcmp
+  (`P.recordHasName`). A small interned constructor id (or pointer
+  identity for static literals) would make matches integer compares.
+  The tree benchmark (depth-21 binary trees) sits ~8% behind node,
+  and this is the main suspect. Measured: pointer-identity fast path
+  alone was noise; needs the layout change.
 - **#3b Full backward liveness.** The scoped per-clause version
   shipped (#3a); remaining: uses spread across MULTIPLE statements
   before the final case, multi-use-per-clause last-use precision, and
@@ -45,6 +52,20 @@ design exists. Move finished items to the Done section with the commit.
   nonzero.
 
 ## Done
+- **Native ABI for list parameters.** (2026-08-22, gleam@cd597909b)
+  Functions with scalar-or-list parameters returning a scalar now
+  travel raw: lists as borrowed spine pointers, zero RC ops per
+  recursion level — the dup/wrap/drop round trips through the Value
+  union that LLVM could not optimize away are gone. Soundness rules:
+  lists are parameter-only (a returned spine would have no owner),
+  wrappers release owned list Values, raw locals box owningly at
+  polymorphic uses and captures (`P.dupList`), the raw call fast path
+  requires every list argument's owner to outlive the call, and TCO
+  loops keep the all-scalar rule. Coin change 900: 0.26 -> 0.13s user
+  (2x; hand-written zig on the same algorithm is 0.12s). All other
+  benchmarks unchanged. New `tree` benchmark (allocation-heavy sum
+  types): zig 1.07s vs node 0.99s at depth 21 — spawned #15.
+  Corpus 119/0/30 leak-clean; workspace suite green.
 - **#12 Toolchain auto-fetch.** (2026-08-22, gleam@2fc4a9be7)
   First zig-target command resolves the pinned zig 0.16.0 itself:
   GLEAM_ZIG override, then gleam's global cache, then a PATH zig

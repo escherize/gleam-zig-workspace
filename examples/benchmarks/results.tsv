@@ -1,0 +1,13 @@
+commit	value	metric	status	description
+605e02a	0.26	user_s	keep	coin_change 900 baseline (pre native-list ABI)
+605e02a	0.01	user_s	keep	string_build 200k baseline
+605e02a	0.03	user_s	keep	vector_records 10M baseline
+605e02a	0.00	user_s	keep	dict_lookup 10k baseline
+605e02a	0.08	user_s	keep	raytracer default res baseline
+605e02a	0.84	user_s	ref	node coin_change comparison
+605e02a	0.28	user_s	ref	node string_build comparison
+605e02a	0.05	user_s	ref	node vector_records comparison
+605e02a	0.07	user_s	ref	node dict_lookup comparison
+cd597909b	0.13	user_s	keep	native ABI admits raw list params: coin_change 0.26 -> 0.13 (2x, matches hand-written zig); other benches unchanged
+cd597909b	1.07	user_s	keep	tree depth21x4 baseline: zig 1.07 vs node 0.99 (node ahead ~8%)
+cd597909b	1.07	user_s	discard	recordHasName pointer-identity fast path: no measurable change, reverted
