@@ -68,7 +68,7 @@ def run_target(target: str) -> tuple[int, str]:
             # work) take ~16s in Debug with a cold zig cache, and 20s
             # made them fail or pass on cache state alone.
             timeout=int(os.environ.get("HARNESS_TIMEOUT", "60")),
-            env=os.environ | {"GLEAM_ZIG": str(ZIG)},
+            env=os.environ | {"GLEAM_ZIG": str(ZIG), "GLEAM_ZIG_LEAK_GATE": "1"},
         )
     except subprocess.TimeoutExpired as e:
         # TimeoutExpired yields bytes even when text=True.
