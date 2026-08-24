@@ -6,6 +6,22 @@ design exists. Move finished items to the Done section with the commit.
 ## Open
 
 ### perf
+- **#16 Latent record-pool aliasing bug (release modes).**
+  ReleaseSafe/ReleaseFast builds intermittently panic "incorrect
+  alignment" reading a closure's function pointer; output truncates.
+  Repro: tour lesson01_use via harness, examples/_run with result.try /
+  echo chains; raytracer flaky-by-build. Evidence: all record-pool
+  push/pop sequences traced legal (no double-pop, no bad name encoding);
+  corruption only when the record free-list recycles addresses - Debug's
+  quarantine allocator and pool-free builds never show it, so a stale
+  alias to a retired record survives somewhere in codegen refcount
+  discipline. Candidate asymmetry: `borrowed$try` Ok-path returns
+  `call1(v_fun, ...)` without dropping `v_fun` (Error path drops it).
+  Pooling is now opt-in (`GLEAM_ZIG_POOL=1`) and release run modes are
+  opt-in (`GLEAM_ZIG_RUN_MODE`) until fixed. Fix hunt: instrument
+  makeRecordL reuse addresses vs closure env/field slots; audit borrowed-
+  ABI drop placement.
+
 - **#15 Record footprint for sum types.** Multi-constructor values
   allocate a wide header (rc + name slice + fields slice + labels
   slice) plus inline fields; allocation traffic dominates the tree

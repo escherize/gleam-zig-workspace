@@ -163,3 +163,31 @@ vendored at `toolchain/` (checksum-verified). Runner finds zig via
   0.34 -> 0.28s user vs node 0.23s.
 - Gate: corpus 122/0/27 leak-clean, compiler suite green, ray tracer
   byte-identical.
+
+## 2026-08-24: dev-loop OODA campaign - corrected decomposition, run-mode + leak/pool gates
+
+- Corrected decomposition (devloop rig, controlled): raytracer `gleam
+  run --target zig` 110.7s = gleam codegen ~0.2s + zig Debug compile
+  ~1.05s + EXECUTING the Debug binary ~113s. The earlier "zig compile
+  dominates" read was wrong; exec at -ODebug is the whole problem.
+- zig 0.16.0 macho: executable cache gives zero cross-run reuse even
+  with byte-identical cmdlines; `-fincremental` errors ("TODO implement
+  saving linker state for macho"). ELF `-fincremental` works (1.58 ->
+  0.27s). Revisit when upstream lands macho linker state.
+- Shipped: `GLEAM_ZIG_RUN_MODE` (run.rs) selects the optimize flag,
+  default Debug; `GLEAM_ZIG_LEAK_GATE=1` keeps the leak check in any
+  mode (prelude reads it from `P.process_environ`, stashed by every
+  generated entrypoint); object pooling now requires `GLEAM_ZIG_POOL=1`.
+  Harness sets the leak gate so corpus coverage is unchanged.
+- LATENT BUG FOUND, default kept safe: release-mode builds intermittently
+  panic "incorrect alignment" reading a closure's function pointer -
+  a stale alias to a retired record surfaces only when record pooling
+  recycles addresses (Debug's quarantine allocator hides it). All pool
+  push/pop sequences traced legal; suspect a use-after-drop alias in
+  codegen refcount discipline (`borrowed$try` Ok-path never drops
+  `v$fun` is one candidate asymmetry). Tracked in ISSUES.md #16.
+  With pools on, raytracer executes ~0.4s; without, smp+no-pool is
+  allocation-bound (~70s) and debug-alloc+gate ~20s.
+- Tour corpus (59/0/4) identical under Debug and ReleaseSafe+gate;
+  harness wall 7m00 -> 4m20. Rig rows:
+  ../compiletime_benchmarks/devloop/results.tsv
