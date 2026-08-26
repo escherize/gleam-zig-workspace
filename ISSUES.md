@@ -22,15 +22,16 @@ design exists. Move finished items to the Done section with the commit.
   makeRecordL reuse addresses vs closure env/field slots; audit borrowed-
   ABI drop placement.
 
-- **#15 Record footprint for sum types.** Multi-constructor values
-  allocate a wide header (rc + name slice + fields slice + labels
-  slice) plus inline fields; allocation traffic dominates the tree
-  benchmark, where node still leads (~8% at depth 21). Name-compare
-  cost is NOT the problem: a pointer-identity fast path for
-  `P.recordHasName` measured as noise. Options: pack the name into a
-  comptime name-hash tag (u64, memcmp fallback for the astronomic
-  collision case), drop the labels slice into the tag word, or pool
-  records by arity. Needs a design pass before it pays.
+- **#15b Record header width (records that carry fields).** The
+  nullary half is gone (#15a below); what remains is the 56-byte header
+  (rc + name slice + fields slice + labels slice) on records that do
+  hold fields. Options unchanged: comptime name-hash tag (u64, memcmp
+  fallback), labels folded into the tag word, or pooling by arity
+  (blocked on #16). Name-compare cost is NOT the problem — a
+  pointer-identity fast path for `P.recordHasName` measured as noise.
+  Measure against a mostly-non-nullary workload before picking one:
+  #15a is evidence the intuition about where the cost sits can be off
+  by 2x.
 - **#3b Full backward liveness.** The scoped per-clause version
   shipped (#3a); remaining: uses spread across MULTIPLE statements
   before the final case, multi-use-per-clause last-use precision, and
@@ -68,6 +69,22 @@ design exists. Move finished items to the Done section with the commit.
 - _(none open)_
 
 ## Done
+- **#15a Nullary constructors interned.** (2026-08-26, gleam@3e63666f8)
+  Counted allocations before shrinking anything: the tree benchmark
+  allocates 163830 records, 81920 of them arity 0. Half of every record
+  carries no payload — a full binary tree has more leaves than internal
+  nodes, so `Leaf` is the majority case. A nullary constructor is a
+  constant, so each variant now gets one immortal static instead of a
+  120-byte allocation. Removes 50% of allocations, where narrowing the
+  header 56->24 bytes would have saved ~27% of the bytes and no
+  allocator round trips. The static's rc starts at maxInt/2 so no
+  existing rc path needs a branch: `drop` never reaches 0,
+  `dropReuseRecord` never sees rc == 1. Depth 21: 114.7 -> 57.2s user,
+  2049 -> 1025MB; harness size 0.53 -> 0.26s; output identical. Corpus
+  60/0/26 differential vs JavaScript, leak gate clean, identity paths
+  (equality, inspect, nesting, dispatch, RC churn) checked against JS
+  since all `Leaf` values now share one pointer. Design note in
+  `.notes/09-ideas.md`.
 - **#14 Signal death reports nonzero.** (2026-08-26, gleam@4888bf381)
   `status.code()` is None when a process dies by a signal, and
   `unwrap_or_default()` turned that into 0 — a segfaulting binary

@@ -67,3 +67,42 @@ first complaint:
    Needs Unicode tables (casing + UAX#29); zig std has neither.
 3. float.to_string uses zig's {d} formatting - matches JS closely but
    unverified against erlang's shortest-round-trip behaviour.
+
+## Record footprint: measure before shrinking (#15, 2026-08-26)
+
+The issue proposed three ways to shrink the record header (name-hash
+tag, labels in the tag word, pooling by arity). Counting allocations
+first pointed somewhere else entirely.
+
+Instrumenting `makeRecordL` over the tree benchmark:
+
+    total=163830  arity0=81920  arity3=81910
+
+Half of every record allocated carries no payload at all. A full binary
+tree has 2^d leaves against 2^d-1 internal nodes, so `Leaf` is not a
+side case - it is the majority. Each one cost a 120-byte struct (56 of
+it header), one allocator round trip, and one free.
+
+Nullary constructors are constants: every `Leaf` is indistinguishable
+from every other, so one immortal static per variant does. That removes
+50% of allocations rather than the ~27% of *bytes* a 56->24 byte header
+would have saved, and the issue's own measurements say round trips, not
+bytes, are what hurts. Depth 21: 114.7 -> 57.2s, 2049 -> 1025MB.
+
+The static's rc starts at `maxInt(usize)/2`, which is what keeps the
+ordinary rc paths correct without adding a branch to any of them:
+`drop` never sees it reach 0 so never frees it, and `dropReuseRecord`
+never sees rc == 1 so FBIP reuse never claims it. Half the range rather
+than the maximum, because `dup` still increments and would overflow.
+It is a `var`, so it lives in writable `.data` - counting still
+happens, it just never reaches a value anyone acts on.
+
+Zig does the per-variant bookkeeping: `nullaryRecord` takes a comptime
+name, so each distinct name instantiates its own static. The code
+generator needed one line.
+
+Left undone: the header is still 56 bytes for records that *do* carry
+fields, and the three original options remain open for them. Worth
+re-measuring against a benchmark whose allocations are mostly non-nullary
+before picking one - this round is evidence that the intuition about
+where the cost sits can be wrong by a factor of two.
