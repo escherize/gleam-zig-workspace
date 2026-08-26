@@ -11,28 +11,13 @@ so check the date before trusting one.
 ## Open
 
 ### perf
-- **#16 Latent record-pool aliasing bug (release modes).** `WIP(a1, 2026-08-26)`
-  ReleaseSafe/ReleaseFast builds intermittently panic "incorrect
-  alignment" reading a closure's function pointer; output truncates.
-  Repro: tour lesson01_use via harness, examples/_run with result.try /
-  echo chains; raytracer flaky-by-build. Evidence: all record-pool
-  push/pop sequences traced legal (no double-pop, no bad name encoding);
-  corruption only when the record free-list recycles addresses - Debug's
-  quarantine allocator and pool-free builds never show it, so a stale
-  alias to a retired record survives somewhere in codegen refcount
-  discipline. Candidate asymmetry: `borrowed$try` Ok-path returns
-  `call1(v_fun, ...)` without dropping `v_fun` (Error path drops it).
-  Pooling is now opt-in (`GLEAM_ZIG_POOL=1`) and release run modes are
-  opt-in (`GLEAM_ZIG_RUN_MODE`) until fixed. Fix hunt: instrument
-  makeRecordL reuse addresses vs closure env/field slots; audit borrowed-
-  ABI drop placement.
-
 - **#15b Record header width (records that carry fields).** The
   nullary half is gone (#15a below); what remains is the 56-byte header
   (rc + name slice + fields slice + labels slice) on records that do
   hold fields. Options unchanged: comptime name-hash tag (u64, memcmp
   fallback), labels folded into the tag word, or pooling by arity
-  (blocked on #16). Name-compare cost is NOT the problem — a
+  (unblocked: #16 fixed the free-list, though pooling is still opt-in).
+  Name-compare cost is NOT the problem — a
   pointer-identity fast path for `P.recordHasName` measured as noise.
   Measure against a mostly-non-nullary workload before picking one:
   #15a is evidence the intuition about where the cost sits can be off
@@ -74,6 +59,27 @@ so check the date before trusting one.
 - _(none open)_
 
 ## Done
+- **#16 Record free-list pointer encoding.** (2026-08-26,
+  gleam@7ae48c545) The record pool hid its next pointer in the retired
+  struct's `name` slice and stored `&.{}` to terminate the list. An empty
+  zig slice has `.ptr == 0x1`, not null, so popping the last node ran
+  `@ptrFromInt(0x1)` and produced a misaligned `*Record`; the length
+  check that would have caught it ran one line too late, after the
+  pointer was already materialised. ReleaseSafe's alignment check panics
+  there, ReleaseFast has none and silently corrected the pointer to null
+  on the next line - hence "intermittent". Next pointer now lives in
+  `rc` (a plain usize, dead on a retired record) with 0 terminating and
+  the null check before `@ptrFromInt`, matching poolPopSlice. Cons and
+  slice pools were never affected. The earlier `borrowed$try` drop
+  asymmetry was a red herring - no codegen change was needed.
+  Deterministic once found: tour lesson01_use ReleaseSafe+pool failed
+  200/200 before, 0/600 after across both release modes; raytracer 30
+  runs byte-identical; corpus 59/1/26 pooled (matching the no-pool
+  control, the one failure being Ackermann where JS itself fails) and
+  60/0/26 default. Pooling stays opt-in until the default flip is
+  measured separately. Harness gained HARNESS_LEAK_GATE=0
+  (gleam-zig@0718d70) because the leak gate disables pooling, which is
+  why every prior corpus run missed this.
 - **#15a Nullary constructors interned.** (2026-08-26, gleam@3e63666f8)
   Counted allocations before shrinking anything: the tree benchmark
   allocates 163830 records, 81920 of them arity 0. Half of every record
