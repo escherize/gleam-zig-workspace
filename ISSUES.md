@@ -3,10 +3,15 @@
 Local tracker. One line of status; details link into `.notes/` where a
 design exists. Move finished items to the Done section with the commit.
 
+An issue being worked right now carries a `WIP(<agent>, <UTC date>)` marker
+on its title line, so a second agent does not start the same thing. Clear the
+marker when the work lands or is abandoned; a stale marker is worse than none,
+so check the date before trusting one.
+
 ## Open
 
 ### perf
-- **#16 Latent record-pool aliasing bug (release modes).**
+- **#16 Latent record-pool aliasing bug (release modes).** `WIP(a1, 2026-08-26)`
   ReleaseSafe/ReleaseFast builds intermittently panic "incorrect
   alignment" reading a closure's function pointer; output truncates.
   Repro: tour lesson01_use via harness, examples/_run with result.try /
