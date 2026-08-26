@@ -68,7 +68,15 @@ def run_target(target: str) -> tuple[int, str]:
             # work) take ~16s in Debug with a cold zig cache, and 20s
             # made them fail or pass on cache state alone.
             timeout=int(os.environ.get("HARNESS_TIMEOUT", "60")),
-            env=os.environ | {"GLEAM_ZIG": str(ZIG), "GLEAM_ZIG_LEAK_GATE": "1"},
+            # The leak gate is on by default, but it disables object
+            # pooling (prelude `pooling()` short-circuits on it), so the
+            # corpus cannot cover pooled runs without turning it off:
+            # HARNESS_LEAK_GATE=0 GLEAM_ZIG_POOL=1 harness.py ...
+            env=os.environ
+            | {
+                "GLEAM_ZIG": str(ZIG),
+                "GLEAM_ZIG_LEAK_GATE": os.environ.get("HARNESS_LEAK_GATE", "1"),
+            },
         )
     except subprocess.TimeoutExpired as e:
         # TimeoutExpired yields bytes even when text=True.
