@@ -65,11 +65,16 @@ design exists. Move finished items to the Done section with the commit.
   safety); a generation-checked handle table removes that.
 
 ### bugs
-- **#14 gleam run reports exit 0 on signal death.** A segfaulting
-  binary surfaced as exit 0 (seen with Ackermann). Map signal death to
-  nonzero.
+- _(none open)_
 
 ## Done
+- **#14 Signal death reports nonzero.** (2026-08-26, gleam@4888bf381)
+  `status.code()` is None when a process dies by a signal, and
+  `unwrap_or_default()` turned that into 0 — a segfaulting binary
+  surfaced through `gleam run` as success. Now reported shell-style as
+  128 + signal. Confirmed against the pre-fix binary: a stack-exhausting
+  program gave exit 0 before, 134 after (SIGABRT, dev build); its
+  ReleaseFast build segfaults and gives 139.
 - **Native ABI for list parameters.** (2026-08-22, gleam@cd597909b)
   Functions with scalar-or-list parameters returning a scalar now
   travel raw: lists as borrowed spine pointers, zero RC ops per
