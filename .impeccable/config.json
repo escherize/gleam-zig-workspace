@@ -63,6 +63,12 @@
         "value": "13.5px",
         "createdAt": "2026-08-21T05:28:30.582Z",
         "reason": "documenter derived DESIGN.md from this shipped build (finish review: ship); value is part of the recorded surface, ramp granularity gap"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "2px",
+        "createdAt": "2026-08-26T22:25:06.910Z",
+        "reason": "a1: .gl i is a 5px-tall data bar; the documented 5-6px small-chrome radius would round it into a pill and destroy the bar reading. Geometry constraint, not drift."
       }
     ]
   }
