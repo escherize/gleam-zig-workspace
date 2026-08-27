@@ -12,7 +12,9 @@ Z=/Users/bcm/dv/gleam-zig/toolchain/zig-aarch64-macos-0.16.0/zig
 
 cp "$SRC" /tmp/bench-original.gleam
 if [[ -n "$PATCH" ]]; then sed -i '' "$PATCH" "$SRC"; fi
-trap 'cp /tmp/bench-original.gleam "$SRC"' EXIT
+# Restore the patched source, then remove what this run created. A benchmark
+# leaves no binaries or temp copies behind.
+trap 'cp /tmp/bench-original.gleam "$SRC"; rm -f /tmp/bench-original.gleam /tmp/bench-bin' EXIT
 
 cp "$SRC" $W/src/mainmod.gleam
 cd $W
