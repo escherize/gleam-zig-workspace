@@ -23,11 +23,34 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-/// Debug builds (the `gleam run` default via `zig run`) use a
-/// leak-checking allocator and verify on exit that no reference-counted
-/// allocation outlives main. Release builds use the fast allocator and
-/// skip the check.
-const leak_checking = builtin.mode == .Debug;
+/// Leak checking is on when the runtime gate is set (or in Debug
+/// builds, where it costs nothing extra to keep). The gate lets
+/// ReleaseSafe/ReleaseFast runs opt into the same check via
+/// GLEAM_ZIG_LEAK_GATE=1. Platforms without a POSIX-style environment
+/// (e.g. Windows) cannot see the variable; there the gate simply
+/// stays off unless the build is Debug.
+fn leak_checking() bool {
+    // Resolved once. This is on the allocation path via rc_allocator(), and
+    // scanning the environment per call cost more than the allocation did.
+    if (leak_cache) |v| return v;
+    const v = resolveLeakChecking();
+    leak_cache = v;
+    return v;
+}
+var leak_cache: ?bool = null;
+
+fn resolveLeakChecking() bool {
+    if (builtin.mode == .Debug) return true;
+    switch (builtin.os.tag) {
+        .windows, .wasi, .emscripten => return false,
+        else => {},
+    }
+    for (process_environ.block.view().slice) |entry| {
+        const kv = std.mem.span(entry);
+        if (std.mem.startsWith(u8, kv, "GLEAM_ZIG_LEAK_GATE=")) return true;
+    }
+    return false;
+}
 
 pub var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
 
@@ -35,8 +58,12 @@ pub var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
 /// argv FFI.
 pub var process_args: std.process.Args = undefined;
 
+/// Stashed by the generated entrypoint alongside `process_args` so
+/// runtime gates (e.g. GLEAM_ZIG_LEAK_GATE) can read the environment.
+pub var process_environ: std.process.Environ = undefined;
+
 fn rc_allocator() std.mem.Allocator {
-    return if (leak_checking) debug_allocator.allocator() else std.heap.smp_allocator;
+    return if (leak_checking()) debug_allocator.allocator() else std.heap.smp_allocator;
 }
 
 /// Scratch allocator for FFI temporaries that are not reference counted.
@@ -83,27 +110,45 @@ pub const Cons = struct {
     tail: ?*const Cons,
 };
 
-pub const Record = struct {
-    rc: usize,
-    /// Variant name, e.g. "Ok". Variant identity is (name, arity), which is
-    /// unique within a type, and values of different types never meet in a
+/// Per-variant constants, one static instance per (name, labels) pair rather
+/// than a copy in every value. Keeping these out of Record is what lets a
+/// record fit the 128-byte allocator size class: at 184 bytes every record
+/// paid for a 256-byte slot.
+pub const VariantInfo = struct {
+    /// Variant name, e.g. "Ok". Variant identity is (name, arity), unique
+    /// within a type, and values of different types never meet in a
     /// well-typed pattern match. Always a static string.
     name: []const u8,
-    fields: []const Value,
     /// Field labels for inspection, null when a field is positional.
     /// Empty when no field has a label. Always static strings.
     labels: []const ?[]const u8 = &.{},
-    /// Storage for small records: `fields` points here for arity <= 4,
+};
+
+pub const Record = struct {
+    rc: usize,
+    info: *const VariantInfo,
+    fields: []const Value,
+    /// Storage for small records: `fields` points here for arity <= 3,
     /// halving allocator traffic on the dominant record shapes (Ok/Error,
-    /// pairs, vectors). Readers only ever see the slice.
+    /// pairs, tree nodes). Readers only ever see the slice. Three, not four:
+    /// a fourth would put Record over 128 bytes and double its slot, and
+    /// arity-4 records did not appear anywhere in the corpus.
     inline_fields: [max_inline_fields]Value = undefined,
 
     pub fn fieldsAreInline(self: *const Record) bool {
         return @intFromPtr(self.fields.ptr) == @intFromPtr(&self.inline_fields);
     }
+
+    pub fn name(self: *const Record) []const u8 {
+        return self.info.name;
+    }
+
+    pub fn labels(self: *const Record) []const ?[]const u8 {
+        return self.info.labels;
+    }
 };
 
-pub const max_inline_fields = 4;
+pub const max_inline_fields = 3;
 
 /// All function values share one shape: a type-erased pointer to a lifted
 /// function whose first parameter is the captured environment. Call sites
@@ -123,9 +168,43 @@ pub const Closure = struct {
 // Release-mode object pools. The dominant cost in hot numeric code is
 // allocator round-trips for tiny objects (a record + its field slice per
 // vector operation). Freed records, cons cells and small slices park in
-// threadlocal free lists for immediate reuse. Compiled out in Debug so
-// the leak-checking gate keeps exact alloc/free pairing.
-const pooling = !leak_checking;
+// threadlocal free lists for immediate reuse. Compiled out when leak
+// checking is on, keeping exact alloc/free pairing there.
+/// Object pooling is on by default; GLEAM_ZIG_POOL=0 opts out. It was
+/// opt-in while the record free-list corruption (#16) was unfixed. With
+/// that fixed the flip measured 1.3-1.5x on allocation-heavy workloads
+/// (raytracer, tree, string_build), nothing slower, memory flat, and an
+/// identical corpus - so the default moved.
+///
+/// Leak checking still disables pooling outright: the gate wants exact
+/// alloc/free pairing. That also means the corpus's default configuration
+/// exercises the UNPOOLED path, which is how #16 survived every corpus
+/// run - pooled coverage needs HARNESS_LEAK_GATE=0.
+fn pooling() bool {
+    // Resolved once, for the same reason as leak_checking: every pool push
+    // and pop consults this, so a per-call environment scan dominated the
+    // record allocation path.
+    if (pool_cache) |v| return v;
+    const v = resolvePooling();
+    pool_cache = v;
+    return v;
+}
+var pool_cache: ?bool = null;
+
+fn resolvePooling() bool {
+    if (leak_checking()) return false;
+    switch (builtin.os.tag) {
+        .windows, .wasi, .emscripten => return false,
+        else => {},
+    }
+    for (process_environ.block.view().slice) |entry| {
+        const kv = std.mem.span(entry);
+        if (std.mem.startsWith(u8, kv, "GLEAM_ZIG_POOL=")) {
+            return !std.mem.eql(u8, kv["GLEAM_ZIG_POOL=".len..], "0");
+        }
+    }
+    return true;
+}
 const max_pooled_slice = 8;
 
 threadlocal var record_pool: ?*Record = null;
@@ -138,7 +217,7 @@ threadlocal var string_pools: [max_pooled_string_words + 1]?[*]u64 =
     @splat(null);
 
 fn poolPopString(words: usize) ?[]u64 {
-    if (!pooling or words < 2 or words > max_pooled_string_words) return null;
+    if (!pooling() or words < 2 or words > max_pooled_string_words) return null;
     const base = string_pools[words] orelse return null;
     const next = base[1];
     string_pools[words] = if (next == 0) null else @ptrFromInt(next);
@@ -147,47 +226,44 @@ fn poolPopString(words: usize) ?[]u64 {
 }
 
 fn poolPushString(base: [*]u64, words: usize) bool {
-    if (!pooling or words < 2 or words > max_pooled_string_words) return false;
+    if (!pooling() or words < 2 or words > max_pooled_string_words) return false;
     base[1] = if (string_pools[words]) |head| @intFromPtr(head) else 0;
     string_pools[words] = base;
     return true;
 }
 
 fn poolPopRecord() ?*Record {
-    if (!pooling) return null;
+    if (!pooling()) return null;
     const head = record_pool orelse return null;
-    // The next pointer hides in the retired struct's name field.
-    record_pool = @ptrFromInt(@intFromPtr(head.name.ptr));
-    if (head.name.len == 0) record_pool = null;
+    // The next pointer hides in the retired struct's rc field, which is
+    // meaningless once the record is dead. 0 terminates the list.
+    record_pool = if (head.rc == 0) null else @ptrFromInt(head.rc);
     return head;
 }
 
 fn poolPushRecord(record: *Record) bool {
-    if (!pooling) return false;
-    record.name = if (record_pool) |next|
-        @as([*]const u8, @ptrCast(next))[0..1]
-    else
-        &.{};
+    if (!pooling()) return false;
+    record.rc = if (record_pool) |next| @intFromPtr(next) else 0;
     record_pool = record;
     return true;
 }
 
 fn poolPopCons() ?*Cons {
-    if (!pooling) return null;
+    if (!pooling()) return null;
     const head = cons_pool orelse return null;
     cons_pool = @constCast(head.tail);
     return head;
 }
 
 fn poolPushCons(cell: *Cons) bool {
-    if (!pooling) return false;
+    if (!pooling()) return false;
     cell.tail = cons_pool;
     cons_pool = cell;
     return true;
 }
 
 fn poolPopSlice(count: usize) ?[]Value {
-    if (!pooling or count == 0 or count > max_pooled_slice) return null;
+    if (!pooling() or count == 0 or count > max_pooled_slice) return null;
     const base = slice_pools[count] orelse return null;
     // The next pointer hides in the first payload word.
     const next: usize = @bitCast(base[1].int);
@@ -197,7 +273,7 @@ fn poolPopSlice(count: usize) ?[]Value {
 }
 
 fn poolPushSlice(payload: []const Value) bool {
-    if (!pooling or payload.len == 0 or payload.len > max_pooled_slice) return false;
+    if (!pooling() or payload.len == 0 or payload.len > max_pooled_slice) return false;
     const base: [*]Value = @constCast(payload.ptr) - 1;
     const next: usize = if (slice_pools[payload.len]) |head|
         @intFromPtr(head)
@@ -359,9 +435,10 @@ fn dropList(head: ?*const Cons) void {
 }
 
 /// Report leaked reference-counted allocations after main returns.
-/// A no-op in release builds.
+/// A no-op unless leak checking is on: Debug builds, or any build
+/// run with GLEAM_ZIG_LEAK_GATE=1 in the environment.
 pub fn leakCheckExit() void {
-    if (!leak_checking) return;
+    if (!leak_checking()) return;
     const leaks = debug_allocator.detectLeaks();
     if (leaks != 0) {
         std.debug.print("gleam-zig: {d} leaked allocation(s)\n", .{leaks});
@@ -406,6 +483,16 @@ pub fn listValue(cell: ?*const Cons) Value {
     return Value{ .list = cell };
 }
 
+/// Takes an owning reference: wraps a spine pointer and increments its
+/// count. The native ABI's raw list parameters travel as borrows; this
+/// boxes them where the result must own (captures, polymorphic uses).
+pub fn dupList(cell: ?*const Cons) Value {
+    if (cell) |c| {
+        @constCast(c).rc += 1;
+    }
+    return Value{ .list = cell };
+}
+
 /// Consumes head and tail.
 pub fn cons(head: Value, tail: Value) Value {
     const cell = poolPopCons() orelse
@@ -434,21 +521,57 @@ pub fn tupleValue(elements: []const Value) Value {
 }
 
 /// Consumes the fields; name must be a static string.
-pub fn makeRecord(name: []const u8, fields: []const Value) Value {
+pub fn makeRecord(comptime name: []const u8, fields: []const Value) Value {
     return makeRecordL(name, fields, &.{});
+}
+
+/// A nullary constructor (`Leaf`, `None`, ...) carries no payload, so every
+/// occurrence of one variant is indistinguishable from every other. Hand
+/// out a single immortal static per variant instead of allocating: in the
+/// tree benchmark half of all record allocations are nullary.
+///
+/// The static's count starts at a sentinel far from both 0 and 1, so the
+/// ordinary rc paths stay correct with no branch added to them: `drop`
+/// never sees it reach 0 and never frees it, and `dropReuseRecord` never
+/// sees rc == 1 so FBIP reuse never claims it. Counting still happens (it
+/// is a plain `var`, so writable) — it just never reaches a value that
+/// would hand the allocation to anyone.
+const immortal_rc: usize = std.math.maxInt(usize) / 2;
+
+pub fn nullaryRecord(comptime name: []const u8) Value {
+    const shared = struct {
+        var record: Record = .{
+            .rc = immortal_rc,
+            .info = variantInfo(name, &.{}),
+            .fields = &.{},
+        };
+    };
+    return Value{ .record = &shared.record };
+}
+
+/// One static VariantInfo per (name, labels) pair. Both are comptime at every
+/// call site, so each variant interns to a single instance no matter how many
+/// values of it exist.
+pub fn variantInfo(
+    comptime name: []const u8,
+    comptime labels: []const ?[]const u8,
+) *const VariantInfo {
+    const shared = struct {
+        const info: VariantInfo = .{ .name = name, .labels = labels };
+    };
+    return &shared.info;
 }
 
 /// Consumes the fields; name and labels must be static strings.
 pub fn makeRecordL(
-    name: []const u8,
+    comptime name: []const u8,
     fields: []const Value,
-    labels: []const ?[]const u8,
+    comptime labels: []const ?[]const u8,
 ) Value {
     const record = poolPopRecord() orelse
         rc_allocator().create(Record) catch @panic("out of memory");
     record.rc = 1;
-    record.name = name;
-    record.labels = labels;
+    record.info = variantInfo(name, labels);
     if (fields.len == 0) {
         record.fields = &.{};
     } else if (fields.len <= max_inline_fields) {
@@ -690,14 +813,13 @@ pub fn dropReuseRecord(subject: Value, arity: usize) ?*Record {
 /// Consumes the fields; name and labels must be static strings.
 pub fn makeRecordReuse(
     token: ?*Record,
-    name: []const u8,
+    comptime name: []const u8,
     fields: []const Value,
-    labels: []const ?[]const u8,
+    comptime labels: []const ?[]const u8,
 ) Value {
     if (token) |record| {
         @memcpy(@constCast(record.fields), fields);
-        record.name = name;
-        record.labels = labels;
+        record.info = variantInfo(name, labels);
         return Value{ .record = record };
     }
     return makeRecordL(name, fields, labels);
@@ -762,8 +884,7 @@ pub fn deepCopy(value: Value) Value {
         .record => |r| {
             const record = rc_allocator().create(Record) catch @panic("out of memory");
             record.rc = 1;
-            record.name = r.name;
-            record.labels = r.labels;
+            record.info = r.info;
             if (r.fields.len == 0) {
                 record.fields = &.{};
             } else if (r.fields.len <= max_inline_fields) {
@@ -1068,12 +1189,48 @@ pub fn stringLiteralEquals(value: Value, literal: []const u8) bool {
 }
 
 pub fn recordHasName(value: Value, name: []const u8) bool {
-    return std.mem.eql(u8, value.record.name, name);
+    return std.mem.eql(u8, value.record.name(), name);
 }
 
 // ---------------------------------------------------------------- equality
 
 /// Borrows both values (used by FFI and internally).
+/// A structural hash matching isEqual: values that compare equal hash
+/// equal. Used by the dict's hash trie. Function values hash by code
+/// pointer, mirroring isEqual's reference equality for them.
+pub fn hashValue(value: Value) u64 {
+    var hasher = std.hash.Wyhash.init(0);
+    hashInto(&hasher, value);
+    return hasher.final();
+}
+
+fn hashInto(hasher: *std.hash.Wyhash, value: Value) void {
+    // The tag participates so 1 and 1.0 and true hash differently, as
+    // isEqual keeps them distinct.
+    hasher.update(&[_]u8{@intFromEnum(std.meta.activeTag(value))});
+    switch (value) {
+        .int => |i| hasher.update(std.mem.asBytes(&i)),
+        .float => |f| hasher.update(std.mem.asBytes(&f)),
+        .bool => |b| hasher.update(&[_]u8{@intFromBool(b)}),
+        .string => |str| hasher.update(str),
+        .nil => {},
+        .list => {
+            var cell = value.list;
+            while (cell) |c| : (cell = c.tail) hashInto(hasher, c.head);
+        },
+        .tuple => |elements| for (elements) |element| hashInto(hasher, element),
+        .record => |record| {
+            hasher.update(record.name());
+            for (record.fields) |field| hashInto(hasher, field);
+        },
+        .closure => |closure| {
+            const address = @intFromPtr(closure.function);
+            hasher.update(std.mem.asBytes(&address));
+        },
+        .bit_array => |bits| hasher.update(bits.bytes()),
+    }
+}
+
 pub fn isEqual(a: Value, b: Value) bool {
     if (std.meta.activeTag(a) != std.meta.activeTag(b)) return false;
     return switch (a) {
@@ -1100,7 +1257,7 @@ pub fn isEqual(a: Value, b: Value) bool {
             return true;
         },
         .record => {
-            if (!std.mem.eql(u8, a.record.name, b.record.name)) return false;
+            if (!std.mem.eql(u8, a.record.name(), b.record.name())) return false;
             if (a.record.fields.len != b.record.fields.len) return false;
             for (a.record.fields, b.record.fields) |x, y| {
                 if (!isEqual(x, y)) return false;
@@ -1226,13 +1383,13 @@ fn inspect(writer: anytype, value: Value) void {
             writer.print(")", .{}) catch {};
         },
         .record => {
-            writer.print("{s}", .{value.record.name}) catch {};
+            writer.print("{s}", .{value.record.name()}) catch {};
             if (value.record.fields.len != 0) {
                 writer.print("(", .{}) catch {};
                 for (value.record.fields, 0..) |field, index| {
                     if (index != 0) writer.print(", ", .{}) catch {};
-                    if (index < value.record.labels.len) {
-                        if (value.record.labels[index]) |label| {
+                    if (index < value.record.labels().len) {
+                        if (value.record.labels()[index]) |label| {
                             writer.print("{s}: ", .{label}) catch {};
                         }
                     }

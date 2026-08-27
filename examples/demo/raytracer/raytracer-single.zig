@@ -29,11 +29,34 @@ const @"gleam$prelude" = struct {
 const std = @import("std");
 const builtin = @import("builtin");
 
-/// Debug builds (the `gleam run` default via `zig run`) use a
-/// leak-checking allocator and verify on exit that no reference-counted
-/// allocation outlives main. Release builds use the fast allocator and
-/// skip the check.
-const leak_checking = builtin.mode == .Debug;
+/// Leak checking is on when the runtime gate is set (or in Debug
+/// builds, where it costs nothing extra to keep). The gate lets
+/// ReleaseSafe/ReleaseFast runs opt into the same check via
+/// GLEAM_ZIG_LEAK_GATE=1. Platforms without a POSIX-style environment
+/// (e.g. Windows) cannot see the variable; there the gate simply
+/// stays off unless the build is Debug.
+fn leak_checking() bool {
+    // Resolved once. This is on the allocation path via rc_allocator(), and
+    // scanning the environment per call cost more than the allocation did.
+    if (leak_cache) |v| return v;
+    const v = resolveLeakChecking();
+    leak_cache = v;
+    return v;
+}
+var leak_cache: ?bool = null;
+
+fn resolveLeakChecking() bool {
+    if (builtin.mode == .Debug) return true;
+    switch (builtin.os.tag) {
+        .windows, .wasi, .emscripten => return false,
+        else => {},
+    }
+    for (process_environ.block.view().slice) |entry| {
+        const kv = std.mem.span(entry);
+        if (std.mem.startsWith(u8, kv, "GLEAM_ZIG_LEAK_GATE=")) return true;
+    }
+    return false;
+}
 
 pub var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
 
@@ -41,8 +64,12 @@ pub var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
 /// argv FFI.
 pub var process_args: std.process.Args = undefined;
 
+/// Stashed by the generated entrypoint alongside `process_args` so
+/// runtime gates (e.g. GLEAM_ZIG_LEAK_GATE) can read the environment.
+pub var process_environ: std.process.Environ = undefined;
+
 fn rc_allocator() std.mem.Allocator {
-    return if (leak_checking) debug_allocator.allocator() else std.heap.smp_allocator;
+    return if (leak_checking()) debug_allocator.allocator() else std.heap.smp_allocator;
 }
 
 /// Scratch allocator for FFI temporaries that are not reference counted.
@@ -89,27 +116,45 @@ pub const Cons = struct {
     tail: ?*const Cons,
 };
 
-pub const Record = struct {
-    rc: usize,
-    /// Variant name, e.g. "Ok". Variant identity is (name, arity), which is
-    /// unique within a type, and values of different types never meet in a
+/// Per-variant constants, one static instance per (name, labels) pair rather
+/// than a copy in every value. Keeping these out of Record is what lets a
+/// record fit the 128-byte allocator size class: at 184 bytes every record
+/// paid for a 256-byte slot.
+pub const VariantInfo = struct {
+    /// Variant name, e.g. "Ok". Variant identity is (name, arity), unique
+    /// within a type, and values of different types never meet in a
     /// well-typed pattern match. Always a static string.
     name: []const u8,
-    fields: []const Value,
     /// Field labels for inspection, null when a field is positional.
     /// Empty when no field has a label. Always static strings.
     labels: []const ?[]const u8 = &.{},
-    /// Storage for small records: `fields` points here for arity <= 4,
+};
+
+pub const Record = struct {
+    rc: usize,
+    info: *const VariantInfo,
+    fields: []const Value,
+    /// Storage for small records: `fields` points here for arity <= 3,
     /// halving allocator traffic on the dominant record shapes (Ok/Error,
-    /// pairs, vectors). Readers only ever see the slice.
+    /// pairs, tree nodes). Readers only ever see the slice. Three, not four:
+    /// a fourth would put Record over 128 bytes and double its slot, and
+    /// arity-4 records did not appear anywhere in the corpus.
     inline_fields: [max_inline_fields]Value = undefined,
 
     pub fn fieldsAreInline(self: *const Record) bool {
         return @intFromPtr(self.fields.ptr) == @intFromPtr(&self.inline_fields);
     }
+
+    pub fn name(self: *const Record) []const u8 {
+        return self.info.name;
+    }
+
+    pub fn labels(self: *const Record) []const ?[]const u8 {
+        return self.info.labels;
+    }
 };
 
-pub const max_inline_fields = 4;
+pub const max_inline_fields = 3;
 
 /// All function values share one shape: a type-erased pointer to a lifted
 /// function whose first parameter is the captured environment. Call sites
@@ -129,9 +174,43 @@ pub const Closure = struct {
 // Release-mode object pools. The dominant cost in hot numeric code is
 // allocator round-trips for tiny objects (a record + its field slice per
 // vector operation). Freed records, cons cells and small slices park in
-// threadlocal free lists for immediate reuse. Compiled out in Debug so
-// the leak-checking gate keeps exact alloc/free pairing.
-const pooling = !leak_checking;
+// threadlocal free lists for immediate reuse. Compiled out when leak
+// checking is on, keeping exact alloc/free pairing there.
+/// Object pooling is on by default; GLEAM_ZIG_POOL=0 opts out. It was
+/// opt-in while the record free-list corruption (#16) was unfixed. With
+/// that fixed the flip measured 1.3-1.5x on allocation-heavy workloads
+/// (raytracer, tree, string_build), nothing slower, memory flat, and an
+/// identical corpus - so the default moved.
+///
+/// Leak checking still disables pooling outright: the gate wants exact
+/// alloc/free pairing. That also means the corpus's default configuration
+/// exercises the UNPOOLED path, which is how #16 survived every corpus
+/// run - pooled coverage needs HARNESS_LEAK_GATE=0.
+fn pooling() bool {
+    // Resolved once, for the same reason as leak_checking: every pool push
+    // and pop consults this, so a per-call environment scan dominated the
+    // record allocation path.
+    if (pool_cache) |v| return v;
+    const v = resolvePooling();
+    pool_cache = v;
+    return v;
+}
+var pool_cache: ?bool = null;
+
+fn resolvePooling() bool {
+    if (leak_checking()) return false;
+    switch (builtin.os.tag) {
+        .windows, .wasi, .emscripten => return false,
+        else => {},
+    }
+    for (process_environ.block.view().slice) |entry| {
+        const kv = std.mem.span(entry);
+        if (std.mem.startsWith(u8, kv, "GLEAM_ZIG_POOL=")) {
+            return !std.mem.eql(u8, kv["GLEAM_ZIG_POOL=".len..], "0");
+        }
+    }
+    return true;
+}
 const max_pooled_slice = 8;
 
 threadlocal var record_pool: ?*Record = null;
@@ -144,7 +223,7 @@ threadlocal var string_pools: [max_pooled_string_words + 1]?[*]u64 =
     @splat(null);
 
 fn poolPopString(words: usize) ?[]u64 {
-    if (!pooling or words < 2 or words > max_pooled_string_words) return null;
+    if (!pooling() or words < 2 or words > max_pooled_string_words) return null;
     const base = string_pools[words] orelse return null;
     const next = base[1];
     string_pools[words] = if (next == 0) null else @ptrFromInt(next);
@@ -153,47 +232,44 @@ fn poolPopString(words: usize) ?[]u64 {
 }
 
 fn poolPushString(base: [*]u64, words: usize) bool {
-    if (!pooling or words < 2 or words > max_pooled_string_words) return false;
+    if (!pooling() or words < 2 or words > max_pooled_string_words) return false;
     base[1] = if (string_pools[words]) |head| @intFromPtr(head) else 0;
     string_pools[words] = base;
     return true;
 }
 
 fn poolPopRecord() ?*Record {
-    if (!pooling) return null;
+    if (!pooling()) return null;
     const head = record_pool orelse return null;
-    // The next pointer hides in the retired struct's name field.
-    record_pool = @ptrFromInt(@intFromPtr(head.name.ptr));
-    if (head.name.len == 0) record_pool = null;
+    // The next pointer hides in the retired struct's rc field, which is
+    // meaningless once the record is dead. 0 terminates the list.
+    record_pool = if (head.rc == 0) null else @ptrFromInt(head.rc);
     return head;
 }
 
 fn poolPushRecord(record: *Record) bool {
-    if (!pooling) return false;
-    record.name = if (record_pool) |next|
-        @as([*]const u8, @ptrCast(next))[0..1]
-    else
-        &.{};
+    if (!pooling()) return false;
+    record.rc = if (record_pool) |next| @intFromPtr(next) else 0;
     record_pool = record;
     return true;
 }
 
 fn poolPopCons() ?*Cons {
-    if (!pooling) return null;
+    if (!pooling()) return null;
     const head = cons_pool orelse return null;
     cons_pool = @constCast(head.tail);
     return head;
 }
 
 fn poolPushCons(cell: *Cons) bool {
-    if (!pooling) return false;
+    if (!pooling()) return false;
     cell.tail = cons_pool;
     cons_pool = cell;
     return true;
 }
 
 fn poolPopSlice(count: usize) ?[]Value {
-    if (!pooling or count == 0 or count > max_pooled_slice) return null;
+    if (!pooling() or count == 0 or count > max_pooled_slice) return null;
     const base = slice_pools[count] orelse return null;
     // The next pointer hides in the first payload word.
     const next: usize = @bitCast(base[1].int);
@@ -203,7 +279,7 @@ fn poolPopSlice(count: usize) ?[]Value {
 }
 
 fn poolPushSlice(payload: []const Value) bool {
-    if (!pooling or payload.len == 0 or payload.len > max_pooled_slice) return false;
+    if (!pooling() or payload.len == 0 or payload.len > max_pooled_slice) return false;
     const base: [*]Value = @constCast(payload.ptr) - 1;
     const next: usize = if (slice_pools[payload.len]) |head|
         @intFromPtr(head)
@@ -365,9 +441,10 @@ fn dropList(head: ?*const Cons) void {
 }
 
 /// Report leaked reference-counted allocations after main returns.
-/// A no-op in release builds.
+/// A no-op unless leak checking is on: Debug builds, or any build
+/// run with GLEAM_ZIG_LEAK_GATE=1 in the environment.
 pub fn leakCheckExit() void {
-    if (!leak_checking) return;
+    if (!leak_checking()) return;
     const leaks = debug_allocator.detectLeaks();
     if (leaks != 0) {
         std.debug.print("gleam-zig: {d} leaked allocation(s)\n", .{leaks});
@@ -412,6 +489,16 @@ pub fn listValue(cell: ?*const Cons) Value {
     return Value{ .list = cell };
 }
 
+/// Takes an owning reference: wraps a spine pointer and increments its
+/// count. The native ABI's raw list parameters travel as borrows; this
+/// boxes them where the result must own (captures, polymorphic uses).
+pub fn dupList(cell: ?*const Cons) Value {
+    if (cell) |c| {
+        @constCast(c).rc += 1;
+    }
+    return Value{ .list = cell };
+}
+
 /// Consumes head and tail.
 pub fn cons(head: Value, tail: Value) Value {
     const cell = poolPopCons() orelse
@@ -440,21 +527,57 @@ pub fn tupleValue(elements: []const Value) Value {
 }
 
 /// Consumes the fields; name must be a static string.
-pub fn makeRecord(name: []const u8, fields: []const Value) Value {
+pub fn makeRecord(comptime name: []const u8, fields: []const Value) Value {
     return makeRecordL(name, fields, &.{});
+}
+
+/// A nullary constructor (`Leaf`, `None`, ...) carries no payload, so every
+/// occurrence of one variant is indistinguishable from every other. Hand
+/// out a single immortal static per variant instead of allocating: in the
+/// tree benchmark half of all record allocations are nullary.
+///
+/// The static's count starts at a sentinel far from both 0 and 1, so the
+/// ordinary rc paths stay correct with no branch added to them: `drop`
+/// never sees it reach 0 and never frees it, and `dropReuseRecord` never
+/// sees rc == 1 so FBIP reuse never claims it. Counting still happens (it
+/// is a plain `var`, so writable) — it just never reaches a value that
+/// would hand the allocation to anyone.
+const immortal_rc: usize = std.math.maxInt(usize) / 2;
+
+pub fn nullaryRecord(comptime name: []const u8) Value {
+    const shared = struct {
+        var record: Record = .{
+            .rc = immortal_rc,
+            .info = variantInfo(name, &.{}),
+            .fields = &.{},
+        };
+    };
+    return Value{ .record = &shared.record };
+}
+
+/// One static VariantInfo per (name, labels) pair. Both are comptime at every
+/// call site, so each variant interns to a single instance no matter how many
+/// values of it exist.
+pub fn variantInfo(
+    comptime name: []const u8,
+    comptime labels: []const ?[]const u8,
+) *const VariantInfo {
+    const shared = struct {
+        const info: VariantInfo = .{ .name = name, .labels = labels };
+    };
+    return &shared.info;
 }
 
 /// Consumes the fields; name and labels must be static strings.
 pub fn makeRecordL(
-    name: []const u8,
+    comptime name: []const u8,
     fields: []const Value,
-    labels: []const ?[]const u8,
+    comptime labels: []const ?[]const u8,
 ) Value {
     const record = poolPopRecord() orelse
         rc_allocator().create(Record) catch @panic("out of memory");
     record.rc = 1;
-    record.name = name;
-    record.labels = labels;
+    record.info = variantInfo(name, labels);
     if (fields.len == 0) {
         record.fields = &.{};
     } else if (fields.len <= max_inline_fields) {
@@ -696,14 +819,13 @@ pub fn dropReuseRecord(subject: Value, arity: usize) ?*Record {
 /// Consumes the fields; name and labels must be static strings.
 pub fn makeRecordReuse(
     token: ?*Record,
-    name: []const u8,
+    comptime name: []const u8,
     fields: []const Value,
-    labels: []const ?[]const u8,
+    comptime labels: []const ?[]const u8,
 ) Value {
     if (token) |record| {
         @memcpy(@constCast(record.fields), fields);
-        record.name = name;
-        record.labels = labels;
+        record.info = variantInfo(name, labels);
         return Value{ .record = record };
     }
     return makeRecordL(name, fields, labels);
@@ -768,8 +890,7 @@ pub fn deepCopy(value: Value) Value {
         .record => |r| {
             const record = rc_allocator().create(Record) catch @panic("out of memory");
             record.rc = 1;
-            record.name = r.name;
-            record.labels = r.labels;
+            record.info = r.info;
             if (r.fields.len == 0) {
                 record.fields = &.{};
             } else if (r.fields.len <= max_inline_fields) {
@@ -1074,12 +1195,48 @@ pub fn stringLiteralEquals(value: Value, literal: []const u8) bool {
 }
 
 pub fn recordHasName(value: Value, name: []const u8) bool {
-    return std.mem.eql(u8, value.record.name, name);
+    return std.mem.eql(u8, value.record.name(), name);
 }
 
 // ---------------------------------------------------------------- equality
 
 /// Borrows both values (used by FFI and internally).
+/// A structural hash matching isEqual: values that compare equal hash
+/// equal. Used by the dict's hash trie. Function values hash by code
+/// pointer, mirroring isEqual's reference equality for them.
+pub fn hashValue(value: Value) u64 {
+    var hasher = std.hash.Wyhash.init(0);
+    hashInto(&hasher, value);
+    return hasher.final();
+}
+
+fn hashInto(hasher: *std.hash.Wyhash, value: Value) void {
+    // The tag participates so 1 and 1.0 and true hash differently, as
+    // isEqual keeps them distinct.
+    hasher.update(&[_]u8{@intFromEnum(std.meta.activeTag(value))});
+    switch (value) {
+        .int => |i| hasher.update(std.mem.asBytes(&i)),
+        .float => |f| hasher.update(std.mem.asBytes(&f)),
+        .bool => |b| hasher.update(&[_]u8{@intFromBool(b)}),
+        .string => |str| hasher.update(str),
+        .nil => {},
+        .list => {
+            var cell = value.list;
+            while (cell) |c| : (cell = c.tail) hashInto(hasher, c.head);
+        },
+        .tuple => |elements| for (elements) |element| hashInto(hasher, element),
+        .record => |record| {
+            hasher.update(record.name());
+            for (record.fields) |field| hashInto(hasher, field);
+        },
+        .closure => |closure| {
+            const address = @intFromPtr(closure.function);
+            hasher.update(std.mem.asBytes(&address));
+        },
+        .bit_array => |bits| hasher.update(bits.bytes()),
+    }
+}
+
 pub fn isEqual(a: Value, b: Value) bool {
     if (std.meta.activeTag(a) != std.meta.activeTag(b)) return false;
     return switch (a) {
@@ -1106,7 +1263,7 @@ pub fn isEqual(a: Value, b: Value) bool {
             return true;
         },
         .record => {
-            if (!std.mem.eql(u8, a.record.name, b.record.name)) return false;
+            if (!std.mem.eql(u8, a.record.name(), b.record.name())) return false;
             if (a.record.fields.len != b.record.fields.len) return false;
             for (a.record.fields, b.record.fields) |x, y| {
                 if (!isEqual(x, y)) return false;
@@ -1232,13 +1389,13 @@ fn inspect(writer: anytype, value: Value) void {
             writer.print(")", .{}) catch {};
         },
         .record => {
-            writer.print("{s}", .{value.record.name}) catch {};
+            writer.print("{s}", .{value.record.name()}) catch {};
             if (value.record.fields.len != 0) {
                 writer.print("(", .{}) catch {};
                 for (value.record.fields, 0..) |field, index| {
                     if (index != 0) writer.print(", ", .{}) catch {};
-                    if (index < value.record.labels.len) {
-                        if (value.record.labels[index]) |label| {
+                    if (index < value.record.labels().len) {
+                        if (value.record.labels()[index]) |label| {
                             writer.print("{s}: ", .{label}) catch {};
                         }
                     }
@@ -10041,122 +10198,383 @@ pub fn string_replace(string: Value, pattern: Value, replacement: Value) Value {
 }
 
 // ------------------------------------------------------------------ dict
-// ponytail: Dict is an insertion-ordered association list (a Value.list of
-// #(key, value) tuples). O(n) operations; swap for a hash map when a real
-// workload notices. "Transient" variants return fresh copies.
+// A hash array mapped trie (HAMT), the structure the JavaScript target
+// uses. Nodes are ordinary reference-counted Values, so the runtime's
+// existing memory discipline covers the whole structure and no new
+// lifetime rules are introduced:
+//
+//   Empty                          the empty dict
+//   Index(bitmap, children)        a sparse node: `bitmap` marks which
+//                                  of 32 slots are present, `children`
+//                                  is a tuple holding only those
+//   Leaf(hash, key, value)         a single entry
+//   Collision(hash, entries)       entries whose full hashes collide,
+//                                  as a tuple of #(key, value) pairs
+//
+// Five bits of hash are consumed per level (32-way branching), so a
+// lookup touches at most 13 nodes for 64-bit hashes and in practice
+// three or four. Structural sharing means an insert copies one node per
+// level, not the whole dict.
+
+const hamt_bits = 5;
+const hamt_width = 1 << hamt_bits; // 32
+const hamt_mask = hamt_width - 1;
+
+fn hamtEmpty() Value {
+    return P.makeRecord("Empty", &[_]Value{});
+}
+
+fn hamtIsEmpty(node: Value) bool {
+    return std.mem.eql(u8, node.record.name(), "Empty");
+}
+
+fn hamtFragment(hash: u64, shift: u6) u5 {
+    return @truncate((hash >> shift) & hamt_mask);
+}
+
+/// The position of slot `fragment` within a node's dense child tuple.
+fn hamtOffset(bitmap: u32, fragment: u5) usize {
+    const below: u32 = bitmap & ((@as(u32, 1) << fragment) - 1);
+    return @popCount(below);
+}
+
+fn hamtLeaf(hash: u64, key: Value, value: Value) Value {
+    return P.makeRecord("Leaf", &[_]Value{
+        P.intValue(@bitCast(hash)),
+        key,
+        value,
+    });
+}
+
+fn hamtIndex(bitmap: u32, children: []const Value) Value {
+    return P.makeRecord("Index", &[_]Value{
+        P.intValue(@intCast(bitmap)),
+        P.tupleValue(children),
+    });
+}
+
+fn hamtNodeHash(node: Value) u64 {
+    return @bitCast(node.record.fields[0].int);
+}
+
+/// Two entries whose hashes differ somewhere at or above `shift`: build
+/// the chain of index nodes that separates them. Consumes both nodes.
+fn hamtMerge(shift: u6, left: Value, right: Value) Value {
+    const left_hash = hamtNodeHash(left);
+    const right_hash = hamtNodeHash(right);
+    if (shift >= 64) {
+        // Hashes are identical the whole way down: a collision node.
+        // Both inputs are leaves here (merge is only called on leaves
+        // or collisions, and equal-hash entries never split).
+        return hamtCollisionOf(left, right);
+    }
+    const left_fragment = hamtFragment(left_hash, shift);
+    const right_fragment = hamtFragment(right_hash, shift);
+    if (left_fragment == right_fragment) {
+        const deeper = hamtMerge(shift + hamt_bits, left, right);
+        const bitmap = @as(u32, 1) << left_fragment;
+        return hamtIndex(bitmap, &[_]Value{deeper});
+    }
+    const bitmap = (@as(u32, 1) << left_fragment) | (@as(u32, 1) << right_fragment);
+    return if (left_fragment < right_fragment)
+        hamtIndex(bitmap, &[_]Value{ left, right })
+    else
+        hamtIndex(bitmap, &[_]Value{ right, left });
+}
+
+/// Consumes both leaves.
+fn hamtCollisionOf(left: Value, right: Value) Value {
+    const hash = hamtNodeHash(left);
+    const first = P.tupleValue(&[_]Value{
+        P.dup(left.record.fields[1]),
+        P.dup(left.record.fields[2]),
+    });
+    const second = P.tupleValue(&[_]Value{
+        P.dup(right.record.fields[1]),
+        P.dup(right.record.fields[2]),
+    });
+    P.drop(left);
+    P.drop(right);
+    return P.makeRecord("Collision", &[_]Value{
+        P.intValue(@bitCast(hash)),
+        P.tupleValue(&[_]Value{ first, second }),
+    });
+}
+
+/// Borrows node, key and value; returns an owned node.
+fn hamtInsert(node: Value, shift: u6, hash: u64, key: Value, value: Value) Value {
+    const name = node.record.name();
+    if (std.mem.eql(u8, name, "Empty")) {
+        return hamtLeaf(hash, P.dup(key), P.dup(value));
+    }
+    if (std.mem.eql(u8, name, "Leaf")) {
+        const leaf_hash = hamtNodeHash(node);
+        if (leaf_hash == hash and P.isEqual(node.record.fields[1], key)) {
+            return hamtLeaf(hash, P.dup(key), P.dup(value));
+        }
+        const fresh = hamtLeaf(hash, P.dup(key), P.dup(value));
+        return hamtMerge(shift, P.dup(node), fresh);
+    }
+    if (std.mem.eql(u8, name, "Collision")) {
+        const collision_hash = hamtNodeHash(node);
+        if (collision_hash != hash) {
+            const fresh = hamtLeaf(hash, P.dup(key), P.dup(value));
+            return hamtMerge(shift, P.dup(node), fresh);
+        }
+        const entries = node.record.fields[1].tuple;
+        var items: std.ArrayList(Value) = .empty;
+        defer items.deinit(scratch);
+        var replaced = false;
+        for (entries) |entry| {
+            if (P.isEqual(entry.tuple[0], key)) {
+                items.append(scratch, P.tupleValue(&[_]Value{ P.dup(key), P.dup(value) })) catch
+                    @panic("out of memory");
+                replaced = true;
+            } else {
+                items.append(scratch, P.dup(entry)) catch @panic("out of memory");
+            }
+        }
+        if (!replaced) {
+            items.append(scratch, P.tupleValue(&[_]Value{ P.dup(key), P.dup(value) })) catch
+                @panic("out of memory");
+        }
+        return P.makeRecord("Collision", &[_]Value{
+            P.intValue(@bitCast(hash)),
+            P.tupleValue(items.items),
+        });
+    }
+    // Index node.
+    const bitmap: u32 = @intCast(node.record.fields[0].int);
+    const children = node.record.fields[1].tuple;
+    const fragment = hamtFragment(hash, shift);
+    const bit = @as(u32, 1) << fragment;
+    const offset = hamtOffset(bitmap, fragment);
+    var items: std.ArrayList(Value) = .empty;
+    defer items.deinit(scratch);
+    if (bitmap & bit != 0) {
+        for (children, 0..) |child, index| {
+            if (index == offset) {
+                items.append(
+                    scratch,
+                    hamtInsert(child, shift + hamt_bits, hash, key, value),
+                ) catch @panic("out of memory");
+            } else {
+                items.append(scratch, P.dup(child)) catch @panic("out of memory");
+            }
+        }
+        return hamtIndex(bitmap, items.items);
+    }
+    // A free slot: splice the new leaf in, keeping slots ordered.
+    for (children, 0..) |child, index| {
+        if (index == offset) {
+            items.append(scratch, hamtLeaf(hash, P.dup(key), P.dup(value))) catch
+                @panic("out of memory");
+        }
+        items.append(scratch, P.dup(child)) catch @panic("out of memory");
+    }
+    if (offset == children.len) {
+        items.append(scratch, hamtLeaf(hash, P.dup(key), P.dup(value))) catch
+            @panic("out of memory");
+    }
+    return hamtIndex(bitmap | bit, items.items);
+}
+
+/// Borrows; returns the entry's value borrowed, or null.
+fn hamtLookup(node: Value, shift: u6, hash: u64, key: Value) ?Value {
+    const name = node.record.name();
+    if (std.mem.eql(u8, name, "Empty")) return null;
+    if (std.mem.eql(u8, name, "Leaf")) {
+        if (hamtNodeHash(node) == hash and P.isEqual(node.record.fields[1], key)) {
+            return node.record.fields[2];
+        }
+        return null;
+    }
+    if (std.mem.eql(u8, name, "Collision")) {
+        if (hamtNodeHash(node) != hash) return null;
+        for (node.record.fields[1].tuple) |entry| {
+            if (P.isEqual(entry.tuple[0], key)) return entry.tuple[1];
+        }
+        return null;
+    }
+    const bitmap: u32 = @intCast(node.record.fields[0].int);
+    const fragment = hamtFragment(hash, shift);
+    const bit = @as(u32, 1) << fragment;
+    if (bitmap & bit == 0) return null;
+    const child = node.record.fields[1].tuple[hamtOffset(bitmap, fragment)];
+    return hamtLookup(child, shift + hamt_bits, hash, key);
+}
+
+/// Borrows node and key; returns an owned node with the entry removed.
+fn hamtDelete(node: Value, shift: u6, hash: u64, key: Value) Value {
+    const name = node.record.name();
+    if (std.mem.eql(u8, name, "Empty")) return hamtEmpty();
+    if (std.mem.eql(u8, name, "Leaf")) {
+        if (hamtNodeHash(node) == hash and P.isEqual(node.record.fields[1], key)) {
+            return hamtEmpty();
+        }
+        return P.dup(node);
+    }
+    if (std.mem.eql(u8, name, "Collision")) {
+        if (hamtNodeHash(node) != hash) return P.dup(node);
+        var items: std.ArrayList(Value) = .empty;
+        defer items.deinit(scratch);
+        for (node.record.fields[1].tuple) |entry| {
+            if (!P.isEqual(entry.tuple[0], key)) {
+                items.append(scratch, P.dup(entry)) catch @panic("out of memory");
+            }
+        }
+        if (items.items.len == 0) return hamtEmpty();
+        if (items.items.len == 1) {
+            const entry = items.items[0];
+            const leaf = hamtLeaf(hash, P.dup(entry.tuple[0]), P.dup(entry.tuple[1]));
+            P.drop(entry);
+            return leaf;
+        }
+        return P.makeRecord("Collision", &[_]Value{
+            P.intValue(@bitCast(hash)),
+            P.tupleValue(items.items),
+        });
+    }
+    const bitmap: u32 = @intCast(node.record.fields[0].int);
+    const children = node.record.fields[1].tuple;
+    const fragment = hamtFragment(hash, shift);
+    const bit = @as(u32, 1) << fragment;
+    if (bitmap & bit == 0) return P.dup(node);
+    const offset = hamtOffset(bitmap, fragment);
+    const updated = hamtDelete(children[offset], shift + hamt_bits, hash, key);
+    var items: std.ArrayList(Value) = .empty;
+    defer items.deinit(scratch);
+    if (hamtIsEmpty(updated)) {
+        P.drop(updated);
+        for (children, 0..) |child, index| {
+            if (index != offset) {
+                items.append(scratch, P.dup(child)) catch @panic("out of memory");
+            }
+        }
+        if (items.items.len == 0) return hamtEmpty();
+        return hamtIndex(bitmap & ~bit, items.items);
+    }
+    for (children, 0..) |child, index| {
+        if (index == offset) {
+            items.append(scratch, updated) catch @panic("out of memory");
+        } else {
+            items.append(scratch, P.dup(child)) catch @panic("out of memory");
+        }
+    }
+    return hamtIndex(bitmap, items.items);
+}
+
+/// Borrows; appends every #(key, value) pair to `out` as owned values.
+fn hamtEntries(node: Value, out: *std.ArrayList(Value)) void {
+    const name = node.record.name();
+    if (std.mem.eql(u8, name, "Empty")) return;
+    if (std.mem.eql(u8, name, "Leaf")) {
+        out.append(scratch, P.tupleValue(&[_]Value{
+            P.dup(node.record.fields[1]),
+            P.dup(node.record.fields[2]),
+        })) catch @panic("out of memory");
+        return;
+    }
+    if (std.mem.eql(u8, name, "Collision")) {
+        for (node.record.fields[1].tuple) |entry| {
+            out.append(scratch, P.dup(entry)) catch @panic("out of memory");
+        }
+        return;
+    }
+    for (node.record.fields[1].tuple) |child| hamtEntries(child, out);
+}
+
+fn hamtCount(node: Value) i64 {
+    const name = node.record.name();
+    if (std.mem.eql(u8, name, "Empty")) return 0;
+    if (std.mem.eql(u8, name, "Leaf")) return 1;
+    if (std.mem.eql(u8, name, "Collision")) {
+        return @intCast(node.record.fields[1].tuple.len);
+    }
+    var total: i64 = 0;
+    for (node.record.fields[1].tuple) |child| total += hamtCount(child);
+    return total;
+}
 
 pub fn dict_identity(dict: Value) Value {
     return P.dup(dict);
 }
 
 pub fn dict_make() Value {
-    return P.emptyList();
+    return hamtEmpty();
 }
 
 pub fn dict_size(dict: Value) Value {
-    var count: i64 = 0;
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) count += 1;
-    return P.intValue(count);
+    return P.intValue(hamtCount(dict));
 }
 
 pub fn dict_has(dict: Value, key: Value) Value {
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) {
-        if (P.isEqual(cell.?.head.tuple[0], key)) return P.TRUE;
-    }
-    return P.FALSE;
+    const found = hamtLookup(dict, 0, P.hashValue(key), key);
+    return if (found == null) P.FALSE else P.TRUE;
 }
 
 pub fn dict_get(dict: Value, key: Value) Value {
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) {
-        if (P.isEqual(cell.?.head.tuple[0], key)) return ok(P.dup(cell.?.head.tuple[1]));
+    if (hamtLookup(dict, 0, P.hashValue(key), key)) |found| {
+        return ok(P.dup(found));
     }
     return err(P.NIL);
 }
 
-/// Borrows dict, key and value; returns an owned copy of the dict with
-/// `key` replaced (keeping its position) or the new entry appended.
-fn dictPut(dict: Value, key: Value, value: Value) Value {
-    var items: std.ArrayList(Value) = .empty;
-    defer items.deinit(scratch);
-    var replaced = false;
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) {
-        if (P.isEqual(cell.?.head.tuple[0], key)) {
-            const entry = P.tupleValue(&[_]Value{ P.dup(key), P.dup(value) });
-            items.append(scratch, entry) catch @panic("out of memory");
-            replaced = true;
-        } else {
-            items.append(scratch, P.dup(cell.?.head)) catch @panic("out of memory");
-        }
-    }
-    if (!replaced) {
-        const entry = P.tupleValue(&[_]Value{ P.dup(key), P.dup(value) });
-        items.append(scratch, entry) catch @panic("out of memory");
-    }
-    return P.listFromSlice(items.items, P.emptyList());
-}
-
 pub fn dict_insert(dict: Value, key: Value, value: Value) Value {
-    return dictPut(dict, key, value);
+    return hamtInsert(dict, 0, P.hashValue(key), key, value);
 }
 
 pub fn dict_transient_insert(key: Value, value: Value, dict: Value) Value {
-    return dictPut(dict, key, value);
+    return hamtInsert(dict, 0, P.hashValue(key), key, value);
 }
 
 pub fn dict_map(dict: Value, fun: Value) Value {
-    var items: std.ArrayList(Value) = .empty;
-    defer items.deinit(scratch);
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) {
-        const key = cell.?.head.tuple[0];
-        const mapped = P.call2(P.dup(fun), P.dup(key), P.dup(cell.?.head.tuple[1]));
-        const entry = P.tupleValue(&[_]Value{ P.dup(key), mapped });
-        items.append(scratch, entry) catch @panic("out of memory");
+    var entries: std.ArrayList(Value) = .empty;
+    defer entries.deinit(scratch);
+    hamtEntries(dict, &entries);
+    var result = hamtEmpty();
+    for (entries.items) |entry| {
+        const key = entry.tuple[0];
+        const mapped = P.call2(P.dup(fun), P.dup(key), P.dup(entry.tuple[1]));
+        const next = hamtInsert(result, 0, P.hashValue(key), key, mapped);
+        P.drop(result);
+        P.drop(mapped);
+        P.drop(entry);
+        result = next;
     }
-    return P.listFromSlice(items.items, P.emptyList());
+    return result;
 }
 
 pub fn dict_transient_delete(key: Value, dict: Value) Value {
-    var items: std.ArrayList(Value) = .empty;
-    defer items.deinit(scratch);
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) {
-        if (!P.isEqual(cell.?.head.tuple[0], key)) {
-            items.append(scratch, P.dup(cell.?.head)) catch @panic("out of memory");
-        }
-    }
-    return P.listFromSlice(items.items, P.emptyList());
+    return hamtDelete(dict, 0, P.hashValue(key), key);
 }
 
 pub fn dict_fold(dict: Value, initial: Value, fun: Value) Value {
+    var entries: std.ArrayList(Value) = .empty;
+    defer entries.deinit(scratch);
+    hamtEntries(dict, &entries);
     var accumulator = P.dup(initial);
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) {
+    for (entries.items) |entry| {
         accumulator = P.call3(
             P.dup(fun),
             accumulator,
-            P.dup(cell.?.head.tuple[0]),
-            P.dup(cell.?.head.tuple[1]),
+            P.dup(entry.tuple[0]),
+            P.dup(entry.tuple[1]),
         );
+        P.drop(entry);
     }
     return accumulator;
 }
 
 pub fn dict_transient_update_with(key: Value, fun: Value, init: Value, dict: Value) Value {
-    var cell = dict.list;
-    while (cell != null) : (cell = cell.?.tail) {
-        if (P.isEqual(cell.?.head.tuple[0], key)) {
-            const updated = P.call1(P.dup(fun), P.dup(cell.?.head.tuple[1]));
-            const result = dictPut(dict, key, updated);
-            P.drop(updated);
-            return result;
-        }
+    const hash = P.hashValue(key);
+    if (hamtLookup(dict, 0, hash, key)) |found| {
+        const updated = P.call1(P.dup(fun), P.dup(found));
+        const result = hamtInsert(dict, 0, hash, key, updated);
+        P.drop(updated);
+        return result;
     }
-    return dictPut(dict, key, init);
+    return hamtInsert(dict, 0, hash, key, init);
 }
 
 // ------------------------------------------------------------------ bit_array
@@ -10776,6 +11194,7 @@ fn @"lambda$2"(@"env$": []const Value, @"v$y": Value) Value {
 
 pub fn main(init: @"gleam$std".process.Init.Minimal) void {
     @"gleam$prelude".process_args = init.args;
+    @"gleam$prelude".process_environ = init.environ;
     @"gleam$prelude".drop(@"gleam$raytracer/raytracer".@"main"());
     @"gleam$prelude".leakCheckExit();
 }
