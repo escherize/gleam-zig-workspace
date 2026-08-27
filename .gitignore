@@ -16,3 +16,10 @@
 .private/
 .private-remote
 .playwright-cli/
+
+# Generated into the committed raytracer build tree by any zig-target build.
+# The tree itself is committed on purpose (it is the shipped emitted-code
+# sample); these are per-build cache files that are not.
+examples/demo/raytracer/build/prod/zig/.prelude-*
+examples/demo/raytracer/build/prod/zig/entrypoint@*.zig
+.harness.lock

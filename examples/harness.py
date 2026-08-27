@@ -11,6 +11,7 @@ stripped, echo's file:line lines reduced to their line number) and diffed.
 """
 
 import os
+import fcntl
 import re
 import subprocess
 import sys
@@ -30,6 +31,24 @@ ZIG = Path(
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 FILE_LINE = re.compile(r"^\S*\.gleam:(\d+)$")
+
+
+def lock_project():
+    """Serialize harness runs against the shared scratch project.
+
+    Every program is copied into examples/_run as mainmod.gleam, so two
+    concurrent runs overwrite each other and compare mismatched programs. The
+    failures look exactly like memory corruption. Hold an exclusive lock for
+    the whole run; a second harness waits rather than interleaving.
+    """
+    PROJECT.mkdir(parents=True, exist_ok=True)
+    handle = open(PROJECT / ".harness.lock", "w")
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print("waiting for the harness lock (another run holds it)...", flush=True)
+        fcntl.flock(handle, fcntl.LOCK_EX)
+    return handle
 
 
 def setup_project():
@@ -285,4 +304,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    _lock = lock_project()
     sys.exit(main())
