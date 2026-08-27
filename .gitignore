@@ -13,3 +13,6 @@
 # Harness scratch project and build output
 /examples/_run/
 /examples/*/build/
+.private/
+.private-remote
+.playwright-cli/
